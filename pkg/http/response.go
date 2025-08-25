@@ -1,6 +1,7 @@
 package http
 
 import (
+	"cpi-hub-api/pkg/apperror"
 	"encoding/json"
 	"net/http"
 )
@@ -57,4 +58,10 @@ func NotFoundResponse(w http.ResponseWriter, message string) {
 
 func InternalServerErrorResponse(w http.ResponseWriter, message string) {
 	ErrorResponse(w, http.StatusInternalServerError, message)
+}
+
+// NewError creates an error response using the apperror package
+func NewError(w http.ResponseWriter, err error) {
+	statusCode, message := apperror.StatusCodeAndMessage(err)
+	ErrorResponse(w, statusCode, message)
 }

@@ -2,7 +2,10 @@ module cpi-hub-api
 
 go 1.24
 
-require github.com/gin-gonic/gin v1.10.1
+require (
+	github.com/gin-gonic/gin v1.10.1
+	github.com/oklog/ulid/v2 v2.1.1
+)
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect

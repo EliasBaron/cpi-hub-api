@@ -11,5 +11,6 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	// users
 	v1.POST("/users", handlers.UserHandler.Create)
+	v1.GET("/users/:id", handlers.UserHandler.Get)
 
 }
