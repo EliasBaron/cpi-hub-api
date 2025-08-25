@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"cpi-hub-api/internal/app/dependencies"
 	"cpi-hub-api/internal/infrastructure/entrypoint/router"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ func main() {
 
 	app := gin.Default()
 
-	router.LoadRoutes(app)
+	router.LoadRoutes(app, dependencies.Build())
 
 	port := os.Getenv("PORT")
 	if port == "" {
