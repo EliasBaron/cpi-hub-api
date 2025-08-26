@@ -23,7 +23,7 @@ func Build() *Handlers {
 	// usecases
 	userUsecase := userUsecase.NewUserUsecase(userRepository)
 	// genero el usecase de spaces
-	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository)
+	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository)
 
 	// handlers
 	return &Handlers{
