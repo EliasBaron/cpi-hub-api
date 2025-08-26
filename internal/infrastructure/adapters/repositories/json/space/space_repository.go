@@ -19,10 +19,6 @@ type SpaceRepository struct {
 	mutex    sync.RWMutex
 }
 
-type spaceData struct {
-	Spaces []*entity.SpaceEntity `json:"spaces"`
-}
-
 func NewSpaceRepository(filePath string) *SpaceRepository {
 	repo := &SpaceRepository{
 		filePath: filePath,
@@ -39,7 +35,6 @@ func (r *SpaceRepository) Create(ctx context.Context, space *domain.Space) error
 	defer r.mutex.Unlock()
 
 	spaceEntity := mapper.ToJSONDatabaseSpace(space)
-
 	r.spaces[spaceEntity.ID] = spaceEntity
 
 	if err := r.saveToFile(); err != nil {
@@ -73,7 +68,7 @@ func (r *SpaceRepository) FindByName(ctx context.Context, name string) (*domain.
 		}
 	}
 
-	return nil, apperror.NewNotFound("space", name, "space_repository.go:FindByName")
+	return nil, nil
 }
 
 func (r *SpaceRepository) loadFromFile() {
@@ -91,14 +86,14 @@ func (r *SpaceRepository) loadFromFile() {
 		return
 	}
 
-	var spaceData spaceData
-	if err := json.Unmarshal(data, &spaceData); err != nil {
+	var db entity.DatabaseFile
+	if err := json.Unmarshal(data, &db); err != nil {
 		r.spaces = make(map[string]*entity.SpaceEntity)
 		return
 	}
 
 	r.spaces = make(map[string]*entity.SpaceEntity)
-	for _, space := range spaceData.Spaces {
+	for _, space := range db.Spaces {
 		if space != nil && space.ID != "" {
 			r.spaces[space.ID] = space
 		}
@@ -106,16 +101,21 @@ func (r *SpaceRepository) loadFromFile() {
 }
 
 func (r *SpaceRepository) saveToFile() error {
-	var spaces []*entity.SpaceEntity
+	// NO uses r.mutex.Lock() aquí
+
+	// Leer el archivo actual para no perder los usuarios
+	var db entity.DatabaseFile
+	if data, err := os.ReadFile(r.filePath); err == nil {
+		_ = json.Unmarshal(data, &db)
+	}
+
+	// Actualizar solo los espacios
+	db.Spaces = nil
 	for _, space := range r.spaces {
-		spaces = append(spaces, space)
+		db.Spaces = append(db.Spaces, space)
 	}
 
-	spaceData := spaceData{
-		Spaces: spaces,
-	}
-
-	data, err := json.MarshalIndent(spaceData, "", "  ")
+	data, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal spaces: %w", err)
 	}

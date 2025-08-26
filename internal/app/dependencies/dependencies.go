@@ -16,9 +16,9 @@ type Handlers struct {
 
 func Build() *Handlers {
 	// repositories
-	userRepository := userRepository.NewUserRepository("user_db.json")
+	userRepository := userRepository.NewUserRepository("app_db.json")
 	// genero el reposotory de spaces
-	spaceRepository := spaceRepository.NewSpaceRepository("space_db.json")
+	spaceRepository := spaceRepository.NewSpaceRepository("app_db.json")
 
 	// usecases
 	userUsecase := userUsecase.NewUserUsecase(userRepository)

@@ -25,23 +25,24 @@ func NewSpaceUsecase(spaceRepository domain.SpaceRepository) SpaceUseCase {
 
 // Create implements SpaceUseCase.
 func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain.Space, error) {
-	// existingSpace, err := s.spaceRepository.FindByName(ctx, space.Name)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	existingSpace, err := s.spaceRepository.FindByName(ctx, space.Name)
+	if err != nil {
+		return nil, err
+	}
 
-	// if existingSpace != nil {
-	// 	return nil, apperror.NewInvalidData("Space with this name already exists", nil, "space_usecase.go:Create")
-	// }
+	if existingSpace != nil {
+		return nil, apperror.NewInvalidData("Space with this name already exists", nil, "space_usecase.go:Create")
+	}
 
 	space.ID = helpers.NewULID()
 	space.CreatedAt = time.Now()
+	space.UpdatedBy = space.CreatedBy
 	space.UpdatedAt = time.Now()
 
-	// err = s.spaceRepository.Create(ctx, space)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	err = s.spaceRepository.Create(ctx, space)
+	if err != nil {
+		return nil, err
+	}
 
 	return space, nil
 }
