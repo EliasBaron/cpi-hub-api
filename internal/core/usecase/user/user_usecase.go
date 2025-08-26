@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type UseCase interface {
+type UserUseCase interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Get(ctx context.Context, id string) (*domain.User, error)
 }
@@ -17,7 +17,7 @@ type useCase struct {
 	userRepository domain.UserRepository
 }
 
-func NewUserUsecase(userRepository domain.UserRepository) UseCase {
+func NewUserUsecase(userRepository domain.UserRepository) UserUseCase {
 	return &useCase{
 		userRepository: userRepository,
 	}

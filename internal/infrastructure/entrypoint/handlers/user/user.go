@@ -10,7 +10,7 @@ import (
 )
 
 type Handler struct {
-	UseCase user.UseCase
+	UseCase user.UserUseCase
 }
 
 func (h *Handler) Create(c *gin.Context) {
@@ -30,7 +30,7 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "User created successfully", createdUser)
+	response.CreatedResponse(c.Writer, "User created successfully", dto.ToUserDTO(createdUser))
 }
 
 func (h *Handler) Get(c *gin.Context) {
@@ -42,5 +42,5 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "User retrieved successfully", user)
+	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTO(user))
 }
