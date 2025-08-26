@@ -106,16 +106,19 @@ func (r *UserRepository) loadFromFile() {
 }
 
 func (r *UserRepository) saveToFile() error {
-	var users []*entity.UserEntity
+
+	var db entity.DatabaseFile
+
+	if data, err := os.ReadFile(r.filePath); err == nil {
+		_ = json.Unmarshal(data, &db)
+	}
+
+	db.Users = nil
 	for _, user := range r.users {
-		users = append(users, user)
+		db.Users = append(db.Users, user)
 	}
 
-	userData := userData{
-		Users: users,
-	}
-
-	data, err := json.MarshalIndent(userData, "", "  ")
+	data, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal users: %w", err)
 	}
