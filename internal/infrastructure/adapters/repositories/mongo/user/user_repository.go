@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/mapper"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -24,5 +26,11 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
+	userEntity := mapper.ToMongoDatabaseUser(user)
+	collection := r.db.Collection("users")
+	_, err := collection.InsertOne(ctx, userEntity)
+	if err != nil {
+		return fmt.Errorf("error al crear el usuario: %w", err)
+	}
 	return nil
 }
