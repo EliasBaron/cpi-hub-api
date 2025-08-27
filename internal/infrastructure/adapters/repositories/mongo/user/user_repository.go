@@ -34,7 +34,7 @@ func (r *UserRepository) findByField(ctx context.Context, field string, value in
 		}
 		return mapper.ToDomainUser(&userEntity), nil
 	}
-	return nil, mongo.ErrNoDocuments
+	return nil, nil
 }
 
 func (r *UserRepository) FindById(ctx context.Context, id string) (*domain.User, error) {
