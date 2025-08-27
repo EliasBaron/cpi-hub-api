@@ -3,10 +3,11 @@ package dependencies
 import (
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
-	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/json/space"
-	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/json/user"
+	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/space"
+	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/user"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
+	"log"
 )
 
 type Handlers struct {
@@ -15,17 +16,17 @@ type Handlers struct {
 }
 
 func Build() *Handlers {
-	// repositories
-	userRepository := userRepository.NewUserRepository("app_db.json")
-	// genero el reposotory de spaces
-	spaceRepository := spaceRepository.NewSpaceRepository("app_db.json")
+	db, err := GetMongoDatabase()
+	if err != nil {
+		log.Fatalf("Error al conectar a MongoDB: %v", err)
+	}
 
-	// usecases
+	userRepository := userRepository.NewUserRepository(db)
+	spaceRepository := spaceRepository.NewSpaceRepository(db)
+
 	userUsecase := userUsecase.NewUserUsecase(userRepository)
-	// genero el usecase de spaces
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository)
 
-	// handlers
 	return &Handlers{
 		UserHandler: &user.Handler{
 			UseCase: userUsecase,
