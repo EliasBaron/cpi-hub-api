@@ -18,6 +18,15 @@ type UserDTO struct {
 	Image    string `json:"image"`
 }
 
+type UserDTOWithSpaces struct {
+	ID       string     `json:"id"`
+	Name     string     `json:"name"`
+	LastName string     `json:"last_name"`
+	Email    string     `json:"email"`
+	Image    string     `json:"image"`
+	Spaces   []SpaceDTO `json:"spaces"`
+}
+
 func (c *CreateUser) ToDomain() *domain.User {
 	return &domain.User{
 		Name:     c.Name,
@@ -35,5 +44,26 @@ func ToUserDTO(user *domain.User) UserDTO {
 		LastName: user.LastName,
 		Email:    user.Email,
 		Image:    user.Image,
+	}
+}
+
+func ToUserDTOWithSpaces(user *domain.UserWithSpaces) UserDTOWithSpaces {
+	var spaceDTOs []SpaceDTO
+	for _, s := range user.Spaces {
+		spaceDTOs = append(spaceDTOs, SpaceDTO{
+			ID:          s.ID,
+			Name:        s.Name,
+			Description: s.Description,
+			CreatedBy:   s.CreatedBy,
+		})
+	}
+
+	return UserDTOWithSpaces{
+		ID:       user.User.ID,
+		Name:     user.User.Name,
+		LastName: user.User.LastName,
+		Email:    user.User.Email,
+		Image:    user.User.Image,
+		Spaces:   spaceDTOs,
 	}
 }

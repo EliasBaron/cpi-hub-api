@@ -9,16 +9,21 @@ import (
 
 type UserUseCase interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
-	Get(ctx context.Context, id string) (*domain.User, error)
+	Get(ctx context.Context, id string) (*domain.UserWithSpaces, error)
+	AddSpaceToUser(ctx context.Context, userId string, spaceId string) error
 }
 
 type useCase struct {
-	userRepository domain.UserRepository
+	userRepository      domain.UserRepository
+	spaceRepository     domain.SpaceRepository
+	userSpaceRepository domain.UserSpaceRepository
 }
 
-func NewUserUsecase(userRepository domain.UserRepository) UserUseCase {
+func NewUserUsecase(userRepository domain.UserRepository, spaceRepository domain.SpaceRepository, userSpaceRepository domain.UserSpaceRepository) UserUseCase {
 	return &useCase{
-		userRepository: userRepository,
+		userRepository:      userRepository,
+		spaceRepository:     spaceRepository,
+		userSpaceRepository: userSpaceRepository,
 	}
 }
 
@@ -42,15 +47,55 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 	return user, nil
 }
 
-func (u *useCase) Get(ctx context.Context, id string) (*domain.User, error) {
+func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, error) {
 	user, err := u.userRepository.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-
 	if user == nil {
-		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:Get")
+		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:GetUserWithSpaces")
 	}
 
-	return user, nil
+	// Paso 1: obtener IDs de espacios desde Postgres
+	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Paso 2: obtener espacios desde Mongo
+	spaces, err := u.spaceRepository.FindByIDs(ctx, spaceIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Paso 3: devolver DTO de dominio unificado
+	return &domain.UserWithSpaces{
+		User:   user,
+		Spaces: spaces,
+	}, nil
+}
+
+func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId string) error {
+	user, err := u.userRepository.FindById(ctx, userId)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.NewNotFound("User not found", nil, "user_usecase.go:AddSpaceToUser")
+	}
+
+	space, err := u.spaceRepository.FindById(ctx, spaceId)
+	if err != nil {
+		return err
+	}
+	if space == nil {
+		return apperror.NewNotFound("Space not found", nil, "user_usecase.go:AddSpaceToUser")
+	}
+
+	err = u.userRepository.AddSpaceToUser(ctx, userId, spaceId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
