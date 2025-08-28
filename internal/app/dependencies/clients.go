@@ -8,12 +8,25 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"database/sql"
+
+	_ "github.com/lib/pq"
 )
 
 type MongoDBConfig struct {
 	URI      string
 	Database string
 	Timeout  time.Duration
+}
+
+type PostgreSQLConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Database string
+	SSLMode  string
 }
 
 func newMongoDBClient() (*mongo.Client, error) {
@@ -56,4 +69,43 @@ func CloseMongoConnection(client *mongo.Client) error {
 	defer cancel()
 
 	return client.Disconnect(ctx)
+}
+
+func NewPostgreSQLClient() (*sql.DB, error) {
+	config := PostgreSQLConfig{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "postgres",
+		Password: "rootroot",
+		Database: "cpihub",
+		SSLMode:  "disable",
+	}
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.Host, config.Port, config.User, config.Password, config.Database, config.SSLMode)
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("error conectando a PostgreSQL: %w", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("error verificando conexión a PostgreSQL: %w", err)
+	}
+
+	log.Printf("Conectado exitosamente a PostgreSQL en %s:%d", config.Host, config.Port)
+	return db, nil
+}
+
+func GetPostgreSQLDatabase() (*sql.DB, error) {
+	client, err := NewPostgreSQLClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func ClosePostgreSQLConnection(db *sql.DB) error {
+	return db.Close()
 }
