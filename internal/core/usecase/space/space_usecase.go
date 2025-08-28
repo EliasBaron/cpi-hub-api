@@ -27,6 +27,7 @@ func NewSpaceUsecase(spaceRepository domain.SpaceRepository, userRepository doma
 
 // Create implements SpaceUseCase.
 func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain.Space, error) {
+
 	existingUser, err := s.userRepository.FindById(ctx, space.CreatedBy)
 	if err != nil {
 		return nil, err
