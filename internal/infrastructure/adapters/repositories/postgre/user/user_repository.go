@@ -52,3 +52,14 @@ func (u *UserRepository) Create(ctx context.Context, user *domain.User) error {
 func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
+
+func (u *UserRepository) AddSpaceToUser(ctx context.Context, userId string, spaceId string) error {
+	_, err := u.db.ExecContext(ctx,
+		"INSERT INTO user_space (user_id, space_id) VALUES ($1, $2)",
+		userId, spaceId,
+	)
+	if err != nil {
+		return fmt.Errorf("error al agregar espacio a usuario: %w", err)
+	}
+	return nil
+}

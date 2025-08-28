@@ -42,5 +42,18 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTO(user))
+	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTOWithSpaces(user))
+}
+
+func (h *Handler) AddSpaceToUser(c *gin.Context) {
+	userId := c.Param("id")
+	spaceId := c.Param("spaceId")
+
+	err := h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
 }
