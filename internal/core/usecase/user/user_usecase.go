@@ -4,7 +4,6 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/pkg/apperror"
-	"cpi-hub-api/pkg/helpers"
 	"time"
 )
 
@@ -32,7 +31,6 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 		return nil, apperror.NewInvalidData("User with this email already exists", nil, "user_usecase.go:Create")
 	}
 
-	user.ID = helpers.NewULID()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
