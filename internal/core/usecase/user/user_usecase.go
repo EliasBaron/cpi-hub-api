@@ -28,7 +28,6 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 	if err != nil {
 		return nil, err
 	}
-
 	if existingUser != nil {
 		return nil, apperror.NewInvalidData("User with this email already exists", nil, "user_usecase.go:Create")
 	}
