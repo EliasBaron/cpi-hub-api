@@ -46,18 +46,9 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
-
-	existingUser, err := r.FindByEmail(ctx, user.Email)
-	if err != nil {
-		return fmt.Errorf("error checking for existing user: %w", err)
-	}
-	if existingUser != nil {
-		return fmt.Errorf("error: user with email %s already exists", user.Email)
-	}
-
 	userEntity := mapper.ToMongoDatabaseUser(user)
 	collection := r.db.Collection("users")
-	_, err = collection.InsertOne(ctx, userEntity)
+	_, err := collection.InsertOne(ctx, userEntity)
 	if err != nil {
 		return fmt.Errorf("error al crear el usuario: %w", err)
 	}
