@@ -28,13 +28,13 @@ func NewSpaceUsecase(spaceRepository domain.SpaceRepository, userRepository doma
 // Create implements SpaceUseCase.
 func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain.Space, error) {
 
-	// existingUser, err := s.userRepository.FindById(ctx, space.CreatedBy)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if existingUser == nil {
-	// 	return nil, apperror.NewNotFound("User not found", nil, "space_usecase.go:Create")
-	// }
+	existingUser, err := s.userRepository.FindById(ctx, space.CreatedBy)
+	if err != nil {
+		return nil, err
+	}
+	if existingUser == nil {
+		return nil, apperror.NewNotFound("User not found", nil, "space_usecase.go:Create")
+	}
 
 	existingSpace, err := s.spaceRepository.FindByName(ctx, space.Name)
 	if err != nil {

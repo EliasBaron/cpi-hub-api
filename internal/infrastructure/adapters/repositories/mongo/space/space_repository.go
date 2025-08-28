@@ -46,17 +46,9 @@ func (r *SpaceRepository) FindByName(ctx context.Context, name string) (*domain.
 }
 
 func (r *SpaceRepository) Create(ctx context.Context, space *domain.Space) error {
-	existingSpace, err := r.FindByName(ctx, space.Name)
-	if err != nil {
-		return fmt.Errorf("error checking for existing space: %w", err)
-	}
-	if existingSpace != nil {
-		return fmt.Errorf("error: space with name %s already exists", space.Name)
-	}
-
 	spaceEntity := mapper.ToMongoDatabaseSpace(space)
 	collection := r.db.Collection("spaces")
-	_, err = collection.InsertOne(ctx, spaceEntity)
+	_, err := collection.InsertOne(ctx, spaceEntity)
 	if err != nil {
 		return fmt.Errorf("error al crear el espacio: %w", err)
 	}
