@@ -4,7 +4,7 @@ import (
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
 	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/space"
-	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/user"
+	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgre/user"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
 	"log"
@@ -16,13 +16,18 @@ type Handlers struct {
 }
 
 func Build() *Handlers {
-	db, err := GetMongoDatabase()
+	mongoDB, err := GetMongoDatabase()
 	if err != nil {
 		log.Fatalf("Error al conectar a MongoDB: %v", err)
 	}
 
-	userRepository := userRepository.NewUserRepository(db)
-	spaceRepository := spaceRepository.NewSpaceRepository(db)
+	postgreDB, err := GetPostgreSQLDatabase()
+	if err != nil {
+		log.Fatalf("Error al conectar a PostgreSQL: %v", err)
+	}
+
+	userRepository := userRepository.NewUserRepository(postgreDB)
+	spaceRepository := spaceRepository.NewSpaceRepository(mongoDB)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository)

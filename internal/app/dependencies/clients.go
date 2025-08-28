@@ -20,6 +20,15 @@ type MongoDBConfig struct {
 	Timeout  time.Duration
 }
 
+type PostgreSQLConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Database string
+	SSLMode  string
+}
+
 func newMongoDBClient() (*mongo.Client, error) {
 	config := MongoDBConfig{
 		URI:      "mongodb://localhost:27017",
@@ -63,7 +72,18 @@ func CloseMongoConnection(client *mongo.Client) error {
 }
 
 func NewPostgreSQLClient() (*sql.DB, error) {
-	connStr := "user=postgres password=rootroot dbname=cpihub sslmode=disable"
+	config := PostgreSQLConfig{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "postgres",
+		Password: "rootroot",
+		Database: "cpihub",
+		SSLMode:  "disable",
+	}
+
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.Host, config.Port, config.User, config.Password, config.Database, config.SSLMode)
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("error conectando a PostgreSQL: %w", err)
@@ -73,7 +93,7 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 		return nil, fmt.Errorf("error verificando conexión a PostgreSQL: %w", err)
 	}
 
-	log.Printf("Conectado exitosamente a PostgreSQL")
+	log.Printf("Conectado exitosamente a PostgreSQL en %s:%d", config.Host, config.Port)
 	return db, nil
 }
 
