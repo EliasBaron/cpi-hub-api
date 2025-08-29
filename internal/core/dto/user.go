@@ -48,7 +48,7 @@ func ToUserDTO(user *domain.User) UserDTO {
 }
 
 func ToUserDTOWithSpaces(user *domain.UserWithSpaces) UserDTOWithSpaces {
-	var spaceDTOs []SpaceDTO
+	spaceDTOs := make([]SpaceDTO, 0, len(user.Spaces))
 	for _, s := range user.Spaces {
 		spaceDTOs = append(spaceDTOs, SpaceDTO{
 			ID:          s.ID,

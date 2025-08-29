@@ -18,4 +18,5 @@ type SpaceRepository interface {
 type UserSpaceRepository interface {
 	FindSpaceIDsByUser(ctx context.Context, userID string) ([]string, error)
 	AddUserToSpace(ctx context.Context, userId string, spaceId string) error
+	Exists(ctx context.Context, userId string, spaceId string) (bool, error)
 }

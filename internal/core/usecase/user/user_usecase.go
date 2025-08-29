@@ -4,7 +4,6 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/pkg/apperror"
-	"strings"
 	"time"
 )
 
@@ -90,11 +89,16 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId str
 		return apperror.NewNotFound("Space not found", nil, "user_usecase.go:AddSpaceToUser")
 	}
 
+	exists, err := u.userSpaceRepository.Exists(ctx, userId, spaceId)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return apperror.NewInvalidData("User already subscribed to this space", nil, "user_usecase.go:AddSpaceToUser")
+	}
+
 	err = u.userSpaceRepository.AddUserToSpace(ctx, userId, spaceId)
 	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value") {
-			return apperror.NewInvalidData("User already subscribed to this space", nil, "user_usecase.go:AddSpaceToUser")
-		}
 		return err
 	}
 

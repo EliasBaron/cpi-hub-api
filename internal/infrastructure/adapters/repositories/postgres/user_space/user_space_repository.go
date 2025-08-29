@@ -37,7 +37,12 @@ func (r *UserSpaceRepository) FindSpaceIDsByUser(ctx context.Context, userID str
 		return nil, err
 	}
 
+	if spaceIDs == nil {
+		return []string{}, nil
+	}
+
 	return spaceIDs, nil
+
 }
 
 func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId string, spaceId string) error {
@@ -49,4 +54,14 @@ func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId string,
 		return fmt.Errorf("error al agregar espacio a usuario: %w", err)
 	}
 	return nil
+}
+
+func (u *UserSpaceRepository) Exists(ctx context.Context, userId string, spaceId string) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM user_spaces WHERE user_id = $1 AND space_id = $2)`
+	err := u.db.QueryRowContext(ctx, query, userId, spaceId).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error al verificar existencia de espacio: %w", err)
+	}
+	return exists, nil
 }
