@@ -6,7 +6,6 @@ type UserRepository interface {
 	FindById(ctx context.Context, id string) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	Create(ctx context.Context, user *User) error
-	AddSpaceToUser(ctx context.Context, userId string, spaceId string) error
 }
 
 type SpaceRepository interface {
@@ -18,4 +17,5 @@ type SpaceRepository interface {
 
 type UserSpaceRepository interface {
 	FindSpaceIDsByUser(ctx context.Context, userID string) ([]string, error)
+	AddUserToSpace(ctx context.Context, userId string, spaceId string) error
 }

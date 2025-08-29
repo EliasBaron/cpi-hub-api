@@ -4,6 +4,7 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/pkg/apperror"
+	"strings"
 	"time"
 )
 
@@ -56,19 +57,16 @@ func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, e
 		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:GetUserWithSpaces")
 	}
 
-	// Paso 1: obtener IDs de espacios desde Postgres
 	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Paso 2: obtener espacios desde Mongo
 	spaces, err := u.spaceRepository.FindByIDs(ctx, spaceIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// Paso 3: devolver DTO de dominio unificado
 	return &domain.UserWithSpaces{
 		User:   user,
 		Spaces: spaces,
@@ -92,8 +90,11 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId str
 		return apperror.NewNotFound("Space not found", nil, "user_usecase.go:AddSpaceToUser")
 	}
 
-	err = u.userRepository.AddSpaceToUser(ctx, userId, spaceId)
+	err = u.userSpaceRepository.AddUserToSpace(ctx, userId, spaceId)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value") {
+			return apperror.NewInvalidData("User already subscribed to this space", nil, "user_usecase.go:AddSpaceToUser")
+		}
 		return err
 	}
 

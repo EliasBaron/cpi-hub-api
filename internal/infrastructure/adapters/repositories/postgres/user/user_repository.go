@@ -13,6 +13,10 @@ type UserRepository struct {
 	db *sql.DB
 }
 
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
 func (u *UserRepository) findUserByField(ctx context.Context, field string, value string) (*domain.User, error) {
 	var userEntity entity.UserEntity
 	query := "SELECT * FROM users WHERE " + field + " = $1"
@@ -46,20 +50,5 @@ func (u *UserRepository) Create(ctx context.Context, user *domain.User) error {
 		return fmt.Errorf("error al crear usuario: %w", err)
 	}
 	user.ID = userEntity.ID
-	return nil
-}
-
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{db: db}
-}
-
-func (u *UserRepository) AddSpaceToUser(ctx context.Context, userId string, spaceId string) error {
-	_, err := u.db.ExecContext(ctx,
-		"INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)",
-		userId, spaceId,
-	)
-	if err != nil {
-		return fmt.Errorf("error al agregar espacio a usuario: %w", err)
-	}
 	return nil
 }

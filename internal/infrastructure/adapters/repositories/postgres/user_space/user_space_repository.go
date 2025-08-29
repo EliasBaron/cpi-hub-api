@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type UserSpaceRepository struct {
@@ -37,4 +38,15 @@ func (r *UserSpaceRepository) FindSpaceIDsByUser(ctx context.Context, userID str
 	}
 
 	return spaceIDs, nil
+}
+
+func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId string, spaceId string) error {
+	_, err := u.db.ExecContext(ctx,
+		"INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)",
+		userId, spaceId,
+	)
+	if err != nil {
+		return fmt.Errorf("error al agregar espacio a usuario: %w", err)
+	}
+	return nil
 }
