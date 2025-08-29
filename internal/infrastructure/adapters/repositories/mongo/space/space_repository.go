@@ -54,3 +54,30 @@ func (r *SpaceRepository) Create(ctx context.Context, space *domain.Space) error
 	}
 	return nil
 }
+
+func (r *SpaceRepository) FindByIDs(ctx context.Context, ids []string) ([]*domain.Space, error) {
+	if len(ids) == 0 {
+		return []*domain.Space{}, nil
+	}
+	collection := r.db.Collection("spaces")
+	cursor, err := collection.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
+	if err != nil {
+		return nil, fmt.Errorf("error al buscar espacios por IDs: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var results []*domain.Space
+	for cursor.Next(ctx) {
+		var spaceEntity entity.SpaceEntity
+		if err := cursor.Decode(&spaceEntity); err != nil {
+			return nil, fmt.Errorf("error al decodificar espacio: %w", err)
+		}
+		results = append(results, mapper.ToDomainSpace(&spaceEntity))
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}

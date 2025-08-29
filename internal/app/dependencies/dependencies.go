@@ -5,6 +5,7 @@ import (
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
 	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/space"
 	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user"
+	userSpaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user_space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
 	"log"
@@ -28,8 +29,9 @@ func Build() *Handlers {
 
 	userRepository := userRepository.NewUserRepository(sqldb)
 	spaceRepository := spaceRepository.NewSpaceRepository(mongoDB)
+	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(sqldb)
 
-	userUsecase := userUsecase.NewUserUsecase(userRepository)
+	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository)
 
 	return &Handlers{
