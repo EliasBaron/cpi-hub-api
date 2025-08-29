@@ -4,8 +4,8 @@ import (
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
 	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/space"
-	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgre/user"
-	userSpaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgre/user_space"
+	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user"
+	userSpaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user_space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
 	"log"
@@ -22,14 +22,14 @@ func Build() *Handlers {
 		log.Fatalf("Error al conectar a MongoDB: %v", err)
 	}
 
-	postgreDB, err := GetPostgreSQLDatabase()
+	sqldb, err := GetPostgreSQLDatabase()
 	if err != nil {
 		log.Fatalf("Error al conectar a PostgreSQL: %v", err)
 	}
 
-	userRepository := userRepository.NewUserRepository(postgreDB)
+	userRepository := userRepository.NewUserRepository(sqldb)
 	spaceRepository := spaceRepository.NewSpaceRepository(mongoDB)
-	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(postgreDB)
+	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(sqldb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository)

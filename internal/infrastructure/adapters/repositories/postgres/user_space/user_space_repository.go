@@ -15,7 +15,7 @@ func NewUserSpaceRepository(db *sql.DB) *UserSpaceRepository {
 
 // Devuelve todos los IDs de espacios asociados a un usuario
 func (r *UserSpaceRepository) FindSpaceIDsByUser(ctx context.Context, userID string) ([]string, error) {
-	query := `SELECT space_id FROM user_space WHERE user_id = $1`
+	query := `SELECT space_id FROM user_spaces WHERE user_id = $1`
 
 	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {

@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
-	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgre/entity"
-	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgre/mapper"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/entity"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"database/sql"
 	"fmt"
 )
@@ -55,7 +55,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (u *UserRepository) AddSpaceToUser(ctx context.Context, userId string, spaceId string) error {
 	_, err := u.db.ExecContext(ctx,
-		"INSERT INTO user_space (user_id, space_id) VALUES ($1, $2)",
+		"INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)",
 		userId, spaceId,
 	)
 	if err != nil {

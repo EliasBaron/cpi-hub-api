@@ -89,11 +89,16 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 		return nil, fmt.Errorf("error conectando a PostgreSQL: %w", err)
 	}
 
+	if err := ensureSchema(db); err != nil {
+		return nil, fmt.Errorf("error asegurando esquema en PostgreSQL: %w", err)
+	}
+
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("error verificando conexión a PostgreSQL: %w", err)
 	}
 
 	log.Printf("Conectado exitosamente a PostgreSQL en %s:%d", config.Host, config.Port)
+
 	return db, nil
 }
 
@@ -108,4 +113,32 @@ func GetPostgreSQLDatabase() (*sql.DB, error) {
 
 func ClosePostgreSQLConnection(db *sql.DB) error {
 	return db.Close()
+}
+
+func ensureSchema(db *sql.DB) error {
+	stmts := []string{
+		`CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT now(),
+            updated_at TIMESTAMP NOT NULL DEFAULT now(),
+            image TEXT
+        )`,
+
+		`CREATE TABLE IF NOT EXISTS user_spaces (
+            user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            space_id TEXT NOT NULL,
+            PRIMARY KEY (user_id, space_id)
+        )`,
+	}
+
+	for _, stmt := range stmts {
+		if _, err := db.Exec(stmt); err != nil {
+			return fmt.Errorf("error creando tabla: %w", err)
+		}
+	}
+	return nil
 }
