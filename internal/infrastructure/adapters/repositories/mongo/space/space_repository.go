@@ -3,6 +3,7 @@ package space
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/entity"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/mapper"
 	"fmt"
@@ -19,11 +20,27 @@ func NewSpaceRepository(db *mongo.Database) *SpaceRepository {
 	return &SpaceRepository{db: db}
 }
 
-func (r *SpaceRepository) findByField(ctx context.Context, field string, value interface{}) (*domain.Space, error) {
+func (r *SpaceRepository) Create(ctx context.Context, space *domain.Space) error {
+	spaceEntity := mapper.ToMongoDatabaseSpace(space)
+
 	collection := r.db.Collection("spaces")
-	cursor, err := collection.Find(ctx, bson.D{{Key: field, Value: value}})
+
+	_, err := collection.InsertOne(ctx, spaceEntity)
+
 	if err != nil {
-		return nil, fmt.Errorf("error al buscar el espacio por %s: %w", field, err)
+		return fmt.Errorf("error al crear el espacio: %w", err)
+	}
+
+	return nil
+}
+
+func (r *SpaceRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Space, error) {
+	filters := mapper.ToMongoDBQuery(criteria)
+
+	collection := r.db.Collection("spaces")
+	cursor, err := collection.Find(ctx, filters)
+	if err != nil {
+		return nil, fmt.Errorf("error al buscar el espacio: %w", err)
 	}
 	defer cursor.Close(ctx)
 
@@ -35,24 +52,6 @@ func (r *SpaceRepository) findByField(ctx context.Context, field string, value i
 		return mapper.ToDomainSpace(&spaceEntity), nil
 	}
 	return nil, nil
-}
-
-func (r *SpaceRepository) FindById(ctx context.Context, id string) (*domain.Space, error) {
-	return r.findByField(ctx, "_id", id)
-}
-
-func (r *SpaceRepository) FindByName(ctx context.Context, name string) (*domain.Space, error) {
-	return r.findByField(ctx, "name", name)
-}
-
-func (r *SpaceRepository) Create(ctx context.Context, space *domain.Space) error {
-	spaceEntity := mapper.ToMongoDatabaseSpace(space)
-	collection := r.db.Collection("spaces")
-	_, err := collection.InsertOne(ctx, spaceEntity)
-	if err != nil {
-		return fmt.Errorf("error al crear el espacio: %w", err)
-	}
-	return nil
 }
 
 func (r *SpaceRepository) FindByIDs(ctx context.Context, ids []string) ([]*domain.Space, error) {

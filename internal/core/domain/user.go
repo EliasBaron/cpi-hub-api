@@ -14,3 +14,8 @@ type User struct {
 	UpdatedAt time.Time
 	Image     string
 }
+
+type UserWithSpaces struct {
+	User   *User
+	Spaces []*Space
+}

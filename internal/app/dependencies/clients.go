@@ -43,15 +43,15 @@ func newMongoDBClient() (*mongo.Client, error) {
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("error conectando a MongoDB: %w", err)
+		return nil, fmt.Errorf("error connecting to MongoDB: %w", err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error verificando conexión a MongoDB: %w", err)
+		return nil, fmt.Errorf("error verifying connection to MongoDB: %w", err)
 	}
 
-	log.Printf("Conectado exitosamente a MongoDB en %s", config.URI)
+	log.Printf("Successfully connected to MongoDB at %s", config.URI)
 	return client, nil
 }
 
@@ -86,18 +86,18 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("error conectando a PostgreSQL: %w", err)
+		return nil, fmt.Errorf("error opening connection to PostgreSQL: %w", err)
 	}
 
 	if err := ensureSchema(db); err != nil {
-		return nil, fmt.Errorf("error asegurando esquema en PostgreSQL: %w", err)
+		return nil, fmt.Errorf("error ensuring schema in PostgreSQL: %w", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error verificando conexión a PostgreSQL: %w", err)
+		return nil, fmt.Errorf("error verifying connection to PostgreSQL: %w", err)
 	}
 
-	log.Printf("Conectado exitosamente a PostgreSQL en %s:%d", config.Host, config.Port)
+	log.Printf("Successfully connected to PostgreSQL at %s:%d", config.Host, config.Port)
 
 	return db, nil
 }
@@ -137,7 +137,7 @@ func ensureSchema(db *sql.DB) error {
 
 	for _, stmt := range stmts {
 		if _, err := db.Exec(stmt); err != nil {
-			return fmt.Errorf("error creando tabla: %w", err)
+			return fmt.Errorf("error creating table: %w", err)
 		}
 	}
 	return nil

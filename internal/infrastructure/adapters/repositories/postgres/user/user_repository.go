@@ -3,10 +3,10 @@ package user
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/entity"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"database/sql"
-	"fmt"
 )
 
 type UserRepository struct {
@@ -17,10 +17,29 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (u *UserRepository) findUserByField(ctx context.Context, field string, value string) (*domain.User, error) {
+func (u *UserRepository) Create(ctx context.Context, user *domain.User) error {
+	var userEntity = *mapper.ToPostgreUser(user)
+
+	if err := u.db.QueryRowContext(ctx,
+		"INSERT INTO users (name, last_name, email, password, created_at, updated_at, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		userEntity.Name, userEntity.LastName, userEntity.Email, userEntity.Password, userEntity.CreatedAt, userEntity.UpdatedAt, userEntity.Image,
+	).Scan(&userEntity.ID); err != nil {
+		return err
+	}
+
+	user.ID = userEntity.ID
+	return nil
+}
+
+func (u *UserRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.User, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+
+	return u.findUserByField(ctx, query, params)
+}
+
+func (u *UserRepository) findUserByField(ctx context.Context, query string, params []interface{}) (*domain.User, error) {
 	var userEntity entity.UserEntity
-	query := "SELECT * FROM users WHERE " + field + " = $1"
-	err := u.db.QueryRowContext(ctx, query, value).Scan(
+	err := u.db.QueryRowContext(ctx, query, params...).Scan(
 		&userEntity.ID, &userEntity.Name, &userEntity.LastName, &userEntity.Email,
 		&userEntity.Password, &userEntity.CreatedAt, &userEntity.UpdatedAt, &userEntity.Image,
 	)
@@ -31,24 +50,4 @@ func (u *UserRepository) findUserByField(ctx context.Context, field string, valu
 		return nil, err
 	}
 	return mapper.ToDomainUser(&userEntity), nil
-}
-
-func (u *UserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
-	return u.findUserByField(ctx, "email", email)
-}
-func (u *UserRepository) FindById(ctx context.Context, id string) (*domain.User, error) {
-	return u.findUserByField(ctx, "id", id)
-}
-
-func (u *UserRepository) Create(ctx context.Context, user *domain.User) error {
-	var userEntity = *mapper.ToPostgreUser(user)
-	err := u.db.QueryRowContext(ctx,
-		"INSERT INTO users (name, last_name, email, password, created_at, updated_at, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-		userEntity.Name, userEntity.LastName, userEntity.Email, userEntity.Password, userEntity.CreatedAt, userEntity.UpdatedAt, userEntity.Image,
-	).Scan(&userEntity.ID)
-	if err != nil {
-		return fmt.Errorf("error al crear usuario: %w", err)
-	}
-	user.ID = userEntity.ID
-	return nil
 }

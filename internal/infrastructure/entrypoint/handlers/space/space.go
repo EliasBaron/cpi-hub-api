@@ -22,25 +22,23 @@ func (h *SpaceHandler) Create(c *gin.Context) {
 		return
 	}
 
-	space := createSpaceDTO.ToDomain()
-
-	createdSpace, err := h.SpaceUseCase.Create(c.Request.Context(), space)
+	createdSpace, err := h.SpaceUseCase.Create(c.Request.Context(), createSpaceDTO.ToDomain())
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Space created successfully", dto.ToSpaceDTO(createdSpace))
+	response.CreatedResponse(c.Writer, "Space created successfully", dto.ToSpaceWithUserDTO(createdSpace))
 }
 
 func (h *SpaceHandler) Get(c *gin.Context) {
-	id := c.Param("id")
+	spaceId := c.Param("space_id")
 
-	space, err := h.SpaceUseCase.Get(c.Request.Context(), id)
+	space, err := h.SpaceUseCase.Get(c.Request.Context(), spaceId)
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Space retrieved successfully", dto.ToSpaceDTO(space))
+	response.SuccessResponse(c.Writer, "Space retrieved successfully", dto.ToSpaceWithUserDTO(space))
 }

@@ -19,12 +19,12 @@ type Handlers struct {
 func Build() *Handlers {
 	mongoDB, err := GetMongoDatabase()
 	if err != nil {
-		log.Fatalf("Error al conectar a MongoDB: %v", err)
+		log.Fatalf("Error connecting to MongoDB: %v", err)
 	}
 
 	sqldb, err := GetPostgreSQLDatabase()
 	if err != nil {
-		log.Fatalf("Error al conectar a PostgreSQL: %v", err)
+		log.Fatalf("Error connecting to PostgreSQL: %v", err)
 	}
 
 	userRepository := userRepository.NewUserRepository(sqldb)
@@ -32,7 +32,7 @@ func Build() *Handlers {
 	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(sqldb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
-	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository)
+	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository)
 
 	return &Handlers{
 		UserHandler: &user.Handler{
