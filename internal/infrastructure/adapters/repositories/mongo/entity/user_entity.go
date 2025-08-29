@@ -12,3 +12,11 @@ type UserEntity struct {
 	UpdatedAt time.Time `bson:"updated_at"`
 	Image     string    `bson:"image"`
 }
+
+type SimpleUserEntity struct {
+	ID       string `bson:"_id"`
+	Name     string `bson:"name"`
+	LastName string `bson:"last_name"`
+	Image    string `bson:"image"`
+	Email    string `bson:"email"`
+}

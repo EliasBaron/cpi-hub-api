@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/pkg/apperror"
 	"time"
 )
@@ -11,6 +12,7 @@ type UserUseCase interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Get(ctx context.Context, id string) (*domain.UserWithSpaces, error)
 	AddSpaceToUser(ctx context.Context, userId string, spaceId string) error
+	GetSpacesByUser(ctx context.Context, userId string) ([]*domain.Space, error)
 }
 
 type useCase struct {
@@ -28,10 +30,19 @@ func NewUserUsecase(userRepository domain.UserRepository, spaceRepository domain
 }
 
 func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
-	existingUser, err := u.userRepository.FindByEmail(ctx, user.Email)
+	existingUser, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "email",
+				Value:    user.Email,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
+
 	if existingUser != nil {
 		return nil, apperror.NewInvalidData("User with this email already exists", nil, "user_usecase.go:Create")
 	}
@@ -48,10 +59,20 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 }
 
 func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, error) {
-	user, err := u.userRepository.FindById(ctx, id)
+	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "id",
+				Value:    id,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
 	if err != nil {
 		return nil, err
 	}
+
 	if user == nil {
 		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:GetUserWithSpaces")
 	}
@@ -62,6 +83,7 @@ func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, e
 	}
 
 	spaces, err := u.spaceRepository.FindByIDs(ctx, spaceIDs)
+
 	if err != nil {
 		return nil, err
 	}
@@ -73,18 +95,38 @@ func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, e
 }
 
 func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId string) error {
-	user, err := u.userRepository.FindById(ctx, userId)
+	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "id",
+				Value:    userId,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
 	if err != nil {
 		return err
 	}
+
 	if user == nil {
 		return apperror.NewNotFound("User not found", nil, "user_usecase.go:AddSpaceToUser")
 	}
 
-	space, err := u.spaceRepository.FindById(ctx, spaceId)
+	space, err := u.spaceRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "id",
+				Value:    spaceId,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
 	if err != nil {
 		return err
 	}
+
 	if space == nil {
 		return apperror.NewNotFound("Space not found", nil, "user_usecase.go:AddSpaceToUser")
 	}
@@ -93,14 +135,23 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId str
 	if err != nil {
 		return err
 	}
+
 	if exists {
 		return apperror.NewInvalidData("User already subscribed to this space", nil, "user_usecase.go:AddSpaceToUser")
 	}
 
-	err = u.userSpaceRepository.AddUserToSpace(ctx, userId, spaceId)
-	if err != nil {
+	if err := u.userSpaceRepository.AddUserToSpace(ctx, userId, spaceId); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (u *useCase) GetSpacesByUser(ctx context.Context, userId string) ([]*domain.Space, error) {
+	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.spaceRepository.FindByIDs(ctx, spaceIDs)
 }

@@ -1,6 +1,9 @@
 package dto
 
-import "cpi-hub-api/internal/core/domain"
+import (
+	"cpi-hub-api/internal/core/domain"
+	"time"
+)
 
 type CreateSpace struct {
 	Name        string `json:"name" binding:"required"`
@@ -13,6 +16,16 @@ type SpaceDTO struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	CreatedBy   string `json:"created_by"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	UpdatedBy   string `json:"updated_by"`
+}
+
+type SpaceWithUserDTO struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	CreatedBy   UserDTO `json:"created_by"`
 }
 
 func (c *CreateSpace) ToDomain() *domain.Space {
@@ -23,11 +36,29 @@ func (c *CreateSpace) ToDomain() *domain.Space {
 	}
 }
 
+func ToSpaceWithUserDTO(space *domain.SpaceWithUser) SpaceWithUserDTO {
+	return SpaceWithUserDTO{
+		ID:          space.Space.ID,
+		Name:        space.Space.Name,
+		Description: space.Space.Description,
+		CreatedBy: UserDTO{
+			ID:       space.User.ID,
+			Name:     space.User.Name,
+			LastName: space.User.LastName,
+			Image:    space.User.Image,
+			Email:    space.User.Email,
+		},
+	}
+}
+
 func ToSpaceDTO(space *domain.Space) SpaceDTO {
 	return SpaceDTO{
 		ID:          space.ID,
 		Name:        space.Name,
 		Description: space.Description,
 		CreatedBy:   space.CreatedBy,
+		CreatedAt:   space.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   space.UpdatedAt.Format(time.RFC3339),
+		UpdatedBy:   space.UpdatedBy,
 	}
 }

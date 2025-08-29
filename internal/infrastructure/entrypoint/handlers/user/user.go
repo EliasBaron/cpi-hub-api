@@ -34,7 +34,7 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 func (h *Handler) Get(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("user_id")
 
 	user, err := h.UseCase.Get(c.Request.Context(), id)
 	if err != nil {
@@ -46,8 +46,8 @@ func (h *Handler) Get(c *gin.Context) {
 }
 
 func (h *Handler) AddSpaceToUser(c *gin.Context) {
-	userId := c.Param("id")
-	spaceId := c.Param("spaceId")
+	userId := c.Param("user_id")
+	spaceId := c.Param("space_id")
 
 	err := h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
 	if err != nil {
@@ -56,4 +56,22 @@ func (h *Handler) AddSpaceToUser(c *gin.Context) {
 	}
 
 	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
+}
+
+func (h *Handler) GetSpacesByUserId(c *gin.Context) {
+	userId := c.Param("user_id")
+
+	spaces, err := h.UseCase.GetSpacesByUser(c.Request.Context(), userId)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	spacesDTO := make([]dto.SpaceDTO, len(spaces))
+
+	for i, space := range spaces {
+		spacesDTO[i] = dto.ToSpaceDTO(space)
+	}
+
+	response.SuccessResponse(c.Writer, "Spaces retrieved successfully", spacesDTO)
 }

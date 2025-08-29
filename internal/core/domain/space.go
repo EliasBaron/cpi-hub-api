@@ -11,3 +11,8 @@ type Space struct {
 	UpdatedAt   time.Time
 	UpdatedBy   string
 }
+
+type SpaceWithUser struct {
+	Space *Space
+	User  *User
+}

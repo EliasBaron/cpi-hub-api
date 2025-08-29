@@ -1,6 +1,9 @@
 package dto
 
-import "cpi-hub-api/internal/core/domain"
+import (
+	"cpi-hub-api/internal/core/domain"
+	"time"
+)
 
 type CreateUser struct {
 	Name     string `json:"name" binding:"required"`
@@ -49,12 +52,16 @@ func ToUserDTO(user *domain.User) UserDTO {
 
 func ToUserDTOWithSpaces(user *domain.UserWithSpaces) UserDTOWithSpaces {
 	spaceDTOs := make([]SpaceDTO, 0, len(user.Spaces))
+
 	for _, s := range user.Spaces {
 		spaceDTOs = append(spaceDTOs, SpaceDTO{
 			ID:          s.ID,
 			Name:        s.Name,
 			Description: s.Description,
-			CreatedBy:   s.CreatedBy,
+			CreatedBy:   user.User.ID,
+			CreatedAt:   s.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:   s.UpdatedAt.Format(time.RFC3339),
+			UpdatedBy:   user.User.ID,
 		})
 	}
 
