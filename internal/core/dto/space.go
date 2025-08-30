@@ -8,17 +8,17 @@ import (
 type CreateSpace struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description" binding:"required"`
-	CreatedBy   string `json:"created_by" binding:"required"`
+	CreatedBy   int    `json:"created_by" binding:"required"`
 }
 
 type SpaceDTO struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	CreatedBy   string `json:"created_by"`
+	CreatedBy   int    `json:"created_by"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
-	UpdatedBy   string `json:"updated_by"`
+	UpdatedBy   int    `json:"updated_by"`
 }
 
 type SpaceWithUserDTO struct {

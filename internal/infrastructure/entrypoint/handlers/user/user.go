@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/usecase/user"
 	"cpi-hub-api/pkg/apperror"
 	response "cpi-hub-api/pkg/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +35,13 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 func (h *Handler) Get(c *gin.Context) {
-	id := c.Param("user_id")
+	idStr := c.Param("user_id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:Get")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
 	user, err := h.UseCase.Get(c.Request.Context(), id)
 	if err != nil {
@@ -46,10 +53,17 @@ func (h *Handler) Get(c *gin.Context) {
 }
 
 func (h *Handler) AddSpaceToUser(c *gin.Context) {
-	userId := c.Param("user_id")
-	spaceId := c.Param("space_id")
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:AddSpaceToUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
-	err := h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
+	spaceId := c.Param("space_id") // si los space_id siguen siendo string, esto se queda así
+
+	err = h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
@@ -59,7 +73,13 @@ func (h *Handler) AddSpaceToUser(c *gin.Context) {
 }
 
 func (h *Handler) GetSpacesByUserId(c *gin.Context) {
-	userId := c.Param("user_id")
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:GetSpacesByUserId")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
 	spaces, err := h.UseCase.GetSpacesByUser(c.Request.Context(), userId)
 	if err != nil {
@@ -68,7 +88,6 @@ func (h *Handler) GetSpacesByUserId(c *gin.Context) {
 	}
 
 	spacesDTO := make([]dto.SpaceDTO, len(spaces))
-
 	for i, space := range spaces {
 		spacesDTO[i] = dto.ToSpaceDTO(space)
 	}

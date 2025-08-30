@@ -15,7 +15,7 @@ func NewUserSpaceRepository(db *sql.DB) *UserSpaceRepository {
 }
 
 // Devuelve todos los IDs de espacios asociados a un usuario
-func (r *UserSpaceRepository) FindSpaceIDsByUser(ctx context.Context, userID string) ([]string, error) {
+func (r *UserSpaceRepository) FindSpaceIDsByUser(ctx context.Context, userID int) ([]string, error) {
 	query := `SELECT space_id FROM user_spaces WHERE user_id = $1`
 
 	rows, err := r.db.QueryContext(ctx, query, userID)
@@ -45,7 +45,7 @@ func (r *UserSpaceRepository) FindSpaceIDsByUser(ctx context.Context, userID str
 
 }
 
-func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId string, spaceId string) error {
+func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId int, spaceId string) error {
 	_, err := u.db.ExecContext(ctx,
 		"INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)",
 		userId, spaceId,
@@ -56,7 +56,7 @@ func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId string,
 	return nil
 }
 
-func (u *UserSpaceRepository) Exists(ctx context.Context, userId string, spaceId string) (bool, error) {
+func (u *UserSpaceRepository) Exists(ctx context.Context, userId int, spaceId string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM user_spaces WHERE user_id = $1 AND space_id = $2)`
 	err := u.db.QueryRowContext(ctx, query, userId, spaceId).Scan(&exists)

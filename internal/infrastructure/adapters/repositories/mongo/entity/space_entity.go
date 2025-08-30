@@ -7,7 +7,7 @@ type SpaceEntity struct {
 	Name        string    `bson:"name"`
 	Description string    `bson:"description"`
 	CreatedAt   time.Time `bson:"created_at"`
-	CreatedBy   string    `bson:"created_by"`
+	CreatedBy   int       `bson:"created_by"`
 	UpdatedAt   time.Time `bson:"updated_at"`
-	UpdatedBy   string    `bson:"updated_by"`
+	UpdatedBy   int       `bson:"updated_by"`
 }

@@ -10,9 +10,9 @@ import (
 
 type UserUseCase interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
-	Get(ctx context.Context, id string) (*domain.UserWithSpaces, error)
-	AddSpaceToUser(ctx context.Context, userId string, spaceId string) error
-	GetSpacesByUser(ctx context.Context, userId string) ([]*domain.Space, error)
+	Get(ctx context.Context, id int) (*domain.UserWithSpaces, error)
+	AddSpaceToUser(ctx context.Context, userId int, spaceId string) error
+	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
 }
 
 type useCase struct {
@@ -58,7 +58,7 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 	return user, nil
 }
 
-func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, error) {
+func (u *useCase) Get(ctx context.Context, id int) (*domain.UserWithSpaces, error) {
 	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
@@ -94,7 +94,7 @@ func (u *useCase) Get(ctx context.Context, id string) (*domain.UserWithSpaces, e
 	}, nil
 }
 
-func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId string) error {
+func (u *useCase) AddSpaceToUser(ctx context.Context, userId int, spaceId string) error {
 	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
@@ -116,7 +116,7 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId str
 	space, err := u.spaceRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
-				Field:    "id",
+				Field:    "_id",
 				Value:    spaceId,
 				Operator: criteria.OperatorEqual,
 			},
@@ -147,7 +147,7 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId string, spaceId str
 	return nil
 }
 
-func (u *useCase) GetSpacesByUser(ctx context.Context, userId string) ([]*domain.Space, error) {
+func (u *useCase) GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error) {
 	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, userId)
 	if err != nil {
 		return nil, err

@@ -89,7 +89,7 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 	space, err := s.spaceRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
-				Field:    "id",
+				Field:    "_id",
 				Value:    id,
 				Operator: criteria.OperatorEqual,
 			},
@@ -104,7 +104,7 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 		return nil, apperror.NewNotFound("Space not found", nil, "space_usecase.go:Get")
 	}
 
-	user, _ := s.userRepository.Find(ctx, &criteria.Criteria{
+	user, err := s.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
 				Field:    "id",
@@ -113,6 +113,12 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 			},
 		},
 	})
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.NewNotFound("User not found for space", nil, "space_usecase.go:Get")
+	}
 
 	return &domain.SpaceWithUser{
 		Space: &domain.Space{

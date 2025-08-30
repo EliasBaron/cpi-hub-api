@@ -14,7 +14,7 @@ type CreateUser struct {
 }
 
 type UserDTO struct {
-	ID       string `json:"id"`
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	LastName string `json:"last_name"`
 	Email    string `json:"email"`
@@ -22,7 +22,7 @@ type UserDTO struct {
 }
 
 type UserDTOWithSpaces struct {
-	ID       string     `json:"id"`
+	ID       int        `json:"id"`
 	Name     string     `json:"name"`
 	LastName string     `json:"last_name"`
 	Email    string     `json:"email"`

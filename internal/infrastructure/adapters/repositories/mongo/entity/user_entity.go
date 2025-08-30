@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type UserEntity struct {
-	ID        string    `bson:"_id"`
+	ID        int       `bson:"_id"`
 	Name      string    `bson:"name"`
 	LastName  string    `bson:"last_name"`
 	Email     string    `bson:"email"`
@@ -14,7 +14,7 @@ type UserEntity struct {
 }
 
 type SimpleUserEntity struct {
-	ID       string `bson:"_id"`
+	ID       int    `bson:"_id"`
 	Name     string `bson:"name"`
 	LastName string `bson:"last_name"`
 	Image    string `bson:"image"`
