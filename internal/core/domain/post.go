@@ -8,8 +8,8 @@ type Post struct {
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	CreatedBy string
-	UpdatedBy string
+	CreatedBy int
+	UpdatedBy int
 	SpaceID   string
 	Comments  []Comment
 }
@@ -19,6 +19,6 @@ type Comment struct {
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	CreatedBy string
-	UpdatedBy string
+	CreatedBy int
+	UpdatedBy int
 }
