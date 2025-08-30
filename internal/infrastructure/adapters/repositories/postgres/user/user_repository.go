@@ -37,11 +37,23 @@ func (u *UserRepository) Find(ctx context.Context, criteria *criteria.Criteria) 
 	return u.findUserByField(ctx, query, params)
 }
 
-func (u *UserRepository) findUserByField(ctx context.Context, query string, params []interface{}) (*domain.User, error) {
+func (u *UserRepository) findUserByField(ctx context.Context, whereClause string, params []interface{}) (*domain.User, error) {
 	var userEntity entity.UserEntity
+
+	query := `
+		SELECT id, name, last_name, email, password, created_at, updated_at, image
+		FROM users
+	` + " " + whereClause + " LIMIT 1"
+
 	err := u.db.QueryRowContext(ctx, query, params...).Scan(
-		&userEntity.ID, &userEntity.Name, &userEntity.LastName, &userEntity.Email,
-		&userEntity.Password, &userEntity.CreatedAt, &userEntity.UpdatedAt, &userEntity.Image,
+		&userEntity.ID,
+		&userEntity.Name,
+		&userEntity.LastName,
+		&userEntity.Email,
+		&userEntity.Password,
+		&userEntity.CreatedAt,
+		&userEntity.UpdatedAt,
+		&userEntity.Image,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -49,5 +61,6 @@ func (u *UserRepository) findUserByField(ctx context.Context, query string, para
 		}
 		return nil, err
 	}
+
 	return mapper.ToDomainUser(&userEntity), nil
 }
