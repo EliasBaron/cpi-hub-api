@@ -7,7 +7,12 @@ type Space struct {
 	Name        string
 	Description string
 	CreatedAt   time.Time
-	CreatedBy   string
+	CreatedBy   int
 	UpdatedAt   time.Time
-	UpdatedBy   string
+	UpdatedBy   int
+}
+
+type SpaceWithUser struct {
+	Space *Space
+	User  *User
 }

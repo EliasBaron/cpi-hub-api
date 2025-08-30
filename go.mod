@@ -4,6 +4,7 @@ go 1.24
 
 require (
 	github.com/gin-gonic/gin v1.10.1
+	github.com/lib/pq v1.10.9
 	github.com/oklog/ulid/v2 v2.1.1
 	go.mongodb.org/mongo-driver v1.17.4
 )

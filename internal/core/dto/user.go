@@ -1,6 +1,9 @@
 package dto
 
-import "cpi-hub-api/internal/core/domain"
+import (
+	"cpi-hub-api/internal/core/domain"
+	"time"
+)
 
 type CreateUser struct {
 	Name     string `json:"name" binding:"required"`
@@ -11,11 +14,20 @@ type CreateUser struct {
 }
 
 type UserDTO struct {
-	ID       string `json:"id"`
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	LastName string `json:"last_name"`
 	Email    string `json:"email"`
 	Image    string `json:"image"`
+}
+
+type UserDTOWithSpaces struct {
+	ID       int        `json:"id"`
+	Name     string     `json:"name"`
+	LastName string     `json:"last_name"`
+	Email    string     `json:"email"`
+	Image    string     `json:"image"`
+	Spaces   []SpaceDTO `json:"spaces"`
 }
 
 func (c *CreateUser) ToDomain() *domain.User {
@@ -35,5 +47,30 @@ func ToUserDTO(user *domain.User) UserDTO {
 		LastName: user.LastName,
 		Email:    user.Email,
 		Image:    user.Image,
+	}
+}
+
+func ToUserDTOWithSpaces(user *domain.UserWithSpaces) UserDTOWithSpaces {
+	spaceDTOs := make([]SpaceDTO, 0, len(user.Spaces))
+
+	for _, s := range user.Spaces {
+		spaceDTOs = append(spaceDTOs, SpaceDTO{
+			ID:          s.ID,
+			Name:        s.Name,
+			Description: s.Description,
+			CreatedBy:   user.User.ID,
+			CreatedAt:   s.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:   s.UpdatedAt.Format(time.RFC3339),
+			UpdatedBy:   user.User.ID,
+		})
+	}
+
+	return UserDTOWithSpaces{
+		ID:       user.User.ID,
+		Name:     user.User.Name,
+		LastName: user.User.LastName,
+		Email:    user.User.Email,
+		Image:    user.User.Image,
+		Spaces:   spaceDTOs,
 	}
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	ID        string
+	ID        int
 	Name      string
 	LastName  string
 	Email     string
@@ -13,4 +13,9 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Image     string
+}
+
+type UserWithSpaces struct {
+	User   *User
+	Spaces []*Space
 }

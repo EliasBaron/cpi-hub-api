@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/usecase/user"
 	"cpi-hub-api/pkg/apperror"
 	response "cpi-hub-api/pkg/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +35,13 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 func (h *Handler) Get(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("user_id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:Get")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
 	user, err := h.UseCase.Get(c.Request.Context(), id)
 	if err != nil {
@@ -42,5 +49,48 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTO(user))
+	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTOWithSpaces(user))
+}
+
+func (h *Handler) AddSpaceToUser(c *gin.Context) {
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:AddSpaceToUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	spaceId := c.Param("space_id") // si los space_id siguen siendo string, esto se queda así
+
+	err = h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
+}
+
+func (h *Handler) GetSpacesByUserId(c *gin.Context) {
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:GetSpacesByUserId")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	spaces, err := h.UseCase.GetSpacesByUser(c.Request.Context(), userId)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	spacesDTO := make([]dto.SpaceDTO, len(spaces))
+	for i, space := range spaces {
+		spacesDTO[i] = dto.ToSpaceDTO(space)
+	}
+
+	response.SuccessResponse(c.Writer, "Spaces retrieved successfully", spacesDTO)
 }
