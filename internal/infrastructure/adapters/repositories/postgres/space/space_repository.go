@@ -1,0 +1,85 @@
+package space
+
+import (
+	"context"
+	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/entity"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
+	"database/sql"
+)
+
+type SpaceRepository struct {
+	db *sql.DB
+}
+
+func NewSpaceRepository(db *sql.DB) *SpaceRepository {
+	return &SpaceRepository{db: db}
+}
+
+func (u *SpaceRepository) Create(ctx context.Context, space *domain.Space) error {
+	var spaceEntity = *mapper.ToPostgresSpace(space)
+
+	if err := u.db.QueryRowContext(ctx,
+		"INSERT INTO spaces (name, description, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+		spaceEntity.Name, spaceEntity.Description, spaceEntity.CreatedBy, spaceEntity.CreatedAt, spaceEntity.UpdatedBy, spaceEntity.UpdatedAt).Scan(&spaceEntity.ID); err != nil {
+		return err
+	}
+
+	space.ID = spaceEntity.ID
+	return nil
+}
+
+func (u *SpaceRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Space, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+
+	return u.findSpaceByField(ctx, query, params)
+}
+
+func (u *SpaceRepository) findSpaceByField(ctx context.Context, whereClause string, params []interface{}) (*domain.Space, error) {
+	var spaceEntity entity.SpaceEntity
+
+	query := `
+		SELECT id, name, description, created_by, created_at, updated_by, updated_at
+		FROM spaces
+	` + " " + whereClause + " LIMIT 1"
+
+	if err := u.db.QueryRowContext(ctx, query, params...).Scan(
+		&spaceEntity.ID,
+		&spaceEntity.Name,
+		&spaceEntity.Description,
+		&spaceEntity.CreatedBy,
+		&spaceEntity.CreatedAt,
+		&spaceEntity.UpdatedBy,
+		&spaceEntity.UpdatedAt,
+	); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return mapper.ToDomainSpace(&spaceEntity), nil
+}
+
+func (u *SpaceRepository) FindByIDs(ctx context.Context, ids []int) ([]*domain.Space, error) {
+	var spaces []*domain.Space
+	for _, id := range ids {
+		space, err := u.Find(ctx, &criteria.Criteria{
+			Filters: []criteria.Filter{
+				{
+					Field:    "id",
+					Value:    id,
+					Operator: criteria.OperatorEqual,
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if space != nil {
+			spaces = append(spaces, space)
+		}
+	}
+	return spaces, nil
+}

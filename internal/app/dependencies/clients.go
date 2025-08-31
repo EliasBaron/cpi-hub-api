@@ -133,6 +133,15 @@ func ensureSchema(db *sql.DB) error {
             space_id TEXT NOT NULL,
             PRIMARY KEY (user_id, space_id)
         )`,
+		`CREATE TABLE IF NOT EXISTS spaces (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMP NOT NULL DEFAULT now(),
+            updated_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            updated_at TIMESTAMP NOT NULL DEFAULT now()
+        )`,
 	}
 
 	for _, stmt := range stmts {

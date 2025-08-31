@@ -1,30 +1,25 @@
 package mapper
 
-import (
-	"cpi-hub-api/internal/core/domain"
-	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/entity"
-)
+// func ToMongoDatabaseSpace(space *domain.Space) *entity.SpaceEntity {
+// 	return &entity.SpaceEntity{
+// 		ID:          space.ID,
+// 		Name:        space.Name,
+// 		Description: space.Description,
+// 		CreatedAt:   space.CreatedAt,
+// 		CreatedBy:   space.CreatedBy,
+// 		UpdatedAt:   space.UpdatedAt,
+// 		UpdatedBy:   space.UpdatedBy,
+// 	}
+// }
 
-func ToMongoDatabaseSpace(space *domain.Space) *entity.SpaceEntity {
-	return &entity.SpaceEntity{
-		ID:          space.ID,
-		Name:        space.Name,
-		Description: space.Description,
-		CreatedAt:   space.CreatedAt,
-		CreatedBy:   space.CreatedBy,
-		UpdatedAt:   space.UpdatedAt,
-		UpdatedBy:   space.UpdatedBy,
-	}
-}
-
-func ToDomainSpace(space *entity.SpaceEntity) *domain.Space {
-	return &domain.Space{
-		ID:          space.ID,
-		Name:        space.Name,
-		Description: space.Description,
-		CreatedAt:   space.CreatedAt,
-		CreatedBy:   space.CreatedBy,
-		UpdatedAt:   space.UpdatedAt,
-		UpdatedBy:   space.UpdatedBy,
-	}
-}
+// func ToDomainSpace(space *entity.SpaceEntity) *domain.Space {
+// 	return &domain.Space{
+// 		ID:          space.ID,
+// 		Name:        space.Name,
+// 		Description: space.Description,
+// 		CreatedAt:   space.CreatedAt,
+// 		CreatedBy:   space.CreatedBy,
+// 		UpdatedAt:   space.UpdatedAt,
+// 		UpdatedBy:   space.UpdatedBy,
+// 	}
+// }
