@@ -1,33 +1,24 @@
 package post
 
-import (
-	"context"
-	"cpi-hub-api/internal/core/domain"
-	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/mapper"
-	"fmt"
+// type PostRepository struct {
+// 	db *mongo.Database
+// }
 
-	"go.mongodb.org/mongo-driver/mongo"
-)
+// func NewPostRepository(db *mongo.Database) *PostRepository {
+// 	return &PostRepository{
+// 		db: db,
+// 	}
+// }
 
-type PostRepository struct {
-	db *mongo.Database
-}
+// func (r *PostRepository) Create(ctx context.Context, post *domain.Post) error {
+// 	postEntity := mapper.ToMongoDatabasePost(post)
 
-func NewPostRepository(db *mongo.Database) *PostRepository {
-	return &PostRepository{
-		db: db,
-	}
-}
+// 	collection := r.db.Collection("posts")
+// 	_, err := collection.InsertOne(ctx, postEntity)
 
-func (r *PostRepository) Create(ctx context.Context, post *domain.Post) error {
-	postEntity := mapper.ToMongoDatabasePost(post)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to insert post: %w", err)
+// 	}
 
-	collection := r.db.Collection("posts")
-	_, err := collection.InsertOne(ctx, postEntity)
-
-	if err != nil {
-		return fmt.Errorf("failed to insert post: %w", err)
-	}
-
-	return nil
-}
+// 	return nil
+// }

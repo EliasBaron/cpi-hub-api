@@ -63,23 +63,58 @@ func (u *SpaceRepository) findSpaceByField(ctx context.Context, whereClause stri
 }
 
 func (u *SpaceRepository) FindByIDs(ctx context.Context, ids []int) ([]*domain.Space, error) {
-	var spaces []*domain.Space
-	for _, id := range ids {
-		space, err := u.Find(ctx, &criteria.Criteria{
-			Filters: []criteria.Filter{
-				{
-					Field:    "id",
-					Value:    id,
-					Operator: criteria.OperatorEqual,
-				},
+	if len(ids) == 0 {
+		return []*domain.Space{}, nil
+	}
+
+	idsInterface := make([]interface{}, len(ids))
+	for i, id := range ids {
+		idsInterface[i] = id
+	}
+
+	spaces, err := u.FindAll(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "id",
+				Value:    idsInterface,
+				Operator: criteria.OperatorIn,
 			},
-		})
-		if err != nil {
+		},
+	})
+
+	return spaces, err
+}
+
+func (u *SpaceRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Space, error) {
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+
+	query := `
+        SELECT id, name, description, created_by, created_at, updated_by, updated_at
+        FROM spaces
+    ` + " " + whereClause
+
+	rows, err := u.db.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var spaces []*domain.Space
+	for rows.Next() {
+		var spaceEntity entity.SpaceEntity
+		if err := rows.Scan(
+			&spaceEntity.ID,
+			&spaceEntity.Name,
+			&spaceEntity.Description,
+			&spaceEntity.CreatedBy,
+			&spaceEntity.CreatedAt,
+			&spaceEntity.UpdatedBy,
+			&spaceEntity.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
-		if space != nil {
-			spaces = append(spaces, space)
-		}
+		spaces = append(spaces, mapper.ToDomainSpace(&spaceEntity))
 	}
-	return spaces, nil
+
+	return spaces, rows.Err()
 }

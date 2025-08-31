@@ -10,7 +10,7 @@ type Post struct {
 	UpdatedAt time.Time
 	CreatedBy int
 	UpdatedBy int
-	SpaceID   string
+	SpaceID   int
 	Comments  []Comment
 }
 

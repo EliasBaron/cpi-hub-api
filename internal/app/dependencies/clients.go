@@ -130,7 +130,7 @@ func ensureSchema(db *sql.DB) error {
 
 		`CREATE TABLE IF NOT EXISTS user_spaces (
             user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            space_id TEXT NOT NULL,
+            space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
             PRIMARY KEY (user_id, space_id)
         )`,
 		`CREATE TABLE IF NOT EXISTS spaces (
