@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/usecase/post"
 	"cpi-hub-api/pkg/apperror"
 	response "cpi-hub-api/pkg/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,7 +33,13 @@ func (h *PostHandler) Create(c *gin.Context) {
 }
 
 func (h *PostHandler) Get(c *gin.Context) {
-	postID := c.Param("post_id")
+	postIDStr := c.Param("post_id")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid post ID", err, "post_handler.go:Get")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
 	post, err := h.PostUseCase.Get(c.Request.Context(), postID)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 
 type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.PostWithUserSpace, error)
-	Get(ctx context.Context, id string) (*domain.PostWithUserSpace, error)
+	Get(ctx context.Context, id int) (*domain.PostWithUserSpace, error)
 }
 
 type postUseCase struct {
@@ -65,7 +65,7 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Po
 	}
 
 	post.CreatedAt, post.UpdatedAt = time.Now(), time.Now()
-	post.CreatedBy, post.UpdatedBy = existingUser.ID, existingUser.ID
+	post.UpdatedBy = post.CreatedBy
 
 	err = p.postRepository.Create(ctx, post)
 	if err != nil {
@@ -79,7 +79,7 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Po
 	}, nil
 }
 
-func (p *postUseCase) Get(ctx context.Context, id string) (*domain.PostWithUserSpace, error) {
+func (p *postUseCase) Get(ctx context.Context, id int) (*domain.PostWithUserSpace, error) {
 	post, err := p.postRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
