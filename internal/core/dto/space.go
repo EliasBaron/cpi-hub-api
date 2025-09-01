@@ -21,6 +21,11 @@ type SpaceDTO struct {
 	UpdatedBy   int    `json:"updated_by"`
 }
 
+type SimpleSpaceDto struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type SpaceWithUserDTO struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`

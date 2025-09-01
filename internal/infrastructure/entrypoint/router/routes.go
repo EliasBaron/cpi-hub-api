@@ -18,4 +18,9 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	// spaces
 	v1.POST("/spaces", handlers.SpaceHandler.Create)
 	v1.GET("/spaces/:space_id", handlers.SpaceHandler.Get)
+
+	// posts
+	v1.POST("/posts", handlers.PostHandler.Create)
+	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
+
 }

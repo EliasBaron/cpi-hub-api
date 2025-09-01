@@ -3,7 +3,7 @@ package domain
 import "time"
 
 type Post struct {
-	ID        string
+	ID        int
 	Title     string
 	Content   string
 	CreatedAt time.Time
@@ -14,8 +14,14 @@ type Post struct {
 	Comments  []Comment
 }
 
+type PostWithUserSpace struct {
+	Post  *Post
+	Space *Space
+	User  *User
+}
+
 type Comment struct {
-	ID        string
+	ID        int
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time

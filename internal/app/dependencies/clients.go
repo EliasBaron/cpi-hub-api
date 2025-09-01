@@ -142,6 +142,16 @@ func ensureSchema(db *sql.DB) error {
             updated_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             updated_at TIMESTAMP NOT NULL DEFAULT now()
         )`,
+		`CREATE TABLE IF NOT EXISTS posts (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMP NOT NULL DEFAULT now(),
+            updated_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            updated_at TIMESTAMP NOT NULL DEFAULT now(),
+            space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE
+        )`,
 	}
 
 	for _, stmt := range stmts {
