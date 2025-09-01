@@ -61,7 +61,13 @@ func (h *Handler) AddSpaceToUser(c *gin.Context) {
 		return
 	}
 
-	spaceId := c.Param("space_id") // si los space_id siguen siendo string, esto se queda así
+	spaceIdStr := c.Param("space_id")
+	spaceId, err := strconv.Atoi(spaceIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid space_id (must be integer)", err, "user_handler.go:AddSpaceToUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
 	err = h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
 	if err != nil {

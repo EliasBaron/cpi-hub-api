@@ -5,7 +5,6 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/pkg/apperror"
-	"cpi-hub-api/pkg/helpers"
 	"time"
 )
 
@@ -65,7 +64,6 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 		return nil, apperror.NewInvalidData("Space with this name already exists", nil, "space_usecase.go:Create")
 	}
 
-	space.ID = helpers.NewULID()
 	space.CreatedAt, space.UpdatedAt = time.Now(), time.Now()
 	space.UpdatedBy, space.CreatedBy = existingUser.ID, existingUser.ID
 
@@ -89,7 +87,7 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 	space, err := s.spaceRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
-				Field:    "_id",
+				Field:    "id",
 				Value:    id,
 				Operator: criteria.OperatorEqual,
 			},

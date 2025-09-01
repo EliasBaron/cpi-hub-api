@@ -12,7 +12,7 @@ type CreateSpace struct {
 }
 
 type SpaceDTO struct {
-	ID          string `json:"id"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	CreatedBy   int    `json:"created_by"`
@@ -22,7 +22,7 @@ type SpaceDTO struct {
 }
 
 type SpaceWithUserDTO struct {
-	ID          string  `json:"id"`
+	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	CreatedBy   UserDTO `json:"created_by"`
