@@ -29,6 +29,5 @@ type PostRepository interface {
 
 type CommentRepository interface {
 	Create(ctx context.Context, comment *Comment) error
-	Find(ctx context.Context, criteria *criteria.Criteria) (*CommentWithUser, error)
-	FindAllByPostID(ctx context.Context, postID int) ([]*CommentWithUser, error)
+	FindAll(ctx context.Context, c *criteria.Criteria) ([]*Comment, error)
 }

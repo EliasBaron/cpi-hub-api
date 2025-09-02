@@ -4,7 +4,7 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
-	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	"time"
 )
 
@@ -20,7 +20,12 @@ type postUseCase struct {
 	commentRepository domain.CommentRepository
 }
 
-func NewPostUsecase(postRepo domain.PostRepository, spaceRepo domain.SpaceRepository, userRepo domain.UserRepository, commentRepo domain.CommentRepository) PostUseCase {
+func NewPostUsecase(
+	postRepo domain.PostRepository,
+	spaceRepo domain.SpaceRepository,
+	userRepo domain.UserRepository,
+	commentRepo domain.CommentRepository,
+) PostUseCase {
 	return &postUseCase{
 		postRepository:    postRepo,
 		spaceRepository:   spaceRepo,
@@ -30,47 +35,20 @@ func NewPostUsecase(postRepo domain.PostRepository, spaceRepo domain.SpaceReposi
 }
 
 func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error) {
-	existingUser, err := p.userRepository.Find(ctx, &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    post.CreatedBy,
-				Operator: criteria.OperatorEqual,
-			},
-		},
-	})
-
+	existingUser, err := helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
 	if err != nil {
 		return nil, err
 	}
 
-	if existingUser == nil {
-		return nil, apperror.NewNotFound("User not found", nil, "post_usecase.go:Create")
-	}
-
-	existingSpace, err := p.spaceRepository.Find(ctx, &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    post.SpaceID,
-				Operator: criteria.OperatorEqual,
-			},
-		},
-	})
-
+	existingSpace, err := helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
 	if err != nil {
 		return nil, err
-	}
-
-	if existingSpace == nil {
-		return nil, apperror.NewNotFound("Space not found", nil, "post_usecase.go:Create")
 	}
 
 	post.CreatedAt, post.UpdatedAt = time.Now(), time.Now()
 	post.UpdatedBy = post.CreatedBy
 
-	err = p.postRepository.Create(ctx, post)
-	if err != nil {
+	if err := p.postRepository.Create(ctx, post); err != nil {
 		return nil, err
 	}
 
@@ -83,69 +61,46 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 }
 
 func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, error) {
-	post, err := p.postRepository.Find(ctx, &criteria.Criteria{
+	post, err := helpers.FindEntity(ctx, p.postRepository, "id", id, "Post not found")
+	if err != nil {
+		return nil, err
+	}
+
+	space, err := helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
+	if err != nil {
+		return nil, err
+	}
+
+	comments, err := p.commentRepository.FindAll(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    id,
-				Operator: criteria.OperatorEqual,
-			},
+			{Field: "post_id", Value: post.ID, Operator: criteria.OperatorEqual},
 		},
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
-	if post == nil {
-		return nil, apperror.NewNotFound("Post not found", nil, "post_usecase.go:Get")
-	}
-
-	space, err := p.spaceRepository.Find(ctx, &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    post.SpaceID,
-				Operator: criteria.OperatorEqual,
-			},
-		},
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if space == nil {
-		return nil, apperror.NewNotFound("Space not found", nil, "post_usecase.go:Get")
-	}
-
-	user, err := p.userRepository.Find(ctx, &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    post.CreatedBy,
-				Operator: criteria.OperatorEqual,
-			},
-		},
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, apperror.NewNotFound("User not found", nil, "post_usecase.go:Get")
-	}
-
-	comments, err := p.commentRepository.FindAllByPostID(ctx, post.ID)
-	if err != nil {
-		return nil, err
+	commentsWithUsers := make([]*domain.CommentWithUser, 0, len(comments))
+	for _, comment := range comments {
+		commentUser, err := helpers.FindEntity(ctx, p.userRepository, "id", comment.CreatedBy, "User not found for comment")
+		if err != nil {
+			return nil, err
+		}
+		commentsWithUsers = append(commentsWithUsers, &domain.CommentWithUser{
+			Comment: comment,
+			User:    commentUser,
+		})
 	}
 
 	return &domain.ExtendedPost{
 		Post:     post,
 		Space:    space,
 		User:     user,
-		Comments: comments,
+		Comments: commentsWithUsers,
 	}, nil
 }

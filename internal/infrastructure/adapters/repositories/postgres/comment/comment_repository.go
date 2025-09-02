@@ -4,6 +4,7 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/entity"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"database/sql"
 )
@@ -35,7 +36,41 @@ func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteri
 	panic("implement me")
 }
 
-func (c *CommentRepository) FindAllByPostID(ctx context.Context, postID int) ([]*domain.CommentWithUser, error) {
-	//TODO implement me
-	panic("implement me")
+func (c *CommentRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Comment, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+	return c.findAllByField(ctx, query, params)
+}
+
+func (c *CommentRepository) findAllByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.Comment, error) {
+	var comments []*domain.Comment
+	query := `
+		SELECT id, post_id, content, created_by, created_at
+		FROM comments
+	` + " " + whereClause
+
+	rows, err := c.db.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var commentEntity entity.CommentEntity
+		if err := rows.Scan(
+			&commentEntity.ID,
+			&commentEntity.PostID,
+			&commentEntity.Content,
+			&commentEntity.CreatedBy,
+			&commentEntity.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		comments = append(comments, mapper.ToDomainComment(&commentEntity))
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return comments, nil
 }
