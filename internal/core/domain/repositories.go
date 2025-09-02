@@ -21,3 +21,8 @@ type UserSpaceRepository interface {
 	FindSpaceIDsByUser(ctx context.Context, userID int) ([]int, error)
 	Exists(ctx context.Context, userId int, spaceId int) (bool, error)
 }
+
+type PostRepository interface {
+	Create(ctx context.Context, post *Post) error
+	Find(ctx context.Context, criteria *criteria.Criteria) (*Post, error)
+}
