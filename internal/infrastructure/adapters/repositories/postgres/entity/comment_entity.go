@@ -9,7 +9,3 @@ type CommentEntity struct {
 	CreatedBy int       `db:"created_by"`
 	CreatedAt time.Time `db:"created_at"`
 }
-
-type CommentWithUserEntity struct {
-	CommentEntity
-}
