@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/pkg/apperror"
+	"time"
 )
 
 type CommentUseCase interface {
@@ -61,6 +62,9 @@ func (c commentUseCase) Create(ctx context.Context, comment *domain.Comment) (*d
 	if existingPost == nil {
 		return nil, apperror.NewNotFound("Post not found", nil, "comment_usecase.go:Create")
 	}
+
+	comment.CreatedAt, comment.UpdatedAt = time.Now(), time.Now()
+	comment.UpdatedBy = comment.CreatedBy
 
 	err = c.commentRepository.Create(ctx, comment)
 	if err != nil {
