@@ -9,25 +9,27 @@ import (
 )
 
 type PostUseCase interface {
-	Create(ctx context.Context, post *domain.Post) (*domain.PostWithUserSpace, error)
-	Get(ctx context.Context, id int) (*domain.PostWithUserSpace, error)
+	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
+	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 }
 
 type postUseCase struct {
-	postRepository  domain.PostRepository
-	spaceRepository domain.SpaceRepository
-	userRepository  domain.UserRepository
+	postRepository    domain.PostRepository
+	spaceRepository   domain.SpaceRepository
+	userRepository    domain.UserRepository
+	commentRepository domain.CommentRepository
 }
 
-func NewPostUsecase(postRepo domain.PostRepository, spaceRepo domain.SpaceRepository, userRepo domain.UserRepository) PostUseCase {
+func NewPostUsecase(postRepo domain.PostRepository, spaceRepo domain.SpaceRepository, userRepo domain.UserRepository, commentRepo domain.CommentRepository) PostUseCase {
 	return &postUseCase{
-		postRepository:  postRepo,
-		spaceRepository: spaceRepo,
-		userRepository:  userRepo,
+		postRepository:    postRepo,
+		spaceRepository:   spaceRepo,
+		userRepository:    userRepo,
+		commentRepository: commentRepo,
 	}
 }
 
-func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.PostWithUserSpace, error) {
+func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error) {
 	existingUser, err := p.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
@@ -72,14 +74,15 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Po
 		return nil, err
 	}
 
-	return &domain.PostWithUserSpace{
-		Post:  post,
-		Space: existingSpace,
-		User:  existingUser,
+	return &domain.ExtendedPost{
+		Post:     post,
+		Space:    existingSpace,
+		User:     existingUser,
+		Comments: []*domain.CommentWithUser{},
 	}, nil
 }
 
-func (p *postUseCase) Get(ctx context.Context, id int) (*domain.PostWithUserSpace, error) {
+func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, error) {
 	post, err := p.postRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
@@ -134,9 +137,15 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.PostWithUserSpac
 		return nil, apperror.NewNotFound("User not found", nil, "post_usecase.go:Get")
 	}
 
-	return &domain.PostWithUserSpace{
-		Post:  post,
-		Space: space,
-		User:  user,
+	comments, err := p.commentRepository.FindAllByPostID(ctx, post.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.ExtendedPost{
+		Post:     post,
+		Space:    space,
+		User:     user,
+		Comments: comments,
 	}, nil
 }

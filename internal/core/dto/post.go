@@ -23,12 +23,13 @@ type PostDTO struct {
 	SpaceID   int       `json:"space_id"`
 }
 
-type PostWithUserSpaceDTO struct {
-	ID        int            `json:"id"`
-	Title     string         `json:"title"`
-	Content   string         `json:"content"`
-	CreatedBy UserDTO        `json:"created_by"`
-	Space     SimpleSpaceDto `json:"space"`
+type PostExtendedDTO struct {
+	ID        int                  `json:"id"`
+	Title     string               `json:"title"`
+	Content   string               `json:"content"`
+	CreatedBy UserDTO              `json:"created_by"`
+	Space     SimpleSpaceDto       `json:"space"`
+	Comments  []CommentWithUserDTO `json:"comments"`
 }
 
 func (c *CreatePost) ToDomain() *domain.Post {
@@ -53,8 +54,14 @@ func ToPostDTO(post *domain.Post) PostDTO {
 	}
 }
 
-func ToPostWithUserSpaceDTO(post *domain.PostWithUserSpace) PostWithUserSpaceDTO {
-	return PostWithUserSpaceDTO{
+func ToPostExtendedDTO(post *domain.ExtendedPost) PostExtendedDTO {
+	commentsDTO := make([]CommentWithUserDTO, 0, len(post.Comments))
+
+	for _, c := range post.Comments {
+		commentsDTO = append(commentsDTO, ToCommentWithUserAndPostDTO(c))
+	}
+
+	return PostExtendedDTO{
 		ID:      post.Post.ID,
 		Title:   post.Post.Title,
 		Content: post.Post.Content,
@@ -69,5 +76,6 @@ func ToPostWithUserSpaceDTO(post *domain.PostWithUserSpace) PostWithUserSpaceDTO
 			ID:   post.Space.ID,
 			Name: post.Space.Name,
 		},
+		Comments: commentsDTO,
 	}
 }

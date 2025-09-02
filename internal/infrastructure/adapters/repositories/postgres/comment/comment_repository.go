@@ -34,3 +34,8 @@ func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteri
 	//TODO implement me
 	panic("implement me")
 }
+
+func (c *CommentRepository) FindAllByPostID(ctx context.Context, postID int) ([]*domain.CommentWithUser, error) {
+	//TODO implement me
+	panic("implement me")
+}

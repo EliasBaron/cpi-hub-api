@@ -14,10 +14,11 @@ type Post struct {
 	Comments  []Comment
 }
 
-type PostWithUserSpace struct {
-	Post  *Post
-	Space *Space
-	User  *User
+type ExtendedPost struct {
+	Post     *Post
+	Space    *Space
+	User     *User
+	Comments []*CommentWithUser
 }
 
 type Comment struct {

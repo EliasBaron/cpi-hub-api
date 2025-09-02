@@ -29,7 +29,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Post created successfully", dto.ToPostWithUserSpaceDTO(createdPost))
+	response.CreatedResponse(c.Writer, "Post created successfully", dto.ToPostExtendedDTO(createdPost))
 }
 
 func (h *PostHandler) Get(c *gin.Context) {
@@ -47,5 +47,5 @@ func (h *PostHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Post retrieved successfully", dto.ToPostWithUserSpaceDTO(post))
+	response.SuccessResponse(c.Writer, "Post retrieved successfully", dto.ToPostExtendedDTO(post))
 }
