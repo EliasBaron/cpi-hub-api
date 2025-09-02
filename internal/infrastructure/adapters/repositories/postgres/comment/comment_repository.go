@@ -31,11 +31,6 @@ func (c *CommentRepository) Create(ctx context.Context, comment *domain.Comment)
 	return nil
 }
 
-func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.CommentWithUser, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (c *CommentRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Comment, error) {
 	query, params := mapper.ToPostgreSQLQuery(criteria)
 	return c.findAllByField(ctx, query, params)

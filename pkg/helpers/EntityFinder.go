@@ -26,7 +26,7 @@ func FindEntity[T any](
 		return nil, err
 	}
 	if entity == nil {
-		return nil, apperror.NewNotFound(notFoundMsg, nil, "post_usecase.go:findEntity")
+		return nil, apperror.NewNotFound(notFoundMsg, nil, "EntityFinder.go:FindEntity")
 	}
 	return entity, nil
 }

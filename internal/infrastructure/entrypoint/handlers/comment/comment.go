@@ -40,21 +40,3 @@ func (h *CommentHandler) Create(c *gin.Context) {
 
 	response.CreatedResponse(c.Writer, "Comment created successfully", dto.ToCommentWithUserAndPostDTO(createdComment))
 }
-
-func (h *CommentHandler) Get(c *gin.Context) {
-	commentIDStr := c.Param("comment_id")
-	commentID, err := strconv.Atoi(commentIDStr)
-	if err != nil {
-		appErr := apperror.NewInvalidData("Invalid comment ID", err, "comment_handler.go:Get")
-		response.NewError(c.Writer, appErr)
-		return
-	}
-
-	comment, err := h.CommentUseCase.Get(c.Request.Context(), commentID)
-	if err != nil {
-		response.NewError(c.Writer, err)
-		return
-	}
-
-	response.SuccessResponse(c.Writer, "Comment retrieved successfully", dto.ToCommentWithUserAndPostDTO(comment))
-}
