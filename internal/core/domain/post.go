@@ -22,9 +22,15 @@ type PostWithUserSpace struct {
 
 type Comment struct {
 	ID        int
+	PostID    int
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	CreatedBy int
 	UpdatedBy int
+}
+
+type CommentWithUser struct {
+	Comment *Comment
+	User    *User
 }

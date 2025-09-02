@@ -26,3 +26,8 @@ type PostRepository interface {
 	Create(ctx context.Context, post *Post) error
 	Find(ctx context.Context, criteria *criteria.Criteria) (*Post, error)
 }
+
+type CommentRepository interface {
+	Create(ctx context.Context, comment *Comment) error
+	Find(ctx context.Context, criteria *criteria.Criteria) (*CommentWithUser, error)
+}
