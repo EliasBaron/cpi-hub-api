@@ -55,7 +55,7 @@ func ToPostDTO(post *domain.Post) PostDTO {
 }
 
 func ToPostDTOs(posts []*domain.Post) []PostDTO {
-	var postDTOs []PostDTO
+	postDTOs := make([]PostDTO, 0, len(posts))
 	for _, post := range posts {
 		postDTOs = append(postDTOs, ToPostDTO(post))
 	}

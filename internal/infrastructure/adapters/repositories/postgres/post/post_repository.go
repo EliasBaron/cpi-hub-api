@@ -91,11 +91,10 @@ func (p *PostRepository) SearchByTitleOrContent(ctx context.Context, query strin
 	sqlQuery := `
         SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
         FROM posts
-        WHERE title ILIKE $1 OR content ILIKE $1
+        WHERE title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%'
     `
 
-	searchPattern := "%" + query + "%"
-	rows, err := p.db.QueryContext(ctx, sqlQuery, searchPattern)
+	rows, err := p.db.QueryContext(ctx, sqlQuery, query)
 	if err != nil {
 		return nil, err
 	}
