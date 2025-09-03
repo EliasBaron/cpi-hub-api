@@ -54,6 +54,15 @@ func ToPostDTO(post *domain.Post) PostDTO {
 	}
 }
 
+func ToPostDTOs(posts []*domain.Post) []PostDTO {
+	postDTOs := make([]PostDTO, 0, len(posts))
+	for _, post := range posts {
+		postDTOs = append(postDTOs, ToPostDTO(post))
+	}
+
+	return postDTOs
+}
+
 func ToPostExtendedDTO(post *domain.ExtendedPost) PostExtendedDTO {
 	commentsDTO := make([]CommentWithUserDTO, 0, len(post.Comments))
 
