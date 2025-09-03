@@ -1,7 +1,6 @@
 package dependencies
 
 import (
-	commentUsecase "cpi-hub-api/internal/core/usecase/comment"
 	postUsecase "cpi-hub-api/internal/core/usecase/post"
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
@@ -10,7 +9,6 @@ import (
 	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/space"
 	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user"
 	userSpaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user_space"
-	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/comment"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/post"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
@@ -18,10 +16,9 @@ import (
 )
 
 type Handlers struct {
-	UserHandler    *user.Handler
-	SpaceHandler   *space.SpaceHandler
-	PostHandler    *post.PostHandler
-	CommentHandler *comment.CommentHandler
+	UserHandler  *user.Handler
+	SpaceHandler *space.SpaceHandler
+	PostHandler  *post.PostHandler
 }
 
 func Build() *Handlers {
@@ -40,7 +37,6 @@ func Build() *Handlers {
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository)
 	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository)
-	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository, userRepository, postRepository)
 
 	return &Handlers{
 		UserHandler: &user.Handler{
@@ -51,9 +47,6 @@ func Build() *Handlers {
 		},
 		PostHandler: &post.PostHandler{
 			PostUseCase: postUsecase,
-		},
-		CommentHandler: &comment.CommentHandler{
-			CommentUseCase: commentUsecase,
 		},
 	}
 }

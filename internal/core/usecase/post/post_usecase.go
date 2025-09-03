@@ -4,13 +4,14 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
-	"cpi-hub-api/pkg/helpers"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"time"
 )
 
 type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
+	AddComent(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
 }
 
 type postUseCase struct {
@@ -102,5 +103,26 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, er
 		Space:    space,
 		User:     user,
 		Comments: commentsWithUsers,
+	}, nil
+}
+
+func (c postUseCase) AddComent(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error) {
+
+	user, err := helpers.FindEntity(ctx, c.userRepository, "id", comment.CreatedBy, "User not found")
+	if err != nil {
+		return nil, err
+	}
+
+	comment.CreatedAt, comment.UpdatedAt = time.Now(), time.Now()
+	comment.UpdatedBy = comment.CreatedBy
+
+	err = c.commentRepository.Create(ctx, comment)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.CommentWithUser{
+		Comment: comment,
+		User:    user,
 	}, nil
 }
