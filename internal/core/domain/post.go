@@ -14,17 +14,24 @@ type Post struct {
 	Comments  []Comment
 }
 
-type PostWithUserSpace struct {
-	Post  *Post
-	Space *Space
-	User  *User
+type ExtendedPost struct {
+	Post     *Post
+	Space    *Space
+	User     *User
+	Comments []*CommentWithUser
 }
 
 type Comment struct {
 	ID        int
+	PostID    int
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	CreatedBy int
 	UpdatedBy int
+}
+
+type CommentWithUser struct {
+	Comment *Comment
+	User    *User
 }

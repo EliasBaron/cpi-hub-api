@@ -4,6 +4,7 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
 	"time"
 )
@@ -84,38 +85,15 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 }
 
 func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUser, error) {
-	space, err := s.spaceRepository.Find(ctx, &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    id,
-				Operator: criteria.OperatorEqual,
-			},
-		},
-	})
-
+	space, err := helpers.FindEntity(ctx, s.spaceRepository, "id", id, "Space not found")
 	if err != nil {
 		return nil, err
 	}
 
-	if space == nil {
-		return nil, apperror.NewNotFound("Space not found", nil, "space_usecase.go:Get")
-	}
+	user, err := helpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
 
-	user, err := s.userRepository.Find(ctx, &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{
-				Field:    "id",
-				Value:    space.CreatedBy,
-				Operator: criteria.OperatorEqual,
-			},
-		},
-	})
 	if err != nil {
 		return nil, err
-	}
-	if user == nil {
-		return nil, apperror.NewNotFound("User not found for space", nil, "space_usecase.go:Get")
 	}
 
 	return &domain.SpaceWithUser{

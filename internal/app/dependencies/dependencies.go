@@ -4,6 +4,7 @@ import (
 	postUsecase "cpi-hub-api/internal/core/usecase/post"
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
+	commentRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/comment"
 	postRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/post"
 	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/space"
 	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user"
@@ -31,10 +32,11 @@ func Build() *Handlers {
 	spaceRepository := spaceRepository.NewSpaceRepository(sqldb)
 	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(sqldb)
 	postRepository := postRepository.NewPostRepository(sqldb)
+	commentRepository := commentRepository.NewCommentRepository(sqldb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository)
-	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository)
+	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository)
 
 	return &Handlers{
 		UserHandler: &user.Handler{

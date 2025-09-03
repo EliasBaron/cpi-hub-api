@@ -29,7 +29,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Post created successfully", dto.ToPostWithUserSpaceDTO(createdPost))
+	response.CreatedResponse(c.Writer, "Post created successfully", dto.ToPostExtendedDTO(createdPost))
 }
 
 func (h *PostHandler) Get(c *gin.Context) {
@@ -47,5 +47,32 @@ func (h *PostHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Post retrieved successfully", dto.ToPostWithUserSpaceDTO(post))
+	response.SuccessResponse(c.Writer, "Post retrieved successfully", dto.ToPostExtendedDTO(post))
+}
+
+func (h *PostHandler) AddComment(c *gin.Context) {
+	postIDStr := c.Param("post_id")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid post ID", err, "comment_handler.go:Create")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+	var commentDTO dto.CommentDTO
+
+	if err := c.ShouldBindJSON(&commentDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid comment data", err, "comment_handler.go:Create")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+	commentDTO.PostID = postID
+
+	createdComment, err := h.PostUseCase.AddComment(c.Request.Context(), commentDTO.ToDomain())
+
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.CreatedResponse(c.Writer, "Comment created successfully", dto.ToCommentWithUserAndPostDTO(createdComment))
 }
