@@ -22,6 +22,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	// posts
 	v1.POST("/posts", handlers.PostHandler.Create)
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
+	v1.GET("/posts/search", handlers.PostHandler.SearchPosts)
 	//comments
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 

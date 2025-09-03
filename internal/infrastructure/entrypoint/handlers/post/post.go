@@ -76,3 +76,19 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 
 	response.CreatedResponse(c.Writer, "Comment created successfully", dto.ToCommentWithUserAndPostDTO(createdComment))
 }
+
+func (h *PostHandler) SearchPosts(context *gin.Context) {
+	searchQuery := context.Query("q")
+	if searchQuery == "" {
+		appErr := apperror.NewInvalidData("Query parameter 'q' is required", nil, "post_handler.go:SearchPosts")
+		response.NewError(context.Writer, appErr)
+		return
+	}
+	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchQuery)
+	if err != nil {
+		response.NewError(context.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostDTOs(posts))
+}

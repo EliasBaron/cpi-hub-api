@@ -34,19 +34,48 @@ func (p *PostRepository) Create(ctx context.Context, post *domain.Post) error {
 
 func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Post, error) {
 	query, params := mapper.ToPostgreSQLQuery(criteria)
-
-	return p.findPostByField(ctx, query, params)
+	posts, err := p.executeQuery(ctx, query+" LIMIT 1", params)
+	if err != nil {
+		return nil, err
+	}
+	if len(posts) == 0 {
+		return nil, nil
+	}
+	return posts[0], nil
 }
 
-func (p *PostRepository) findPostByField(ctx context.Context, whereClause string, params []interface{}) (*domain.Post, error) {
-	var postEntity entity.PostEntity
+func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Post, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+	return p.executeQuery(ctx, query, params)
+}
+
+func (p *PostRepository) executeQuery(ctx context.Context, whereClause string, params []interface{}) ([]*domain.Post, error) {
+	var posts []*domain.Post
 
 	query := `
-        SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
-        FROM posts
-    ` + " " + whereClause + " LIMIT 1"
+		SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
+		FROM posts
+	` + " " + whereClause
 
-	err := p.db.QueryRowContext(ctx, query, params...).Scan(
+	rows, err := p.db.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var postEntity entity.PostEntity
+		if err := p.scanPostEntity(rows, &postEntity); err != nil {
+			return nil, err
+		}
+		posts = append(posts, mapper.ToDomainPost(&postEntity))
+	}
+
+	return posts, rows.Err()
+}
+
+func (p *PostRepository) scanPostEntity(scanner interface{ Scan(...interface{}) error }, postEntity *entity.PostEntity) error {
+	return scanner.Scan(
 		&postEntity.ID,
 		&postEntity.Title,
 		&postEntity.Content,
@@ -56,12 +85,30 @@ func (p *PostRepository) findPostByField(ctx context.Context, whereClause string
 		&postEntity.UpdatedAt,
 		&postEntity.SpaceID,
 	)
+}
+
+func (p *PostRepository) SearchByTitleOrContent(ctx context.Context, query string) ([]*domain.Post, error) {
+	sqlQuery := `
+        SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
+        FROM posts
+        WHERE title ILIKE $1 OR content ILIKE $1
+    `
+
+	searchPattern := "%" + query + "%"
+	rows, err := p.db.QueryContext(ctx, sqlQuery, searchPattern)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
 		return nil, err
 	}
+	defer rows.Close()
 
-	return mapper.ToDomainPost(&postEntity), nil
+	var posts []*domain.Post
+	for rows.Next() {
+		var postEntity entity.PostEntity
+		if err := p.scanPostEntity(rows, &postEntity); err != nil {
+			return nil, err
+		}
+		posts = append(posts, mapper.ToDomainPost(&postEntity))
+	}
+
+	return posts, rows.Err()
 }

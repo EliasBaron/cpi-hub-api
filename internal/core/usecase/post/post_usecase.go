@@ -12,6 +12,7 @@ type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
+	SearchPosts(ctx context.Context, query string) ([]*domain.Post, error)
 }
 
 type postUseCase struct {
@@ -125,4 +126,13 @@ func (c postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (*
 		Comment: comment,
 		User:    user,
 	}, nil
+}
+
+func (p *postUseCase) SearchPosts(ctx context.Context, query string) ([]*domain.Post, error) {
+	posts, err := p.postRepository.SearchByTitleOrContent(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
