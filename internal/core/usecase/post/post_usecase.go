@@ -11,7 +11,7 @@ import (
 type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
-	AddComent(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
+	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
 }
 
 type postUseCase struct {
@@ -106,7 +106,7 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, er
 	}, nil
 }
 
-func (c postUseCase) AddComent(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error) {
+func (c postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error) {
 
 	user, err := helpers.FindEntity(ctx, c.userRepository, "id", comment.CreatedBy, "User not found")
 	if err != nil {

@@ -67,7 +67,7 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 	}
 	commentDTO.PostID = postID
 
-	createdComment, err := h.PostUseCase.AddComent(c.Request.Context(), commentDTO.ToDomain())
+	createdComment, err := h.PostUseCase.AddComment(c.Request.Context(), commentDTO.ToDomain())
 
 	if err != nil {
 		response.NewError(c.Writer, err)
