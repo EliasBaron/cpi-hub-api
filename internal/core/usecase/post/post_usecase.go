@@ -197,10 +197,12 @@ func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*
 	}
 
 	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUser(ctx, userId)
-	if err != nil || len(userSpacesIds) == 0 {
-		return []*domain.ExtendedPost{}, err
+	if err != nil {
+		return nil, err
 	}
-
+	if len(userSpacesIds) == 0 {
+		return []*domain.ExtendedPost{}, nil
+	}
 	posts, err := p.postRepository.FindAll(ctx, buildCriteria("space_id", userSpacesIds))
 	if err != nil {
 		return nil, err
