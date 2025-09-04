@@ -196,7 +196,7 @@ func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*
 		return nil, err
 	}
 
-	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUser(ctx, userId)
+	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
