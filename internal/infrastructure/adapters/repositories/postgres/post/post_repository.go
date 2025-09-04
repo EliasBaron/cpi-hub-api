@@ -55,7 +55,7 @@ func (p *PostRepository) executeQuery(ctx context.Context, whereClause string, p
 	query := `
 		SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
 		FROM posts
-	` + " " + whereClause
+	` + " " + whereClause + " ORDER BY created_at DESC"
 
 	rows, err := p.db.QueryContext(ctx, query, params...)
 	if err != nil {

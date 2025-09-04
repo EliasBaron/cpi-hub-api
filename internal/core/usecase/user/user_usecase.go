@@ -77,7 +77,7 @@ func (u *useCase) Get(ctx context.Context, id int) (*domain.UserWithSpaces, erro
 		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:GetUserWithSpaces")
 	}
 
-	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, user.ID)
+	spaceIDs, err := u.userSpaceRepository.FindSpacesIDsByUser(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId int, spaceId int) e
 }
 
 func (u *useCase) GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error) {
-	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, userId)
+	spaceIDs, err := u.userSpaceRepository.FindSpacesIDsByUser(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
