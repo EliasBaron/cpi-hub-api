@@ -33,8 +33,8 @@ func (p *PostRepository) Create(ctx context.Context, post *domain.Post) error {
 }
 
 func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Post, error) {
-	query, params := mapper.ToPostgreSQLQuery(criteria)
-	posts, err := p.executeQuery(ctx, query+" LIMIT 1", params)
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+	posts, err := p.executeQuery(ctx, whereClause, "ORDER BY created_at DESC", "LIMIT 1", params)
 	if err != nil {
 		return nil, err
 	}
@@ -45,17 +45,17 @@ func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) 
 }
 
 func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Post, error) {
-	query, params := mapper.ToPostgreSQLQuery(criteria)
-	return p.executeQuery(ctx, query, params)
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+	return p.executeQuery(ctx, whereClause, "ORDER BY created_at DESC", "", params)
 }
 
-func (p *PostRepository) executeQuery(ctx context.Context, whereClause string, params []interface{}) ([]*domain.Post, error) {
+func (p *PostRepository) executeQuery(ctx context.Context, whereClause, orderClause, limitClause string, params []interface{}) ([]*domain.Post, error) {
 	var posts []*domain.Post
 
 	query := `
 		SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
 		FROM posts
-	` + " " + whereClause + " ORDER BY created_at DESC"
+	` + " " + whereClause + " " + orderClause + " " + limitClause
 
 	rows, err := p.db.QueryContext(ctx, query, params...)
 	if err != nil {
