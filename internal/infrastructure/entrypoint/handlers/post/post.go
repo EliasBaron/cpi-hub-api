@@ -103,20 +103,3 @@ func (h *PostHandler) SearchPosts(context *gin.Context) {
 
 	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
 }
-
-func (h *PostHandler) GetPostsByUserSpaces(context *gin.Context) {
-	userIDstr := context.Param("user_id")
-	userID, err := strconv.Atoi(userIDstr)
-	if err != nil {
-		appErr := apperror.NewInvalidData("Invalid user ID", err, "post_handler.go:GetPostsByUserSpaces")
-		response.NewError(context.Writer, appErr)
-		return
-	}
-	posts, err := h.PostUseCase.GetPostsByUserSpaces(context.Request.Context(), userID)
-	if err != nil {
-		response.NewError(context.Writer, err)
-		return
-	}
-
-	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
-}

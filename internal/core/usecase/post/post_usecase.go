@@ -14,7 +14,7 @@ type PostUseCase interface {
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
 	SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error)
-	GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error)
+	GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error)
 }
 
 type postUseCase struct {
@@ -228,8 +228,7 @@ func (p *postUseCase) SearchPosts(ctx context.Context, query string, page int) (
 	return p.buildExtendedPosts(ctx, posts)
 }
 
-func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error) {
-
+func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error) {
 	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -237,7 +236,14 @@ func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*
 	if len(userSpacesIds) == 0 {
 		return []*domain.ExtendedPost{}, nil
 	}
-	posts, err := p.postRepository.FindAll(ctx, buildCriteria("space_id", userSpacesIds))
+
+	criteria := criteria.NewCriteriaBuilder().
+		WithFilter("space_id", userSpacesIds, criteria.OperatorIn).
+		WithPagination(page, 10).
+		WithSort("created_at", criteria.OrderDirectionDesc).
+		Build()
+
+	posts, err := p.postRepository.FindAll(ctx, criteria)
 	if err != nil {
 		return nil, err
 	}
