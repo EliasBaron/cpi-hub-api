@@ -12,7 +12,7 @@ type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
-	SearchPosts(ctx context.Context, query string) ([]*domain.Post, error)
+	SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error)
 	GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error)
 }
 
@@ -91,9 +91,7 @@ func (p *postUseCase) getCommentsWithUsers(ctx context.Context, postIDs []int) (
 
 func (p *postUseCase) buildExtendedPosts(
 	ctx context.Context,
-	posts []*domain.Post,
-	user *domain.User,
-) ([]*domain.ExtendedPost, error) {
+	posts []*domain.Post) ([]*domain.ExtendedPost, error) {
 	if len(posts) == 0 {
 		return []*domain.ExtendedPost{}, nil
 	}
@@ -118,6 +116,11 @@ func (p *postUseCase) buildExtendedPosts(
 				return nil, err
 			}
 			spaceCache[post.SpaceID] = space
+		}
+
+		user, err := helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
+		if err != nil {
+			return nil, err
 		}
 
 		result = append(result, &domain.ExtendedPost{
@@ -160,11 +163,7 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, er
 	if err != nil {
 		return nil, err
 	}
-	user, err := helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
-	if err != nil {
-		return nil, err
-	}
-	extendedPosts, err := p.buildExtendedPosts(ctx, []*domain.Post{post}, user)
+	extendedPosts, err := p.buildExtendedPosts(ctx, []*domain.Post{post})
 	if err != nil {
 		return nil, err
 	}
@@ -186,15 +185,15 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	return &domain.CommentWithUser{Comment: comment, User: user}, nil
 }
 
-func (p *postUseCase) SearchPosts(ctx context.Context, query string) ([]*domain.Post, error) {
-	return p.postRepository.SearchByTitleOrContent(ctx, query)
-}
-
-func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error) {
-	user, err := helpers.FindEntity(ctx, p.userRepository, "id", userId, "User not found")
+func (p *postUseCase) SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error) {
+	posts, err := p.postRepository.SearchByTitleOrContent(ctx, query)
 	if err != nil {
 		return nil, err
 	}
+	return p.buildExtendedPosts(ctx, posts)
+}
+
+func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error) {
 
 	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, userId)
 	if err != nil {
@@ -208,5 +207,5 @@ func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*
 		return nil, err
 	}
 
-	return p.buildExtendedPosts(ctx, posts, user)
+	return p.buildExtendedPosts(ctx, posts)
 }
