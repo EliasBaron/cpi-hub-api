@@ -90,7 +90,7 @@ func (h *PostHandler) SearchPosts(context *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostDTOs(posts))
+	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
 }
 
 func (h *PostHandler) GetPostsByUserSpaces(context *gin.Context) {
