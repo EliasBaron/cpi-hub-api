@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"strings"
 	"time"
 )
 
@@ -12,7 +13,7 @@ type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
-	SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error)
+	SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error)
 	GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error)
 }
 
@@ -205,13 +206,19 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	return &domain.CommentWithUser{Comment: comment, User: user}, nil
 }
 
-func (p *postUseCase) SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error) {
-	searchQuery := "%" + query + "%"
+func (p *postUseCase) SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error) {
+	if query == "" || len(strings.TrimSpace(query)) == 0 {
+		return []*domain.ExtendedPost{}, nil
+	}
+
+	searchQuery := "%" + strings.TrimSpace(query) + "%"
 
 	searchCriteria := criteria.NewCriteriaBuilder().
 		WithFilter("title", searchQuery, criteria.OperatorILike).
 		WithFilter("content", searchQuery, criteria.OperatorILike).
 		WithLogicalOperator(criteria.LogicalOperatorOr).
+		WithPagination(page, 10).
+		WithSort("created_at", criteria.OrderDirectionDesc).
 		Build()
 
 	posts, err := p.postRepository.FindAll(ctx, searchCriteria)

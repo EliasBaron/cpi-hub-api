@@ -84,7 +84,18 @@ func (h *PostHandler) SearchPosts(context *gin.Context) {
 		response.NewError(context.Writer, appErr)
 		return
 	}
-	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchQuery)
+	pageStr := context.Query("page")
+	page := 1
+	if pageStr != "" {
+		var err error
+		page, err = strconv.Atoi(pageStr)
+		if err != nil || page < 1 {
+			appErr := apperror.NewInvalidData("Invalid page number", err, "post_handler.go:SearchPosts")
+			response.NewError(context.Writer, appErr)
+			return
+		}
+	}
+	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchQuery, page)
 	if err != nil {
 		response.NewError(context.Writer, err)
 		return

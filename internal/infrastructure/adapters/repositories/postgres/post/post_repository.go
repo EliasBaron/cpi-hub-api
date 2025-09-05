@@ -61,8 +61,6 @@ func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteri
 	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
 	queryParams := QueryParams{
 		WhereClause: whereClause,
-		OrderClause: "ORDER BY created_at DESC",
-		LimitClause: "",
 		Args:        params,
 	}
 	return p.executeQuery(ctx, queryParams)
@@ -71,10 +69,17 @@ func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteri
 func (p *PostRepository) executeQuery(ctx context.Context, params QueryParams) ([]*domain.Post, error) {
 	var posts []*domain.Post
 
-	query := `
-		SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
-		FROM posts
-	` + " " + params.WhereClause + " " + params.OrderClause + " " + params.LimitClause
+	query := "SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id FROM posts"
+
+	if params.WhereClause != "" {
+		query += params.WhereClause
+	}
+	if params.OrderClause != "" {
+		query += " " + params.OrderClause
+	}
+	if params.LimitClause != "" {
+		query += " " + params.LimitClause
+	}
 
 	rows, err := p.db.QueryContext(ctx, query, params.Args...)
 	if err != nil {
@@ -104,31 +109,6 @@ func (p *PostRepository) scanPostEntity(scanner interface{ Scan(...interface{}) 
 		&postEntity.UpdatedAt,
 		&postEntity.SpaceID,
 	)
-}
-
-func (p *PostRepository) SearchByTitleOrContent(ctx context.Context, query string) ([]*domain.Post, error) {
-	sqlQuery := `
-        SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
-        FROM posts
-        WHERE title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%'
-    `
-
-	rows, err := p.db.QueryContext(ctx, sqlQuery, query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var posts []*domain.Post
-	for rows.Next() {
-		var postEntity entity.PostEntity
-		if err := p.scanPostEntity(rows, &postEntity); err != nil {
-			return nil, err
-		}
-		posts = append(posts, mapper.ToDomainPost(&postEntity))
-	}
-
-	return posts, rows.Err()
 }
 
 func (p *PostRepository) Update(ctx context.Context, post *domain.Post) error {
