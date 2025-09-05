@@ -13,6 +13,13 @@ type PostRepository struct {
 	db *sql.DB
 }
 
+type QueryParams struct {
+	WhereClause string
+	OrderClause string
+	LimitClause string
+	Args        []interface{}
+}
+
 func NewPostRepository(db *sql.DB) *PostRepository {
 	return &PostRepository{
 		db: db,
@@ -33,8 +40,14 @@ func (p *PostRepository) Create(ctx context.Context, post *domain.Post) error {
 }
 
 func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Post, error) {
-	query, params := mapper.ToPostgreSQLQuery(criteria)
-	posts, err := p.executeQuery(ctx, query+" LIMIT 1", params)
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+	queryParams := QueryParams{
+		WhereClause: whereClause,
+		OrderClause: "ORDER BY created_at DESC",
+		LimitClause: "LIMIT 1",
+		Args:        params,
+	}
+	posts, err := p.executeQuery(ctx, queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -45,19 +58,25 @@ func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) 
 }
 
 func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Post, error) {
-	query, params := mapper.ToPostgreSQLQuery(criteria)
-	return p.executeQuery(ctx, query, params)
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+	queryParams := QueryParams{
+		WhereClause: whereClause,
+		OrderClause: "ORDER BY created_at DESC",
+		LimitClause: "",
+		Args:        params,
+	}
+	return p.executeQuery(ctx, queryParams)
 }
 
-func (p *PostRepository) executeQuery(ctx context.Context, whereClause string, params []interface{}) ([]*domain.Post, error) {
+func (p *PostRepository) executeQuery(ctx context.Context, params QueryParams) ([]*domain.Post, error) {
 	var posts []*domain.Post
 
 	query := `
 		SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id
 		FROM posts
-	` + " " + whereClause
+	` + " " + params.WhereClause + " " + params.OrderClause + " " + params.LimitClause
 
-	rows, err := p.db.QueryContext(ctx, query, params...)
+	rows, err := p.db.QueryContext(ctx, query, params.Args...)
 	if err != nil {
 		return nil, err
 	}
