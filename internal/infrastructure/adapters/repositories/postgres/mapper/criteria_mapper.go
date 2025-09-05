@@ -12,25 +12,33 @@ type FilterClause struct {
 }
 
 func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
-	var clauses []string
+	var whereParts []string
 	var params []interface{}
-	paramIndex := 1
 
-	for _, filter := range c.Filters {
-		clause, filterParams := buildFilterClause(filter, paramIndex)
-		if clause != "" {
-			clauses = append(clauses, clause)
-			params = append(params, filterParams...)
-			paramIndex += len(filterParams)
-		}
+	// WHERE
+	for i, f := range c.Filters {
+		clause := fmt.Sprintf("%s = $%d", f.Field, i+1) // simplificado
+		whereParts = append(whereParts, clause)
+		params = append(params, f.Value)
 	}
 
-	whereClause := ""
-	if len(clauses) > 0 {
-		whereClause = "WHERE " + strings.Join(clauses, " AND ")
+	query := ""
+	if len(whereParts) > 0 {
+		query += " WHERE " + strings.Join(whereParts, " AND ")
 	}
 
-	return whereClause, params
+	// ORDER BY
+	if c.Sort.Field != "" {
+		query += fmt.Sprintf(" ORDER BY %s %s", c.Sort.Field, c.Sort.SortDirection)
+	}
+
+	// PAGINATE
+	if c.Pagination.PageSize > 0 {
+		offset := (c.Pagination.Page - 1) * c.Pagination.PageSize
+		query += fmt.Sprintf(" LIMIT %d OFFSET %d", c.Pagination.PageSize, offset)
+	}
+
+	return query, params
 }
 
 func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interface{}) {
