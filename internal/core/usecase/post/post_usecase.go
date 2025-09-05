@@ -49,16 +49,9 @@ func intsToInterfaces(ints []int) []interface{} {
 }
 
 func buildCriteria(field string, values []int) *criteria.Criteria {
-	if len(values) == 1 {
-		return &criteria.Criteria{
-			Filters: []criteria.Filter{
-				{Field: field, Value: values[0], Operator: criteria.OperatorEqual},
-			},
-		}
-	}
 	return &criteria.Criteria{
 		Filters: []criteria.Filter{
-			{Field: field, Value: intsToInterfaces(values), Operator: criteria.OperatorIn},
+			{Field: field, Value: values, Operator: criteria.OperatorIn},
 		},
 	}
 }

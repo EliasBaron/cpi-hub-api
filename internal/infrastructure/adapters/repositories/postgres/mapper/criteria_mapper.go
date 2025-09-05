@@ -14,12 +14,16 @@ type FilterClause struct {
 func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 	var whereParts []string
 	var params []interface{}
+	paramIndex := 1
 
 	// WHERE
-	for i, f := range c.Filters {
-		clause := fmt.Sprintf("%s = $%d", f.Field, i+1) // simplificado
-		whereParts = append(whereParts, clause)
-		params = append(params, f.Value)
+	for _, f := range c.Filters {
+		clause, clauseParams := buildFilterClause(f, paramIndex)
+		if clause != "" {
+			whereParts = append(whereParts, clause)
+			params = append(params, clauseParams...)
+			paramIndex += len(clauseParams)
+		}
 	}
 
 	query := ""
@@ -52,15 +56,18 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 		return fmt.Sprintf("%s != $%d", filter.Field, startIndex), []interface{}{filter.Value}
 
 	case criteria.OperatorIn:
-		if values, ok := filter.Value.([]interface{}); ok {
-			placeholders := make([]string, len(values))
-			for i, _ := range values {
+		switch v := filter.Value.(type) {
+		case []int:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
 				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
-				params = append(params, values[i])
+				args[i] = interface{}(val)
 			}
-			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), params
+			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ",")), args
+		default:
+			return "", nil
 		}
-		return fmt.Sprintf("%s IN ($%d)", filter.Field, startIndex), []interface{}{filter.Value}
 
 	case criteria.OperatorNotIn:
 		if values, ok := filter.Value.([]interface{}); ok {
