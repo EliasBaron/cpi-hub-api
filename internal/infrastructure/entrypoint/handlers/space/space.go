@@ -42,3 +42,21 @@ func (h *SpaceHandler) Get(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, "Space retrieved successfully", dto.ToSpaceWithUserDTO(space))
 }
+
+func (h *SpaceHandler) GetLatestSpaces(context *gin.Context) {
+	latestUpdates, err := h.SpaceUseCase.GetSpacesSortedBy(context.Request.Context(), "updated_at", "desc")
+	if err != nil {
+		response.NewError(context.Writer, err)
+		return
+	}
+	latestCreated, err := h.SpaceUseCase.GetSpacesSortedBy(context.Request.Context(), "created_at", "desc")
+	if err != nil {
+		response.NewError(context.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(context.Writer, "Latest spaces retrieved successfully", gin.H{
+		"latest_updates": dto.ToSpaceWithUserDTO(latestUpdates),
+		"latest_created": dto.ToSpaceWithUserDTO(latestCreated),
+	})
+}

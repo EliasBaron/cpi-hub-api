@@ -14,6 +14,7 @@ type SpaceRepository interface {
 	Create(ctx context.Context, space *Space) error
 	Find(ctx context.Context, criteria *criteria.Criteria) (*Space, error)
 	FindByIDs(ctx context.Context, ids []int) ([]*Space, error)
+	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*Space, error)
 }
 
 type UserSpaceRepository interface {
