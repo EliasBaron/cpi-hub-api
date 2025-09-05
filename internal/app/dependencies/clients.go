@@ -89,9 +89,10 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 		return nil, fmt.Errorf("error opening connection to PostgreSQL: %w", err)
 	}
 
-	if err := ensureSchema(db); err != nil {
-		return nil, fmt.Errorf("error ensuring schema in PostgreSQL: %w", err)
-	}
+	// only run if you want to recreate the schema
+	// if err := schema.EnsureSchema(db); err != nil {
+	// 	return nil, fmt.Errorf("error ensuring schema in PostgreSQL: %w", err)
+	// }
 
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("error verifying connection to PostgreSQL: %w", err)
@@ -167,3 +168,4 @@ func ensureSchema(db *sql.DB) error {
 	}
 	return nil
 }
+
