@@ -28,7 +28,16 @@ func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 
 	query := ""
 	if len(whereParts) > 0 {
-		query += " WHERE " + strings.Join(whereParts, " AND ")
+		logicalOp := " AND "
+		if c.LogicalOperator == criteria.LogicalOperatorOr {
+			logicalOp = " OR "
+		}
+
+		if len(whereParts) > 1 {
+			query += " WHERE (" + strings.Join(whereParts, logicalOp) + ")"
+		} else {
+			query += " WHERE " + whereParts[0]
+		}
 	}
 
 	// ORDER BY
@@ -54,6 +63,12 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 
 	case criteria.OperatorNotEqual:
 		return fmt.Sprintf("%s != $%d", filter.Field, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorLike:
+		return fmt.Sprintf("%s LIKE $%d", filter.Field, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorILike:
+		return fmt.Sprintf("%s ILIKE $%d", filter.Field, startIndex), []interface{}{filter.Value}
 
 	case criteria.OperatorIn:
 		switch v := filter.Value.(type) {

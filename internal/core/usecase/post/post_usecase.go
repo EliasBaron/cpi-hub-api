@@ -206,7 +206,15 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 }
 
 func (p *postUseCase) SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error) {
-	posts, err := p.postRepository.SearchByTitleOrContent(ctx, query)
+	searchQuery := "%" + query + "%"
+
+	searchCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("title", searchQuery, criteria.OperatorILike).
+		WithFilter("content", searchQuery, criteria.OperatorILike).
+		WithLogicalOperator(criteria.LogicalOperatorOr).
+		Build()
+
+	posts, err := p.postRepository.FindAll(ctx, searchCriteria)
 	if err != nil {
 		return nil, err
 	}
