@@ -118,3 +118,13 @@ func (u *SpaceRepository) FindAll(ctx context.Context, criteria *criteria.Criter
 
 	return spaces, rows.Err()
 }
+
+func (u *SpaceRepository) Update(ctx context.Context, space *domain.Space) error {
+	spaceEntity := mapper.ToPostgresSpace(space)
+
+	_, err := u.db.ExecContext(ctx,
+		"UPDATE spaces SET name=$1, description=$2, updated_by=$3, updated_at=$4 WHERE id=$5",
+		spaceEntity.Name, spaceEntity.Description, spaceEntity.UpdatedBy, spaceEntity.UpdatedAt, spaceEntity.ID)
+
+	return err
+}

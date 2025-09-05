@@ -12,7 +12,7 @@ import (
 type SpaceUseCase interface {
 	Create(ctx context.Context, space *domain.Space) (*domain.SpaceWithUser, error)
 	Get(ctx context.Context, id string) (*domain.SpaceWithUser, error)
-	GetSpacesSortedBy(ctx context.Context, sortBy string, order string) ([]*domain.SpaceWithUser, error)
+	GetAll(ctx context.Context, sortField string) ([]*domain.SpaceWithUser, error)
 }
 
 type spaceUseCase struct {
@@ -128,17 +128,18 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 	}, nil
 }
 
-func (s *spaceUseCase) GetSpacesSortedBy(ctx context.Context, sortBy string, order string) ([]*domain.SpaceWithUser, error) {
-	spaces, err := s.spaceRepository.FindAll(ctx, &criteria.Criteria{
-		Sorts: []criteria.Sort{
-			{
-				Field:     sortBy,
-				Direction: order,
-			},
-		},
-	})
+func (s *spaceUseCase) GetAll(ctx context.Context, sortField string) ([]*domain.SpaceWithUser, error) {
+	criteria := criteria.NewCriteriaBuilder().
+		WithSort(sortField, criteria.OrderDirectionDesc).
+		Build()
+
+	spaces, err := s.spaceRepository.FindAll(ctx, criteria)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(spaces) == 0 {
+		return []*domain.SpaceWithUser{}, nil
 	}
 
 	spacesWithUsers, err := s.makeSpacesWithUsers(ctx, spaces)

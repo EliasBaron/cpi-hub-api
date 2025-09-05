@@ -69,3 +69,14 @@ func (c *CommentRepository) findAllByField(ctx context.Context, whereClause stri
 
 	return comments, nil
 }
+
+func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Comment, error) {
+	comments, err := c.FindAll(ctx, criteria)
+	if err != nil {
+		return nil, err
+	}
+	if len(comments) == 0 {
+		return nil, nil
+	}
+	return comments[0], nil
+}

@@ -150,6 +150,12 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 		return nil, err
 	}
 
+	existingSpace.UpdatedAt = time.Now()
+	existingSpace.UpdatedBy = post.CreatedBy
+	if err := p.spaceRepository.Update(ctx, existingSpace); err != nil {
+		return nil, err
+	}
+
 	return &domain.ExtendedPost{
 		Post:     post,
 		Space:    existingSpace,
@@ -182,6 +188,27 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	if err := p.commentRepository.Create(ctx, comment); err != nil {
 		return nil, err
 	}
+
+	post, err := helpers.FindEntity(ctx, p.postRepository, "id", comment.PostID, "Post not found")
+	if err != nil {
+		return nil, err
+	}
+	post.UpdatedAt = time.Now()
+	post.UpdatedBy = comment.CreatedBy
+	if err := p.postRepository.Update(ctx, post); err != nil {
+		return nil, err
+	}
+
+	space, err := helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
+	if err != nil {
+		return nil, err
+	}
+	space.UpdatedAt = time.Now()
+	space.UpdatedBy = comment.CreatedBy
+	if err := p.spaceRepository.Update(ctx, space); err != nil {
+		return nil, err
+	}
+
 	return &domain.CommentWithUser{Comment: comment, User: user}, nil
 }
 

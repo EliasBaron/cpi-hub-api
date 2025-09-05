@@ -30,6 +30,8 @@ type SpaceWithUserDTO struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
+	CreatedAt   string  `json:"created_at"`
+	UpdatedAt   string  `json:"updated_at"`
 	CreatedBy   UserDTO `json:"created_by"`
 }
 
@@ -46,6 +48,8 @@ func ToSpaceWithUserDTO(space *domain.SpaceWithUser) SpaceWithUserDTO {
 		ID:          space.Space.ID,
 		Name:        space.Space.Name,
 		Description: space.Space.Description,
+		CreatedAt:   space.Space.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   space.Space.UpdatedAt.Format(time.RFC3339),
 		CreatedBy: UserDTO{
 			ID:       space.User.ID,
 			Name:     space.User.Name,
@@ -66,4 +70,13 @@ func ToSpaceDTO(space *domain.Space) SpaceDTO {
 		UpdatedAt:   space.UpdatedAt.Format(time.RFC3339),
 		UpdatedBy:   space.UpdatedBy,
 	}
+}
+
+func ToSpaceWithUserDTOs(spaces []*domain.SpaceWithUser) []SpaceWithUserDTO {
+	spacesWithUserDTOs := make([]SpaceWithUserDTO, 0, len(spaces))
+
+	for _, space := range spaces {
+		spacesWithUserDTOs = append(spacesWithUserDTOs, ToSpaceWithUserDTO(space))
+	}
+	return spacesWithUserDTOs
 }

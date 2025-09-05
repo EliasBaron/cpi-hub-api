@@ -127,12 +127,6 @@ func ensureSchema(db *sql.DB) error {
             updated_at TIMESTAMP NOT NULL DEFAULT now(),
             image TEXT
         )`,
-
-		`CREATE TABLE IF NOT EXISTS user_spaces (
-            user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
-            PRIMARY KEY (user_id, space_id)
-        )`,
 		`CREATE TABLE IF NOT EXISTS spaces (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
@@ -141,6 +135,11 @@ func ensureSchema(db *sql.DB) error {
             created_at TIMESTAMP NOT NULL DEFAULT now(),
             updated_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             updated_at TIMESTAMP NOT NULL DEFAULT now()
+        )`,
+		`CREATE TABLE IF NOT EXISTS user_spaces (
+            user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
+            PRIMARY KEY (user_id, space_id)
         )`,
 		`CREATE TABLE IF NOT EXISTS posts (
             id SERIAL PRIMARY KEY,

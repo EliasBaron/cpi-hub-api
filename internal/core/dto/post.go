@@ -27,6 +27,9 @@ type PostExtendedDTO struct {
 	ID        int                  `json:"id"`
 	Title     string               `json:"title"`
 	Content   string               `json:"content"`
+	CreatedAt time.Time            `json:"created_at"`
+	UpdatedAt time.Time            `json:"updated_at"`
+	UpdatedBy int                  `json:"updated_by"`
 	CreatedBy UserDTO              `json:"created_by"`
 	Space     SimpleSpaceDto       `json:"space"`
 	Comments  []CommentWithUserDTO `json:"comments"`
@@ -62,9 +65,12 @@ func ToPostExtendedDTO(post *domain.ExtendedPost) PostExtendedDTO {
 	}
 
 	return PostExtendedDTO{
-		ID:      post.Post.ID,
-		Title:   post.Post.Title,
-		Content: post.Post.Content,
+		ID:        post.Post.ID,
+		Title:     post.Post.Title,
+		Content:   post.Post.Content,
+		CreatedAt: post.Post.CreatedAt,
+		UpdatedAt: post.Post.UpdatedAt,
+		UpdatedBy: post.Post.UpdatedBy,
 		CreatedBy: UserDTO{
 			ID:       post.User.ID,
 			Name:     post.User.Name,

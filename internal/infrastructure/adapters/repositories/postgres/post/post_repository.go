@@ -130,3 +130,12 @@ func (p *PostRepository) SearchByTitleOrContent(ctx context.Context, query strin
 
 	return posts, rows.Err()
 }
+
+func (p *PostRepository) Update(ctx context.Context, post *domain.Post) error {
+	var postEntity = *mapper.ToPostgresPost(post)
+
+	_, err := p.db.ExecContext(ctx,
+		"UPDATE posts SET title=$1, content=$2, updated_at=$3, updated_by=$4, space_id=$5 WHERE id=$6",
+		postEntity.Title, postEntity.Content, postEntity.UpdatedAt, postEntity.UpdatedBy, postEntity.SpaceID, postEntity.ID)
+	return err
+}
