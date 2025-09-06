@@ -16,7 +16,7 @@ import (
 )
 
 type Handlers struct {
-	UserHandler  *user.Handler
+	UserHandler  *user.UserHandler
 	SpaceHandler *space.SpaceHandler
 	PostHandler  *post.PostHandler
 }
@@ -39,8 +39,9 @@ func Build() *Handlers {
 	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 
 	return &Handlers{
-		UserHandler: &user.Handler{
-			UseCase: userUsecase,
+		UserHandler: &user.UserHandler{
+			UseCase:     userUsecase,
+			PostUseCase: postUsecase,
 		},
 		SpaceHandler: &space.SpaceHandler{
 			SpaceUseCase: spaceUsecase,

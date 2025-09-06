@@ -14,16 +14,17 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.GET("/users/:user_id", handlers.UserHandler.Get)
 	v1.PUT("/users/:user_id/spaces/:space_id", handlers.UserHandler.AddSpaceToUser)
 	v1.GET("/users/:user_id/spaces", handlers.UserHandler.GetSpacesByUserId)
+	v1.GET("/users/:user_id/interested-posts", handlers.UserHandler.GetPostsByUserSpaces)
 
 	// spaces
 	v1.POST("/spaces", handlers.SpaceHandler.Create)
 	v1.GET("/spaces/:space_id", handlers.SpaceHandler.Get)
+	v1.GET("/spaces", handlers.SpaceHandler.GetSpacesOrderedBy)
 
 	// posts
 	v1.POST("/posts", handlers.PostHandler.Create)
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
 	v1.GET("/posts/search", handlers.PostHandler.SearchPosts)
-	v1.GET("/posts/spaces/:user_id", handlers.PostHandler.GetPostsByUserSpaces)
 	//comments
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 

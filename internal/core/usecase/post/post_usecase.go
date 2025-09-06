@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"strings"
 	"time"
 )
 
@@ -12,8 +13,8 @@ type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
-	SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error)
-	GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error)
+	SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error)
+	GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error)
 }
 
 type postUseCase struct {
@@ -49,16 +50,9 @@ func intsToInterfaces(ints []int) []interface{} {
 }
 
 func buildCriteria(field string, values []int) *criteria.Criteria {
-	if len(values) == 1 {
-		return &criteria.Criteria{
-			Filters: []criteria.Filter{
-				{Field: field, Value: values[0], Operator: criteria.OperatorEqual},
-			},
-		}
-	}
 	return &criteria.Criteria{
 		Filters: []criteria.Filter{
-			{Field: field, Value: intsToInterfaces(values), Operator: criteria.OperatorIn},
+			{Field: field, Value: values, Operator: criteria.OperatorIn},
 		},
 	}
 }
@@ -150,6 +144,12 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 		return nil, err
 	}
 
+	existingSpace.UpdatedAt = time.Now()
+	existingSpace.UpdatedBy = post.CreatedBy
+	if err := p.spaceRepository.Update(ctx, existingSpace); err != nil {
+		return nil, err
+	}
+
 	return &domain.ExtendedPost{
 		Post:     post,
 		Space:    existingSpace,
@@ -182,19 +182,53 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	if err := p.commentRepository.Create(ctx, comment); err != nil {
 		return nil, err
 	}
+
+	post, err := helpers.FindEntity(ctx, p.postRepository, "id", comment.PostID, "Post not found")
+	if err != nil {
+		return nil, err
+	}
+	post.UpdatedAt = time.Now()
+	post.UpdatedBy = comment.CreatedBy
+	if err := p.postRepository.Update(ctx, post); err != nil {
+		return nil, err
+	}
+
+	space, err := helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
+	if err != nil {
+		return nil, err
+	}
+	space.UpdatedAt = time.Now()
+	space.UpdatedBy = comment.CreatedBy
+	if err := p.spaceRepository.Update(ctx, space); err != nil {
+		return nil, err
+	}
+
 	return &domain.CommentWithUser{Comment: comment, User: user}, nil
 }
 
-func (p *postUseCase) SearchPosts(ctx context.Context, query string) ([]*domain.ExtendedPost, error) {
-	posts, err := p.postRepository.SearchByTitleOrContent(ctx, query)
+func (p *postUseCase) SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error) {
+	if query == "" || len(strings.TrimSpace(query)) == 0 {
+		return []*domain.ExtendedPost{}, nil
+	}
+
+	searchQuery := "%" + strings.TrimSpace(query) + "%"
+
+	searchCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("title", searchQuery, criteria.OperatorILike).
+		WithFilter("content", searchQuery, criteria.OperatorILike).
+		WithLogicalOperator(criteria.LogicalOperatorOr).
+		WithPagination(page, 10).
+		WithSort("created_at", criteria.OrderDirectionDesc).
+		Build()
+
+	posts, err := p.postRepository.FindAll(ctx, searchCriteria)
 	if err != nil {
 		return nil, err
 	}
 	return p.buildExtendedPosts(ctx, posts)
 }
 
-func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*domain.ExtendedPost, error) {
-
+func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error) {
 	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -202,7 +236,14 @@ func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int) ([]*
 	if len(userSpacesIds) == 0 {
 		return []*domain.ExtendedPost{}, nil
 	}
-	posts, err := p.postRepository.FindAll(ctx, buildCriteria("space_id", userSpacesIds))
+
+	criteria := criteria.NewCriteriaBuilder().
+		WithFilter("space_id", userSpacesIds, criteria.OperatorIn).
+		WithPagination(page, 10).
+		WithSort("created_at", criteria.OrderDirectionDesc).
+		Build()
+
+	posts, err := p.postRepository.FindAll(ctx, criteria)
 	if err != nil {
 		return nil, err
 	}

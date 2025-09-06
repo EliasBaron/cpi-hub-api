@@ -84,24 +84,18 @@ func (h *PostHandler) SearchPosts(context *gin.Context) {
 		response.NewError(context.Writer, appErr)
 		return
 	}
-	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchQuery)
-	if err != nil {
-		response.NewError(context.Writer, err)
-		return
+	pageStr := context.Query("page")
+	page := 1
+	if pageStr != "" {
+		var err error
+		page, err = strconv.Atoi(pageStr)
+		if err != nil || page < 1 {
+			appErr := apperror.NewInvalidData("Invalid page number", err, "post_handler.go:SearchPosts")
+			response.NewError(context.Writer, appErr)
+			return
+		}
 	}
-
-	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
-}
-
-func (h *PostHandler) GetPostsByUserSpaces(context *gin.Context) {
-	userIDstr := context.Param("user_id")
-	userID, err := strconv.Atoi(userIDstr)
-	if err != nil {
-		appErr := apperror.NewInvalidData("Invalid user ID", err, "post_handler.go:GetPostsByUserSpaces")
-		response.NewError(context.Writer, appErr)
-		return
-	}
-	posts, err := h.PostUseCase.GetPostsByUserSpaces(context.Request.Context(), userID)
+	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchQuery, page)
 	if err != nil {
 		response.NewError(context.Writer, err)
 		return

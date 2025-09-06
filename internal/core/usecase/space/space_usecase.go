@@ -12,6 +12,7 @@ import (
 type SpaceUseCase interface {
 	Create(ctx context.Context, space *domain.Space) (*domain.SpaceWithUser, error)
 	Get(ctx context.Context, id string) (*domain.SpaceWithUser, error)
+	GetAll(ctx context.Context, sortField string) ([]*domain.SpaceWithUser, error)
 }
 
 type spaceUseCase struct {
@@ -26,6 +27,24 @@ func NewSpaceUsecase(spaceRepository domain.SpaceRepository, userRepository doma
 		userRepository:      userRepository,
 		userSpaceRepository: userSpaceRepository,
 	}
+}
+
+func (s *spaceUseCase) makeSpacesWithUsers(ctx context.Context, spaces []*domain.Space) ([]*domain.SpaceWithUser, error) {
+	var spacesWithUsers []*domain.SpaceWithUser
+
+	for _, space := range spaces {
+		user, err := helpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
+		if err != nil {
+			return nil, err
+		}
+
+		spacesWithUsers = append(spacesWithUsers, &domain.SpaceWithUser{
+			Space: space,
+			User:  user,
+		})
+	}
+
+	return spacesWithUsers, nil
 }
 
 func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain.SpaceWithUser, error) {
@@ -91,7 +110,6 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 	}
 
 	user, err := helpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
-
 	if err != nil {
 		return nil, err
 	}
@@ -108,4 +126,26 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 		},
 		User: user,
 	}, nil
+}
+
+func (s *spaceUseCase) GetAll(ctx context.Context, sortField string) ([]*domain.SpaceWithUser, error) {
+	criteria := criteria.NewCriteriaBuilder().
+		WithSort(sortField, criteria.OrderDirectionDesc).
+		Build()
+
+	spaces, err := s.spaceRepository.FindAll(ctx, criteria)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(spaces) == 0 {
+		return []*domain.SpaceWithUser{}, nil
+	}
+
+	spacesWithUsers, err := s.makeSpacesWithUsers(ctx, spaces)
+	if err != nil {
+		return nil, err
+	}
+
+	return spacesWithUsers, nil
 }
