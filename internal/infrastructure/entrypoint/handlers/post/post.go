@@ -78,12 +78,6 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 }
 
 func (h *PostHandler) SearchPosts(context *gin.Context) {
-	searchQuery := context.Query("q")
-	if searchQuery == "" {
-		appErr := apperror.NewInvalidData("Query parameter 'q' is required", nil, "post_handler.go:SearchPosts")
-		response.NewError(context.Writer, appErr)
-		return
-	}
 	pageStr := context.Query("page")
 	page := 1
 	if pageStr != "" {
@@ -95,7 +89,14 @@ func (h *PostHandler) SearchPosts(context *gin.Context) {
 			return
 		}
 	}
-	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchQuery, page)
+
+	searchParams := dto.SearchPostsParams{
+		Page:    page,
+		SpaceID: context.Query("space_id"),
+		Query:   context.Query("q"),
+	}
+
+	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchParams)
 	if err != nil {
 		response.NewError(context.Writer, err)
 		return

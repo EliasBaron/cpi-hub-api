@@ -7,6 +7,7 @@ import (
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/entity"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"database/sql"
+	"fmt"
 )
 
 type PostRepository struct {
@@ -58,6 +59,7 @@ func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) 
 }
 
 func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Post, error) {
+	fmt.Println("criteria", criteria)
 	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
 	queryParams := QueryParams{
 		WhereClause: whereClause,
