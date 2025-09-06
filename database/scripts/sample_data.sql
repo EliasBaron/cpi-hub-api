@@ -1,0 +1,438 @@
+-- CPI Hub API - Sample Data
+-- Script for inserting sample data into the database
+
+-- -- Insert sample users
+-- INSERT INTO users (name, last_name, email, password, image, created_at, updated_at) VALUES
+-- ('Valentin', 'Ferreyra', 'valentin.ferreyra@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/0000FF/FFFFFF?text=JP', NOW(), NOW()),
+-- ('Elias', 'Baron', 'elias.baron@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FF0000/FFFFFF?text=MG', NOW(), NOW()),
+-- ('Juanma', 'Sanchez Diaz', 'juanma.sanchez.diaz@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/00FF00/FFFFFF?text=CR', NOW(), NOW()),
+-- ('Diego', 'Kippes', 'diego.kippes@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFFF00/000000?text=AM', NOW(), NOW()),
+-- ('Aaron', 'Gutierrez', 'aaron.gutierrez@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FF00FF/FFFFFF?text=LF', NOW(), NOW()),
+-- ('Santiago', 'Abregu', 'santiago.abregu@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/800080/FFFFFF?text=PS', NOW(), NOW()),
+-- ('Fabian', 'Frangella', 'fabian.frangella@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/00FFFF/000000?text=LL', NOW(), NOW()),
+-- ('Matias', 'Aduco', 'matias.aduco@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW()),
+-- ('Gonzalo', 'Bender', 'gonzalo.bender@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW()),
+-- ('Tobias', 'Torres', 'tobias.torres@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW()),
+-- ('Carlos', 'Rivero', 'carlos.rivero@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW()),
+-- ('Susan', 'Rosito', 'susan.rosito@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW()),
+-- ('Fernando', 'Dodino', 'fernando.dodino@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW()),
+-- ('Feche', 'Romero', 'feche.romero@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'https://via.placeholder.com/150/FFA500/FFFFFF?text=SR', NOW(), NOW());
+
+-- -- Insert sample spaces
+-- INSERT INTO spaces (name, description, created_by, updated_by, created_at, updated_at) VALUES
+-- ('Club de Fotografía 📸', 'Comparte tus mejores fotos y técnicas fotográficas', 1, 1, NOW(), NOW()),
+-- ('Grupo Fitness 💪', 'Rutinas de ejercicio, consejos de nutrición y motivación deportiva', 2, 2, NOW(), NOW()),
+-- ('Cine y Series 🎬', 'Reseñas de películas, series y recomendaciones cinematográficas', 3, 3, NOW(), NOW()),
+-- ('Emprendimientos 🚀', 'Ideas de negocio, startups y consejos para emprendedores', 4, 4, NOW(), NOW()),
+-- ('Grupo de Idiomas 🌍', 'Aprende idiomas, practica conversación y comparte recursos', 5, 5, NOW(), NOW()),
+-- ('Grupo de Medio Ambiente 🌱', 'Sostenibilidad, ecología y cuidado del planeta', 6, 6, NOW(), NOW()),
+-- ('Hablemos de Psicología 🧠', 'Bienestar mental, desarrollo personal y salud emocional', 7, 7, NOW(), NOW()),
+-- ('Historia 📚', 'Explora el pasado y descubre curiosidades históricas', 8, 8, NOW(), NOW()),
+-- ('Astronomía 🌌', 'Explora el universo, estrellas y fenómenos astronómicos', 9, 9, NOW(), NOW()),
+-- ('Filosofía 🤔', 'Reflexiones filosóficas, ética y pensamiento crítico', 10, 10, NOW(), NOW()),
+-- ('Cueva gamer 🕹️', 'Club para jugar videojuegos y compartir experiencias gaming', 11, 11, NOW(), NOW()),
+-- ('Club de lectura 📚', 'Espacio para compartir reseñas de libros, recomendaciones literarias y discutir sobre nuestras lecturas favoritas', 12, 12, NOW(), NOW()),
+-- ('General UNQUI', 'Espacio para hablar de cualquier cosa sobre la universidad', 13, 13, NOW(), NOW()),
+-- ('Tecnología 💻', 'Discusiones sobre las últimas tendencias tecnológicas y programación', 1, 1, NOW(), NOW()),
+-- ('Club de Música 🎵', 'Comparte tus canciones favoritas y descubre nueva música', 2, 2, NOW(), NOW()),
+-- ('Deportes ⚽', 'Todo sobre deportes, desde fútbol hasta tenis', 3, 3, NOW(), NOW()),
+-- ('Arte y Diseño 🎨', 'Comparte tus creaciones artísticas y proyectos de diseño', 4, 4, NOW(), NOW()),
+-- ('Grupo de Cocina 👨‍🍳', 'Recetas, técnicas culinarias y experiencias gastronómicas', 5, 5, NOW(), NOW()),
+-- ('Club de viajeros ✈️', 'Comparte tus experiencias de viaje y descubre nuevos destinos', 6, 6, NOW(), NOW()),
+-- ('Solo para cientificos 🔬', 'Discusiones sobre avances científicos y curiosidades del mundo', 7, 7, NOW(), NOW());
+
+
+
+-- -- Insert sample posts
+-- INSERT INTO posts (title, content, created_by, space_id, updated_by, created_at, updated_at) VALUES
+-- ('¿Cuál es el mejor framework para React en 2024?', 'Estoy evaluando opciones para un nuevo proyecto. ¿Qué opinan sobre Next.js vs Vite vs Create React App?', 1, 1, 1, NOW(), NOW()),
+-- ('Configuración de Docker para microservicios', 'Comparto mi experiencia configurando Docker Compose para un proyecto con múltiples servicios', 2, 2, 2, NOW(), NOW()),
+-- ('Introducción a TensorFlow 2.0', 'Guía básica para comenzar con machine learning usando TensorFlow', 3, 3, 3, NOW(), NOW()),
+-- ('Flutter vs React Native: Comparación 2024', 'Análisis detallado de ambas tecnologías para desarrollo móvil multiplataforma', 4, 4, 4, NOW(), NOW()),
+-- ('Arquitectura de microservicios con Go', 'Cómo diseñar una arquitectura escalable usando Go y gRPC', 5, 5, 5, NOW(), NOW()),
+-- ('Optimización de rendimiento en React', 'Técnicas avanzadas para mejorar el rendimiento de aplicaciones React', 6, 6, 6, NOW(), NOW());
+
+-- -- Insert sample comments
+-- INSERT INTO comments (post_id, content, created_by, created_at) VALUES
+-- (1, 'Yo recomendaría Next.js para proyectos que necesiten SSR', 2, NOW()),
+-- (1, 'Vite es excelente para desarrollo, muy rápido', 6, NOW()),
+-- (2, 'Muy útil, gracias por compartir la configuración', 5, NOW()),
+-- (2, '¿Has probado con Kubernetes en lugar de Docker Compose?', 7, NOW()),
+-- (3, 'Excelente guía, muy clara para principiantes', 8, NOW()),
+-- (3, '¿Podrías agregar ejemplos de redes neuronales?', 1, NOW()),
+-- (4, 'React Native tiene mejor ecosistema, pero Flutter es más consistente', 5, NOW()),
+-- (4, 'Flutter tiene mejor rendimiento nativo', 7, NOW()),
+-- (5, 'Go es perfecto para microservicios, muy eficiente', 3, NOW()),
+-- (5, '¿Usas algún ORM específico con Go?', 8, NOW()),
+-- (6, 'React.memo es clave para optimización', 1, NOW()),
+-- (6, 'También recomiendo usar React DevTools Profiler', 4, NOW());
+
+-- -- Check user IDs after insert
+-- SELECT id, name, last_name FROM users ORDER BY id;
+
+-- -- Check space IDs after insert
+-- SELECT id, name, created_by FROM spaces ORDER BY id;
+
+-- -- Insert user-space relationships (each user joins 5-10 spaces)
+-- INSERT INTO user_spaces (user_id, space_id) VALUES
+-- -- User 1 (Valentin) - 7 spaces
+-- (12, 61), (12, 63), (12, 65), (12, 67), (12, 69), (12, 71), (12, 73),
+-- -- User 2 (Elias) - 6 spaces
+-- (13, 62), (13, 64), (13, 66), (13, 68), (13, 70), (13, 72),
+-- -- User 3 (Juanma) - 8 spaces
+-- (14, 61), (14, 63), (14, 65), (14, 67), (14, 69), (14, 71), (14, 73), (14, 75),
+-- -- User 4 (Diego) - 5 spaces
+-- (15, 62), (15, 64), (15, 66), (15, 68), (15, 70),
+-- -- User 5 (Aaron) - 9 spaces
+-- (16, 61), (16, 62), (16, 63), (16, 64), (16, 65), (16, 66), (16, 67), (16, 68), (16, 69),
+-- -- User 6 (Santiago) - 7 spaces
+-- (17, 62), (17, 64), (17, 66), (17, 68), (17, 70), (17, 72), (17, 74),
+-- -- User 7 (Fabian) - 6 spaces
+-- (18, 61), (18, 63), (18, 65), (18, 67), (18, 69), (18, 71),
+-- -- User 8 (Matias) - 8 spaces
+-- (19, 62), (19, 64), (19, 66), (19, 68), (19, 70), (19, 72), (19, 74), (19, 76),
+-- -- User 9 (Gonzalo) - 5 spaces
+-- (22, 61), (22, 63), (22, 65), (22, 67), (22, 69),
+-- -- User 10 (Tobias) - 10 spaces
+-- (23, 61), (23, 62), (23, 63), (23, 64), (23, 65), (23, 66), (23, 67), (23, 68), (23, 69), (23, 70),
+-- -- User 11 (Carlos) - 7 spaces
+-- (24, 62), (24, 64), (24, 66), (24, 68), (24, 70), (24, 72), (24, 74),
+-- -- User 12 (Susan) - 6 spaces
+-- (25, 61), (25, 63), (25, 65), (25, 67), (25, 69), (25, 71),
+-- -- User 13 (Fernando) - 9 spaces
+-- (20, 61), (20, 62), (20, 63), (20, 64), (20, 65), (20, 66), (20, 67), (20, 68), (20, 69);
+
+-- -- Insert posts for each user in their spaces
+-- INSERT INTO posts (title, content, created_by, space_id, updated_by, created_at, updated_at) VALUES
+-- -- -- User 1 (Valentin) posts
+-- ('Mi primera foto con camara profesional', 'Comparto mi experiencia usando una DSLR por primera vez. Los resultados fueron increibles!', 12, 61, 12, '2024-08-20 10:30:00', '2024-08-22 14:15:00'),
+-- ('Que opinan de la fotografia nocturna?', 'Estoy experimentando con fotos nocturnas pero me cuesta encontrar la configuracion ideal.', 12, 63, 12, '2024-08-25 16:45:00', '2024-08-27 09:20:00'),
+-- ('Recomendacion de pelicula: Inception', 'Una obra maestra de Nolan que mezcla ciencia ficcion con drama psicologico.', 12, 65, 12, '2024-08-30 20:10:00', '2024-09-01 11:30:00'),
+-- ('Mi idea de startup: App de delivery', 'Planeo crear una app que conecte restaurantes locales con clientes de manera mas eficiente.', 12, 67, 12, '2024-09-05 13:25:00', '2024-09-07 16:40:00'),
+-- ('Aprendiendo ingles con podcasts', 'Los podcasts son una excelente forma de mejorar la comprension auditiva.', 12, 69, 12, '2024-09-10 08:15:00', '2024-09-12 19:50:00'),
+-- ('Consejos para reducir el consumo de plastico', 'Pequeños cambios que podemos hacer en casa para cuidar el medio ambiente.', 12, 71, 12, '2024-09-15 14:30:00', '2024-09-17 10:25:00'),
+-- ('La importancia de la salud mental', 'Hablemos sobre la importancia de cuidar nuestra salud mental en el trabajo.', 12, 73, 12, '2024-09-20 11:45:00', '2024-09-22 15:10:00'),
+
+-- -- -- User 2 (Elias) posts
+-- -- ('Rutina de ejercicios para principiantes', 'Comparto mi rutina de 30 minutos que me ayudo a empezar en el fitness.', 13, 62, 13, '2024-08-22 07:20:00', '2024-08-24 18:35:00'),
+-- -- ('Recomendacion de serie: Breaking Bad', 'Una serie que no puede faltar en tu lista de pendientes. Actuaciones increibles!', 13, 64, 13, '2024-08-27 21:15:00', '2024-08-29 12:40:00'),
+-- -- ('Mi experiencia emprendiendo', 'Los primeros pasos son los mas dificiles, pero la perseverancia es clave.', 13, 66, 13, '2024-09-02 15:50:00', '2024-09-04 09:25:00'),
+-- -- ('Aprendiendo frances con Duolingo', 'Una app muy util para practicar idiomas de forma divertida.', 13, 68, 13, '2024-09-07 12:10:00', '2024-09-09 16:55:00'),
+-- -- ('Consejos para un hogar mas sostenible', 'Pequeños cambios que podemos hacer para reducir nuestro impacto ambiental.', 13, 70, 13, '2024-09-12 10:30:00', '2024-09-14 14:20:00'),
+-- -- ('Manejo del estres en el trabajo', 'Tecnicas que me han ayudado a mantener la calma en situaciones estresantes.', 13, 72, 13, '2024-09-17 16:45:00', '2024-09-19 11:15:00'),
+
+-- -- -- User 3 (Juanma) posts
+-- -- ('Mi equipo de fotografia favorito', 'Comparto mi setup actual y por que elegi cada pieza de equipo.', 14, 61, 14, '2024-08-24 09:15:00', '2024-08-26 17:30:00'),
+-- -- ('Rutina de cardio en casa', 'Ejercicios que podes hacer sin necesidad de ir al gimnasio.', 14, 63, 14, '2024-08-29 18:20:00', '2024-08-31 13:45:00'),
+-- -- ('Pelicula del mes: Parasite', 'Una obra maestra del cine coreano que todos deberian ver.', 14, 65, 14, '2024-09-04 22:10:00', '2024-09-06 15:25:00'),
+-- -- ('Mi startup de tecnologia educativa', 'Desarrollando una plataforma para hacer el aprendizaje mas interactivo.', 14, 67, 14, '2024-09-09 14:35:00', '2024-09-11 10:50:00'),
+-- -- ('Aprendiendo portugues', 'El portugues es mas facil de lo que pensaba, especialmente si ya sabes español.', 14, 69, 14, '2024-09-14 11:40:00', '2024-09-16 19:15:00'),
+-- -- ('Consejos para reciclar correctamente', 'Aprendamos a separar los residuos de manera adecuada.', 14, 71, 14, '2024-09-19 16:25:00', '2024-09-21 12:40:00'),
+-- -- ('Meditacion para principiantes', 'Una practica que ha cambiado mi vida y mi forma de ver las cosas.', 14, 73, 14, '2024-09-24 08:50:00', '2024-09-26 16:20:00'),
+-- -- ('Curiosidades historicas de Argentina', 'Datos interesantes sobre la historia de nuestro pais que pocos conocen.', 14, 75, 14, '2024-09-29 20:30:00', '2024-10-01 14:55:00'),
+
+-- -- User 4 (Diego) posts
+-- ('Rutina de fuerza para ganar musculo', 'Mi programa de entrenamiento de 12 semanas que me dio excelentes resultados.', 15, 62, 15, '2024-08-26 06:30:00', '2024-08-28 20:15:00'),
+-- ('Serie recomendada: The Office', 'Una comedia que nunca pasa de moda y siempre te saca una sonrisa.', 15, 64, 15, '2024-08-31 19:45:00', '2024-09-02 11:20:00'),
+-- ('Mi emprendimiento de e-commerce', 'Lecciones aprendidas al crear una tienda online desde cero.', 15, 66, 15, '2024-09-06 13:10:00', '2024-09-08 16:35:00'),
+-- ('Aprendiendo italiano con musica', 'La musica italiana es perfecta para aprender el idioma de forma natural.', 15, 68, 15, '2024-09-11 15:25:00', '2024-09-13 09:40:00'),
+-- ('Huerta en casa: primeros pasos', 'Comenzar tu propia huerta es mas facil de lo que imaginas.', 15, 70, 15, '2024-09-16 12:50:00', '2024-09-18 17:25:00'),
+
+-- -- User 5 (Aaron) posts
+-- ('Tecnicas de composicion fotografica', 'La regla de los tercios y otras tecnicas que mejoran tus fotos.', 16, 61, 16, '2024-08-28 10:40:00', '2024-08-30 14:55:00'),
+-- ('Rutina HIIT de 20 minutos', 'Entrenamiento de alta intensidad perfecto para dias ocupados.', 16, 62, 16, '2024-09-02 07:15:00', '2024-09-04 18:30:00'),
+-- ('Pelicula de culto: Blade Runner', 'Una obra maestra del cyberpunk que sigue siendo relevante hoy.', 16, 63, 16, '2024-09-08 21:20:00', '2024-09-10 13:45:00'),
+-- ('Mi startup de fintech', 'Revolucionando la forma en que las personas manejan sus finanzas.', 16, 64, 16, '2024-09-13 16:35:00', '2024-09-15 10:20:00'),
+-- ('Aprendiendo aleman', 'Un idioma desafiante pero muy gratificante de aprender.', 16, 65, 16, '2024-09-18 14:10:00', '2024-09-20 19:35:00'),
+-- ('Consejos para ahorrar energia', 'Pequeños cambios que reducen significativamente el consumo energetico.', 16, 66, 16, '2024-09-23 11:25:00', '2024-09-25 15:50:00'),
+-- ('Mindfulness en el dia a dia', 'Como incorporar la atencion plena en nuestras actividades cotidianas.', 16, 67, 16, '2024-09-28 09:40:00', '2024-09-30 16:15:00'),
+-- ('Historia de la programacion', 'Un repaso por los hitos mas importantes en el desarrollo de software.', 16, 68, 16, '2024-10-03 17:30:00', '2024-10-05 12:45:00'),
+-- ('Observacion de estrellas', 'Guia basica para comenzar en la astronomia amateur.', 16, 69, 16, '2024-10-08 20:15:00', '2024-10-10 14:20:00'),
+
+-- -- User 6 (Santiago) posts
+-- ('Rutina de yoga para principiantes', 'Posturas basicas que te ayudaran a relajarte y fortalecer tu cuerpo.', 17, 62, 17, '2024-10-13 08:45:00', '2024-10-15 17:30:00'),
+-- ('Serie de Netflix: Stranger Things', 'Una mezcla perfecta de nostalgia y misterio que engancha desde el primer capitulo.', 17, 64, 17, '2024-10-18 21:10:00', '2024-10-20 14:25:00'),
+-- ('Mi emprendimiento de marketing digital', 'Ayudando a pequeñas empresas a crecer en el mundo digital.', 17, 66, 17, '2024-10-23 15:20:00', '2024-10-25 11:40:00'),
+-- ('Aprendiendo japones', 'Un idioma fascinante que abre puertas a una cultura increible.', 17, 68, 17, '2024-10-28 12:35:00', '2024-10-30 18:15:00'),
+-- ('Compostaje casero', 'Como convertir tus residuos organicos en abono para plantas.', 17, 70, 17, '2024-11-02 10:50:00', '2024-11-04 16:20:00'),
+-- ('Tecnicas de relajacion', 'Metodos efectivos para reducir el estres y la ansiedad.', 17, 72, 17, '2024-11-07 19:25:00', '2024-11-09 13:45:00'),
+-- ('Filosofia estoica moderna', 'Como aplicar las enseñanzas de los estoicos en la vida actual.', 17, 74, 17, '2024-11-12 16:40:00', '2024-11-14 09:30:00'),
+
+-- -- User 7 (Fabian) posts
+-- ('Fotografia de paisajes', 'Consejos para capturar la belleza de la naturaleza con tu camara.', 18, 61, 18, '2024-10-15 11:30:00', '2024-10-17 15:45:00'),
+-- ('Rutina de calistenia', 'Ejercicios con el peso corporal que podes hacer en cualquier lugar.', 18, 63, 18, '2024-10-20 07:15:00', '2024-10-22 19:20:00'),
+-- ('Pelicula recomendada: Interstellar', 'Una obra maestra de Nolan que combina ciencia y emocion.', 18, 65, 18, '2024-10-25 22:45:00', '2024-10-27 12:10:00'),
+-- ('Mi startup de salud mental', 'Creando herramientas digitales para mejorar el bienestar emocional.', 18, 67, 18, '2024-10-30 14:20:00', '2024-11-01 10:35:00'),
+-- ('Aprendiendo chino mandarin', 'Un desafio linguistico que vale la pena emprender.', 18, 69, 18, '2024-11-04 13:55:00', '2024-11-06 17:25:00'),
+-- ('Vida zero waste', 'Mi experiencia reduciendo al minimo los residuos en casa.', 18, 71, 18, '2024-11-09 16:10:00', '2024-11-11 12:40:00'),
+
+-- -- User 8 (Matias) posts
+-- ('Rutina de crossfit', 'Mi programa de entrenamiento que combina fuerza y resistencia.', 19, 62, 19, '2024-11-14 06:20:00', '2024-11-16 20:35:00'),
+-- ('Serie recomendada: Game of Thrones', 'Una epopeya fantastica que marco una era en la television.', 19, 64, 19, '2024-11-19 20:30:00', '2024-11-21 13:15:00'),
+-- ('Mi emprendimiento de turismo', 'Conectando viajeros con experiencias autenticas locales.', 19, 66, 19, '2024-11-24 15:45:00', '2024-11-26 11:20:00'),
+-- ('Aprendiendo ruso', 'Un idioma complejo pero fascinante de aprender.', 19, 68, 19, '2024-11-29 12:10:00', '2024-12-01 18:40:00'),
+-- ('Jardin vertical en casa', 'Como crear un jardin vertical en espacios pequeños.', 19, 70, 19, '2024-12-04 09:25:00', '2024-12-06 15:50:00'),
+-- ('Tecnicas de respiracion', 'Ejercicios de respiracion que mejoran la concentracion y relajacion.', 19, 72, 19, '2024-12-09 18:15:00', '2024-12-11 12:30:00'),
+-- ('Filosofia existencialista', 'Reflexiones sobre la libertad y la responsabilidad humana.', 19, 74, 19, '2024-12-14 16:55:00', '2024-12-16 09:45:00'),
+-- ('Videojuegos indie recomendados', 'Juegos independientes que no pueden faltar en tu biblioteca.', 19, 76, 19, '2024-12-19 21:40:00', '2024-12-21 14:25:00'),
+
+-- -- User 9 (Gonzalo) posts
+-- ('Fotografia macro', 'El fascinante mundo de la fotografia de cerca y sus tecnicas.', 22, 61, 22, '2024-11-16 10:15:00', '2024-11-18 16:30:00'),
+-- ('Rutina de pilates', 'Ejercicios que fortalecen el core y mejoran la postura.', 22, 63, 22, '2024-11-21 08:30:00', '2024-11-23 19:45:00'),
+-- ('Pelicula de culto: Pulp Fiction', 'Una obra maestra de Tarantino que revoluciono el cine.', 22, 65, 22, '2024-11-26 23:20:00', '2024-11-28 12:55:00'),
+-- ('Mi startup de educacion online', 'Democratizando el acceso a la educacion de calidad.', 22, 67, 22, '2024-12-01 13:40:00', '2024-12-03 09:15:00'),
+-- ('Aprendiendo arabe', 'Un idioma hermoso que conecta con una cultura milenaria.', 22, 69, 22, '2024-12-06 14:25:00', '2024-12-08 18:10:00'),
+
+-- -- User 10 (Tobias) posts
+-- ('Fotografia de retratos', 'Consejos para capturar la personalidad de las personas en fotos.', 23, 61, 23, '2024-11-18 12:45:00', '2024-11-20 18:20:00'),
+-- ('Rutina de natacion', 'El deporte mas completo para trabajar todo el cuerpo.', 23, 62, 23, '2024-11-23 07:30:00', '2024-11-25 20:15:00'),
+-- ('Serie recomendada: The Crown', 'Una produccion excepcional sobre la familia real britanica.', 23, 63, 23, '2024-11-28 22:10:00', '2024-11-30 14:35:00'),
+-- ('Mi emprendimiento de tecnologia', 'Desarrollando soluciones innovadoras para problemas cotidianos.', 23, 64, 23, '2024-12-03 15:25:00', '2024-12-05 11:50:00'),
+-- ('Aprendiendo sueco', 'Un idioma nordico con una pronunciacion muy particular.', 23, 65, 23, '2024-12-08 13:40:00', '2024-12-10 17:25:00'),
+-- ('Energias renovables en casa', 'Como implementar paneles solares y otras alternativas verdes.', 23, 66, 23, '2024-12-13 10:15:00', '2024-12-15 16:40:00'),
+-- ('Psicologia positiva', 'Como aplicar la psicologia positiva en nuestra vida diaria.', 23, 67, 23, '2024-12-18 19:30:00', '2024-12-20 13:45:00'),
+-- ('Historia del arte', 'Un recorrido por los movimientos artisticos mas importantes.', 23, 68, 23, '2024-12-23 16:20:00', '2024-12-25 09:35:00'),
+-- ('Astronomia para principiantes', 'Como comenzar a observar el cielo nocturno.', 23, 69, 23, '2024-12-28 21:50:00', '2024-12-30 15:10:00'),
+-- ('Filosofia budista', 'Enseñanzas milenarias para la vida moderna.', 23, 70, 23, '2025-01-02 14:25:00', '2025-01-04 18:55:00'),
+
+-- -- User 11 (Carlos) posts
+-- ('Rutina de boxeo', 'Un deporte que combina cardio, fuerza y tecnica.', 24, 62, 24, '2024-11-20 06:15:00', '2024-11-22 21:30:00'),
+-- ('Pelicula recomendada: The Matrix', 'Una pelicula que cambio la forma de hacer ciencia ficcion.', 24, 64, 24, '2024-11-25 20:45:00', '2024-11-27 13:20:00'),
+-- ('Mi emprendimiento de logistica', 'Optimizando la cadena de suministro con tecnologia.', 24, 66, 24, '2024-11-30 14:35:00', '2024-12-02 10:50:00'),
+-- ('Aprendiendo holandes', 'Un idioma germanico con caracteristicas unicas.', 24, 68, 24, '2024-12-05 12:20:00', '2024-12-07 18:45:00'),
+-- ('Permacultura en casa', 'Diseñando un sistema sostenible en tu propio hogar.', 24, 70, 24, '2024-12-10 09:40:00', '2024-12-12 15:25:00'),
+-- ('Tecnicas de meditacion', 'Diferentes tipos de meditacion para diferentes necesidades.', 24, 72, 24, '2024-12-15 18:55:00', '2024-12-17 12:40:00'),
+-- ('Filosofia de la ciencia', 'Reflexiones sobre el metodo cientifico y la verdad.', 24, 74, 24, '2024-12-20 16:10:00', '2024-12-22 09:25:00'),
+
+-- -- User 12 (Susan) posts
+-- ('Fotografia de bodas', 'Consejos para capturar momentos unicos e irrepetibles.', 25, 61, 25, '2024-11-22 11:30:00', '2024-11-24 17:15:00'),
+-- ('Rutina de danza', 'Bailar es una forma divertida de mantenerse en forma.', 25, 63, 25, '2024-11-27 08:45:00', '2024-11-29 19:20:00'),
+-- ('Serie recomendada: The Handmaid''s Tale', 'Una distopia que invita a la reflexion sobre la sociedad.', 25, 65, 25, '2024-12-02 23:15:00', '2024-12-04 14:50:00'),
+-- ('Mi startup de moda sostenible', 'Creando ropa etica y respetuosa con el medio ambiente.', 25, 67, 25, '2024-12-07 15:50:00', '2024-12-09 11:35:00'),
+-- ('Aprendiendo coreano', 'Un idioma que esta ganando popularidad por su cultura.', 25, 69, 25, '2024-12-12 14:05:00', '2024-12-14 18:30:00'),
+-- ('Tecnicas de relajacion muscular', 'Ejercicios para liberar la tension del cuerpo.', 25, 71, 25, '2024-12-17 10:25:00', '2024-12-19 16:40:00'),
+
+-- -- User 13 (Fernando) posts
+-- ('Fotografia de calle', 'Capturando la vida urbana y sus momentos espontaneos.', 20, 61, 20, '2024-11-24 13:20:00', '2024-11-26 19:45:00'),
+-- ('Rutina de ciclismo', 'Pedalear es una excelente forma de explorar y ejercitarse.', 20, 62, 20, '2024-11-29 07:10:00', '2024-12-01 20:35:00'),
+-- ('Pelicula recomendada: 2001: A Space Odyssey', 'Una obra maestra del cine que sigue siendo relevante.', 20, 63, 20, '2024-12-04 21:40:00', '2024-12-06 13:25:00'),
+-- ('Mi emprendimiento de IA', 'Desarrollando inteligencia artificial para resolver problemas reales.', 20, 64, 20, '2024-12-09 16:15:00', '2024-12-11 12:00:00'),
+-- ('Aprendiendo hindi', 'Un idioma que conecta con una cultura milenaria y diversa.', 20, 65, 20, '2024-12-14 13:30:00', '2024-12-16 17:55:00'),
+-- ('Vida minimalista', 'Como simplificar la vida para encontrar mas felicidad.', 20, 66, 20, '2024-12-19 11:45:00', '2024-12-21 15:20:00'),
+-- ('Psicologia del color', 'Como los colores afectan nuestras emociones y decisiones.', 20, 67, 20, '2024-12-24 19:10:00', '2024-12-26 13:35:00'),
+-- ('Historia de la musica', 'Un recorrido por los generos musicales mas influyentes.', 20, 68, 20, '2024-12-29 17:25:00', '2024-12-31 10:50:00'),
+-- ('Observacion de planetas', 'Como identificar y observar los planetas del sistema solar.', 20, 69, 20, '2025-01-03 20:15:00', '2025-01-05 14:30:00');
+
+-- -- Insert sample comments
+-- INSERT INTO comments (post_id, content, created_by, created_at) VALUES
+-- -- User 1 (Valentin) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Aaron's post
+-- (1, 'Muy buenos consejos! La regla de los tercios me cambio la forma de sacar fotos', 12, '2024-08-29 15:20:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (2, 'Genial la rutina! La hice ayer y me dejo re cansado pero contento', 12, '2024-08-30 19:45:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (3, 'Parasite es una locura! La vi 3 veces y cada vez encuentro algo nuevo', 12, '2024-09-05 22:30:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (4, 'Me re copa la idea! La educacion online esta en auge, mucha suerte con el proyecto', 12, '2024-09-10 16:15:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (5, 'Totalmente de acuerdo! El portugues es re facil si ya sabes español', 12, '2024-09-15 12:30:00'),
+-- -- Space 71 (Medio Ambiente) - commenting on Juanma's post
+-- (6, 'Excelente post! En casa ya separamos los residuos, es un cambio chico pero importante', 12, '2024-09-20 18:20:00'),
+-- -- Space 73 (Psicologia) - commenting on Juanma's post
+-- (7, 'La meditacion me ayudo un monton con la ansiedad, super recomendable', 12, '2024-09-25 10:45:00'),
+
+-- -- User 2 (Elias) comments in his spaces
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (8, 'Que buena rutina! La voy a probar esta semana, necesito ganar musculo', 13, '2024-08-29 08:30:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (9, 'The Office es mi serie de comedia favorita! La vi como 5 veces', 13, '2024-09-03 20:15:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (10, 'Muy buenos consejos! El e-commerce es complicado pero vale la pena', 13, '2024-09-07 14:25:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (11, 'La musica italiana es hermosa! Yo aprendi con canciones de Eros Ramazzotti', 13, '2024-09-12 16:40:00'),
+-- -- Space 70 (Medio Ambiente) - commenting on Diego's post
+-- (12, 'Me encanta la idea de tener una huerta! Voy a empezar con tomates', 13, '2024-09-17 11:50:00'),
+-- -- Space 72 (Psicologia) - commenting on Santiago's post
+-- (13, 'El yoga me cambio la vida! Muy buenos consejos para principiantes', 13, '2024-10-16 09:15:00'),
+
+-- -- User 3 (Juanma) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Aaron's post
+-- (14, 'La composicion es clave! Muy buenos tips para mejorar las fotos', 14, '2024-08-29 12:10:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Aaron's post
+-- (15, 'El HIIT es una locura! 20 minutos y quedas reventado pero funciona', 14, '2024-09-03 18:30:00'),
+-- -- Space 65 (Cine y Series) - commenting on Aaron's post
+-- (16, 'Blade Runner es una obra de arte! La estetica cyberpunk es increible', 14, '2024-09-09 21:45:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Aaron's post
+-- (17, 'El fintech esta explotando! Muy buena oportunidad para emprender', 14, '2024-09-14 15:20:00'),
+-- -- Space 69 (Idiomas) - commenting on Aaron's post
+-- (18, 'El aleman es jodido pero muy gratificante! Ich lerne auch Deutsch', 14, '2024-09-19 17:35:00'),
+-- -- Space 71 (Medio Ambiente) - commenting on Aaron's post
+-- (19, 'Ahorrar energia es fundamental! En casa cambiamos todas las lamparas por LED', 14, '2024-09-24 13:25:00'),
+-- -- Space 73 (Psicologia) - commenting on Aaron's post
+-- (20, 'El mindfulness me ayudo un monton! Muy buenos consejos', 14, '2024-09-29 11:40:00'),
+-- -- Space 75 (Historia) - commenting on Aaron's post
+-- (21, 'La historia de la programacion es fascinante! Desde Ada Lovelace hasta ahora', 14, '2024-10-04 16:55:00'),
+
+-- -- User 4 (Diego) comments in his spaces
+-- -- Space 62 (Gym y Fitness) - commenting on Aaron's post
+-- (22, 'El HIIT es lo mas! 20 minutos y estas hecho polvo pero funciona', 15, '2024-09-03 09:45:00'),
+-- -- Space 64 (Cine y Series) - commenting on Aaron's post
+-- (23, 'Blade Runner es una pelicula que nunca pasa de moda! Muy buena recomendacion', 15, '2024-09-09 22:20:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Aaron's post
+-- (24, 'El fintech es el futuro! Muy buena oportunidad para innovar', 15, '2024-09-14 17:10:00'),
+-- -- Space 68 (Idiomas) - commenting on Aaron's post
+-- (25, 'El aleman es complicado pero vale la pena! Viel Gluck!', 15, '2024-09-19 19:30:00'),
+-- -- Space 70 (Medio Ambiente) - commenting on Aaron's post
+-- (26, 'Ahorrar energia es clave! Pequeños cambios hacen la diferencia', 15, '2024-09-24 14:15:00'),
+
+-- -- User 5 (Aaron) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Valentin's post
+-- (27, 'Que buena experiencia! La primera vez con DSLR es inolvidable', 16, '2024-08-21 14:20:00'),
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (28, 'Excelente rutina! La fuerza es fundamental para cualquier deporte', 16, '2024-08-27 20:35:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (29, 'El cardio en casa es perfecto! No necesitas gimnasio para estar en forma', 16, '2024-08-30 19:15:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (30, 'The Office es genial! Una comedia que nunca falla', 16, '2024-09-02 21:40:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (31, 'Parasite es una obra maestra! El cine coreano esta en otro nivel', 16, '2024-09-05 23:10:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (32, 'El e-commerce es un mundo! Muy buenos consejos para empezar', 16, '2024-09-07 16:25:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (33, 'La educacion online es el futuro! Muy buena idea de negocio', 16, '2024-09-10 15:50:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (34, 'La musica italiana es perfecta para aprender! Muy buen metodo', 16, '2024-09-12 18:45:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (35, 'El portugues es re facil! Yo tambien lo estoy aprendiendo', 16, '2024-09-15 13:20:00'),
+
+-- -- User 6 (Santiago) comments in his spaces
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (36, 'La rutina de fuerza es clave! Muy buenos consejos para ganar musculo', 17, '2024-08-27 21:45:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (37, 'The Office es mi serie favorita! La vi como 10 veces', 17, '2024-09-02 22:30:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (38, 'El e-commerce es complicado pero muy rentable! Muy buenos tips', 17, '2024-09-07 17:15:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (39, 'La musica italiana es hermosa! Muy buen metodo para aprender', 17, '2024-09-12 19:30:00'),
+-- -- Space 70 (Medio Ambiente) - commenting on Diego's post
+-- (40, 'La huerta en casa es genial! Voy a empezar con hierbas aromaticas', 17, '2024-09-17 12:40:00'),
+-- -- Space 72 (Psicologia) - commenting on Aaron's post
+-- (41, 'El mindfulness me ayudo un monton! Muy buenos consejos para el dia a dia', 17, '2024-09-29 12:25:00'),
+-- -- Space 74 (Filosofia) - commenting on Matias's post
+-- (42, 'La filosofia existencialista es fascinante! Muy buenas reflexiones', 17, '2024-12-15 17:30:00'),
+
+-- -- User 7 (Fabian) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Valentin's post
+-- (43, 'Que buena experiencia! La fotografia nocturna es un mundo aparte', 18, '2024-08-26 17:50:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (44, 'El cardio en casa es perfecto! No necesitas gimnasio para entrenar', 18, '2024-08-30 20:10:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (45, 'Parasite es una locura! El cine coreano esta en otro nivel', 18, '2024-09-05 23:25:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (46, 'La educacion online es el futuro! Muy buena idea de negocio', 18, '2024-09-10 16:35:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (47, 'El portugues es re facil! Yo tambien lo estoy aprendiendo', 18, '2024-09-15 14:15:00'),
+-- -- Space 71 (Medio Ambiente) - commenting on Juanma's post
+-- (48, 'El reciclaje es fundamental! Muy buenos consejos para separar residuos', 18, '2024-09-20 19:20:00'),
+
+-- -- User 8 (Matias) comments in his spaces
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (49, 'La rutina de fuerza es clave! Muy buenos consejos para ganar musculo', 19, '2024-08-27 22:15:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (50, 'The Office es genial! Una comedia que nunca pasa de moda', 19, '2024-09-02 23:00:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (51, 'El e-commerce es un mundo! Muy buenos consejos para empezar', 19, '2024-09-07 18:25:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (52, 'La musica italiana es perfecta para aprender! Muy buen metodo', 19, '2024-09-12 20:15:00'),
+-- -- Space 70 (Medio Ambiente) - commenting on Diego's post
+-- (53, 'La huerta en casa es genial! Voy a empezar con tomates', 19, '2024-09-17 13:30:00'),
+-- -- Space 72 (Psicologia) - commenting on Aaron's post
+-- (54, 'El mindfulness me ayudo un monton! Muy buenos consejos', 19, '2024-09-29 13:10:00'),
+-- -- Space 74 (Filosofia) - commenting on Santiago's post
+-- (55, 'La filosofia estoica es muy practica! Muy buenas reflexiones', 19, '2024-11-13 18:45:00'),
+-- -- Space 76 (Gaming) - commenting on his own post
+-- (56, 'Los juegos indie son una joya! Muy buenas recomendaciones', 19, '2024-12-20 22:15:00'),
+
+-- -- User 9 (Gonzalo) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Valentin's post
+-- (57, 'Que buena experiencia! La fotografia nocturna es un desafio pero vale la pena', 22, '2024-08-26 18:30:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (58, 'El cardio en casa es perfecto! No necesitas gimnasio para estar en forma', 22, '2024-08-30 21:00:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (59, 'Parasite es una obra maestra! El cine coreano esta en otro nivel', 22, '2024-09-05 23:40:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (60, 'La educacion online es el futuro! Muy buena idea de negocio', 22, '2024-09-10 17:20:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (61, 'El portugues es re facil! Yo tambien lo estoy aprendiendo', 22, '2024-09-15 15:00:00'),
+
+-- -- User 10 (Tobias) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Valentin's post
+-- (62, 'Que buena experiencia! La fotografia nocturna es un mundo aparte', 23, '2024-08-26 19:15:00'),
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (63, 'La rutina de fuerza es clave! Muy buenos consejos para ganar musculo', 23, '2024-08-27 23:30:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (64, 'El cardio en casa es perfecto! No necesitas gimnasio para entrenar', 23, '2024-08-30 21:45:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (65, 'The Office es mi serie favorita! La vi como 15 veces', 23, '2024-09-02 23:30:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (66, 'Parasite es una locura! El cine coreano esta en otro nivel', 23, '2024-09-05 23:55:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (67, 'El e-commerce es un mundo! Muy buenos consejos para empezar', 23, '2024-09-07 19:10:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (68, 'La educacion online es el futuro! Muy buena idea de negocio', 23, '2024-09-10 18:05:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (69, 'La musica italiana es perfecta para aprender! Muy buen metodo', 23, '2024-09-12 21:00:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (70, 'El portugues es re facil! Yo tambien lo estoy aprendiendo', 23, '2024-09-15 16:15:00'),
+-- -- Space 70 (Medio Ambiente) - commenting on Diego's post
+-- (71, 'La huerta en casa es genial! Voy a empezar con hierbas aromaticas', 23, '2024-09-17 14:45:00'),
+
+-- -- User 11 (Carlos) comments in his spaces
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (72, 'La rutina de fuerza es clave! Muy buenos consejos para ganar musculo', 24, '2024-08-27 23:45:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (73, 'The Office es genial! Una comedia que nunca falla', 24, '2024-09-02 23:45:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (74, 'El e-commerce es complicado pero muy rentable! Muy buenos tips', 24, '2024-09-07 19:35:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (75, 'La musica italiana es hermosa! Muy buen metodo para aprender', 24, '2024-09-12 21:30:00'),
+-- -- Space 70 (Medio Ambiente) - commenting on Diego's post
+-- (76, 'La huerta en casa es genial! Voy a empezar con tomates', 24, '2024-09-17 15:20:00'),
+-- -- Space 72 (Psicologia) - commenting on Aaron's post
+-- (77, 'El mindfulness me ayudo un monton! Muy buenos consejos para el dia a dia', 24, '2024-09-29 14:00:00'),
+-- -- Space 74 (Filosofia) - commenting on Matias's post
+-- (78, 'La filosofia existencialista es fascinante! Muy buenas reflexiones', 24, '2024-12-15 18:15:00'),
+
+-- -- User 12 (Susan) comments in her spaces
+-- -- Space 61 (Fotografia) - commenting on Valentin's post
+-- (79, 'Que buena experiencia! La fotografia nocturna es un desafio pero vale la pena', 25, '2024-08-26 20:00:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (80, 'El cardio en casa es perfecto! No necesitas gimnasio para estar en forma', 25, '2024-08-30 22:15:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (81, 'Parasite es una obra maestra! El cine coreano esta en otro nivel', 25, '2024-09-05 23:55:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (82, 'La educacion online es el futuro! Muy buena idea de negocio', 25, '2024-09-10 18:50:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (83, 'El portugues es re facil! Yo tambien lo estoy aprendiendo', 25, '2024-09-15 17:30:00'),
+-- -- Space 71 (Medio Ambiente) - commenting on Juanma's post
+-- (84, 'El reciclaje es fundamental! Muy buenos consejos para separar residuos', 25, '2024-09-20 20:35:00'),
+
+-- -- User 13 (Fernando) comments in his spaces
+-- -- Space 61 (Fotografia) - commenting on Valentin's post
+-- (85, 'Que buena experiencia! La fotografia nocturna es un mundo aparte', 20, '2024-08-26 20:45:00'),
+-- -- Space 62 (Gym y Fitness) - commenting on Diego's post
+-- (86, 'La rutina de fuerza es clave! Muy buenos consejos para ganar musculo', 20, '2024-08-28 00:15:00'),
+-- -- Space 63 (Gym y Fitness) - commenting on Juanma's post
+-- (87, 'El cardio en casa es perfecto! No necesitas gimnasio para entrenar', 20, '2024-08-30 22:30:00'),
+-- -- Space 64 (Cine y Series) - commenting on Diego's post
+-- (88, 'The Office es mi serie favorita! La vi como 20 veces', 20, '2024-09-02 23:55:00'),
+-- -- Space 65 (Cine y Series) - commenting on Juanma's post
+-- (89, 'Parasite es una locura! El cine coreano esta en otro nivel', 20, '2024-09-05 23:55:00'),
+-- -- Space 66 (Emprendimientos) - commenting on Diego's post
+-- (90, 'El e-commerce es un mundo! Muy buenos consejos para empezar', 20, '2024-09-07 20:00:00'),
+-- -- Space 67 (Emprendimientos) - commenting on Juanma's post
+-- (91, 'La educacion online es el futuro! Muy buena idea de negocio', 20, '2024-09-10 19:25:00'),
+-- -- Space 68 (Idiomas) - commenting on Diego's post
+-- (92, 'La musica italiana es perfecta para aprender! Muy buen metodo', 20, '2024-09-12 22:00:00'),
+-- -- Space 69 (Idiomas) - commenting on Juanma's post
+-- (93, 'El portugues es re facil! Yo tambien lo estoy aprendiendo', 20, '2024-09-15 18:45:00');

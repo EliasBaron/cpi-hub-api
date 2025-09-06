@@ -11,7 +11,7 @@ import (
 type UserUseCase interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Get(ctx context.Context, id int) (*domain.UserWithSpaces, error)
-	AddSpaceToUser(ctx context.Context, userId int, spaceId string) error
+	AddSpaceToUser(ctx context.Context, userId int, spaceId int) error
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
 }
 
@@ -77,7 +77,7 @@ func (u *useCase) Get(ctx context.Context, id int) (*domain.UserWithSpaces, erro
 		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:GetUserWithSpaces")
 	}
 
-	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, user.ID)
+	spaceIDs, err := u.userSpaceRepository.FindSpacesIDsByUserID(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (u *useCase) Get(ctx context.Context, id int) (*domain.UserWithSpaces, erro
 	}, nil
 }
 
-func (u *useCase) AddSpaceToUser(ctx context.Context, userId int, spaceId string) error {
+func (u *useCase) AddSpaceToUser(ctx context.Context, userId int, spaceId int) error {
 	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
@@ -116,7 +116,7 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId int, spaceId string
 	space, err := u.spaceRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
-				Field:    "_id",
+				Field:    "id",
 				Value:    spaceId,
 				Operator: criteria.OperatorEqual,
 			},
@@ -148,7 +148,7 @@ func (u *useCase) AddSpaceToUser(ctx context.Context, userId int, spaceId string
 }
 
 func (u *useCase) GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error) {
-	spaceIDs, err := u.userSpaceRepository.FindSpaceIDsByUser(ctx, userId)
+	spaceIDs, err := u.userSpaceRepository.FindSpacesIDsByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

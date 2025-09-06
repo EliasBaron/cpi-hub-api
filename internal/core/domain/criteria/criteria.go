@@ -1,9 +1,10 @@
 package criteria
 
 type Criteria struct {
-	Filters    []Filter
-	Sort       Sort
-	Pagination Pagination
+	Filters         []Filter
+	Sort            Sort
+	Pagination      Pagination
+	LogicalOperator LogicalOperator
 }
 
 type Filter struct {
@@ -14,6 +15,7 @@ type Filter struct {
 
 type Operator string
 type Direction string
+type LogicalOperator string
 
 const (
 	OperatorEqual    Operator = "eq"
@@ -26,9 +28,14 @@ const (
 	OperatorLte      Operator = "lte"
 	OperatorRegex    Operator = "regex"
 	OperatorExists   Operator = "exists"
+	OperatorLike     Operator = "like"
+	OperatorILike    Operator = "ilike"
 
 	OrderDirectionDesc Direction = "desc"
 	OrderDirectionAsc  Direction = "asc"
+
+	LogicalOperatorAnd LogicalOperator = "and"
+	LogicalOperatorOr  LogicalOperator = "or"
 
 	DefaultPage     int = 1
 	DefaultPageSize int = 50
@@ -45,16 +52,18 @@ type Pagination struct {
 }
 
 type CriteriaBuilder struct {
-	filters    []Filter
-	sort       Sort
-	pagination Pagination
+	filters         []Filter
+	sort            Sort
+	pagination      Pagination
+	logicalOperator LogicalOperator
 }
 
 func NewCriteriaBuilder() *CriteriaBuilder {
 	return &CriteriaBuilder{
-		filters:    make([]Filter, 0),
-		sort:       Sort{},
-		pagination: Pagination{},
+		filters:         make([]Filter, 0),
+		sort:            Sort{},
+		pagination:      Pagination{},
+		logicalOperator: LogicalOperatorAnd, // Por defecto AND
 	}
 }
 
@@ -90,11 +99,17 @@ func (b *CriteriaBuilder) WithPagination(page int, pageSize int) *CriteriaBuilde
 	return b
 }
 
+func (b *CriteriaBuilder) WithLogicalOperator(operator LogicalOperator) *CriteriaBuilder {
+	b.logicalOperator = operator
+	return b
+}
+
 func (b *CriteriaBuilder) Build() *Criteria {
 	return &Criteria{
-		Filters:    b.filters,
-		Sort:       b.sort,
-		Pagination: b.pagination,
+		Filters:         b.filters,
+		Sort:            b.sort,
+		Pagination:      b.pagination,
+		LogicalOperator: b.logicalOperator,
 	}
 }
 

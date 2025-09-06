@@ -2,6 +2,7 @@ package user
 
 import (
 	"cpi-hub-api/internal/core/dto"
+	"cpi-hub-api/internal/core/usecase/post"
 	"cpi-hub-api/internal/core/usecase/user"
 	"cpi-hub-api/pkg/apperror"
 	response "cpi-hub-api/pkg/http"
@@ -10,11 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Handler struct {
-	UseCase user.UserUseCase
+type UserHandler struct {
+	UseCase     user.UserUseCase
+	PostUseCase post.PostUseCase
 }
 
-func (h *Handler) Create(c *gin.Context) {
+func (h *UserHandler) Create(c *gin.Context) {
 	var createUserDTO dto.CreateUser
 
 	if err := c.ShouldBindJSON(&createUserDTO); err != nil {
@@ -34,7 +36,7 @@ func (h *Handler) Create(c *gin.Context) {
 	response.CreatedResponse(c.Writer, "User created successfully", dto.ToUserDTO(createdUser))
 }
 
-func (h *Handler) Get(c *gin.Context) {
+func (h *UserHandler) Get(c *gin.Context) {
 	idStr := c.Param("user_id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -52,7 +54,7 @@ func (h *Handler) Get(c *gin.Context) {
 	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTOWithSpaces(user))
 }
 
-func (h *Handler) AddSpaceToUser(c *gin.Context) {
+func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
 	userIdStr := c.Param("user_id")
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
@@ -61,7 +63,13 @@ func (h *Handler) AddSpaceToUser(c *gin.Context) {
 		return
 	}
 
-	spaceId := c.Param("space_id") // si los space_id siguen siendo string, esto se queda así
+	spaceIdStr := c.Param("space_id")
+	spaceId, err := strconv.Atoi(spaceIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid space_id (must be integer)", err, "user_handler.go:AddSpaceToUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
 
 	err = h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
 	if err != nil {
@@ -72,7 +80,7 @@ func (h *Handler) AddSpaceToUser(c *gin.Context) {
 	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
 }
 
-func (h *Handler) GetSpacesByUserId(c *gin.Context) {
+func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
 	userIdStr := c.Param("user_id")
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
@@ -93,4 +101,28 @@ func (h *Handler) GetSpacesByUserId(c *gin.Context) {
 	}
 
 	response.SuccessResponse(c.Writer, "Spaces retrieved successfully", spacesDTO)
+}
+
+func (h *UserHandler) GetPostsByUserSpaces(c *gin.Context) {
+	userIDstr := c.Param("user_id")
+	userID, err := strconv.Atoi(userIDstr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user ID", err, "user_handler.go:GetPostsByUserSpaces")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	pageStr := c.Query("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	posts, err := h.PostUseCase.GetPostsByUserSpaces(c.Request.Context(), userID, page)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
 }

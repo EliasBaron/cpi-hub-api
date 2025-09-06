@@ -3,7 +3,7 @@ package domain
 import "time"
 
 type Space struct {
-	ID          string
+	ID          int
 	Name        string
 	Description string
 	CreatedAt   time.Time

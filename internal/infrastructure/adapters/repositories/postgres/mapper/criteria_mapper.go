@@ -12,25 +12,46 @@ type FilterClause struct {
 }
 
 func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
-	var clauses []string
+	var whereParts []string
 	var params []interface{}
 	paramIndex := 1
 
-	for _, filter := range c.Filters {
-		clause, filterParams := buildFilterClause(filter, paramIndex)
+	// WHERE
+	for _, f := range c.Filters {
+		clause, clauseParams := buildFilterClause(f, paramIndex)
 		if clause != "" {
-			clauses = append(clauses, clause)
-			params = append(params, filterParams...)
-			paramIndex += len(filterParams)
+			whereParts = append(whereParts, clause)
+			params = append(params, clauseParams...)
+			paramIndex += len(clauseParams)
 		}
 	}
 
-	whereClause := ""
-	if len(clauses) > 0 {
-		whereClause = "WHERE " + strings.Join(clauses, " AND ")
+	query := ""
+	if len(whereParts) > 0 {
+		logicalOp := " AND "
+		if c.LogicalOperator == criteria.LogicalOperatorOr {
+			logicalOp = " OR "
+		}
+
+		if len(whereParts) > 1 {
+			query += " WHERE (" + strings.Join(whereParts, logicalOp) + ")"
+		} else {
+			query += " WHERE " + whereParts[0]
+		}
 	}
 
-	return whereClause, params
+	// ORDER BY
+	if c.Sort.Field != "" {
+		query += fmt.Sprintf(" ORDER BY %s %s", c.Sort.Field, c.Sort.SortDirection)
+	}
+
+	// PAGINATE
+	if c.Pagination.PageSize > 0 {
+		offset := (c.Pagination.Page - 1) * c.Pagination.PageSize
+		query += fmt.Sprintf(" LIMIT %d OFFSET %d", c.Pagination.PageSize, offset)
+	}
+
+	return query, params
 }
 
 func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interface{}) {
@@ -43,16 +64,25 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 	case criteria.OperatorNotEqual:
 		return fmt.Sprintf("%s != $%d", filter.Field, startIndex), []interface{}{filter.Value}
 
+	case criteria.OperatorLike:
+		return fmt.Sprintf("%s LIKE $%d", filter.Field, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorILike:
+		return fmt.Sprintf("%s ILIKE $%d", filter.Field, startIndex), []interface{}{filter.Value}
+
 	case criteria.OperatorIn:
-		if values, ok := filter.Value.([]interface{}); ok {
-			placeholders := make([]string, len(values))
-			for i, _ := range values {
+		switch v := filter.Value.(type) {
+		case []int:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
 				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
-				params = append(params, values[i])
+				args[i] = interface{}(val)
 			}
-			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), params
+			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ",")), args
+		default:
+			return "", nil
 		}
-		return fmt.Sprintf("%s IN ($%d)", filter.Field, startIndex), []interface{}{filter.Value}
 
 	case criteria.OperatorNotIn:
 		if values, ok := filter.Value.([]interface{}); ok {

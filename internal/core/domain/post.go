@@ -3,22 +3,35 @@ package domain
 import "time"
 
 type Post struct {
-	ID        string
+	ID        int
 	Title     string
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	CreatedBy string
-	UpdatedBy string
-	SpaceID   string
+	CreatedBy int
+	UpdatedBy int
+	SpaceID   int
 	Comments  []Comment
 }
 
+type ExtendedPost struct {
+	Post     *Post
+	Space    *Space
+	User     *User
+	Comments []*CommentWithUser
+}
+
 type Comment struct {
-	ID        string
+	ID        int
+	PostID    int
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	CreatedBy string
-	UpdatedBy string
+	CreatedBy int
+	UpdatedBy int
+}
+
+type CommentWithUser struct {
+	Comment *Comment
+	User    *User
 }

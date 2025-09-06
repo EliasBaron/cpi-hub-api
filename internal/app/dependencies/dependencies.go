@@ -1,26 +1,27 @@
 package dependencies
 
 import (
+	postUsecase "cpi-hub-api/internal/core/usecase/post"
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
-	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/space"
+	commentRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/comment"
+	postRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/post"
+	spaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/space"
 	userRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user"
 	userSpaceRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/user_space"
+	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/post"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
 	"log"
 )
 
 type Handlers struct {
-	UserHandler  *user.Handler
+	UserHandler  *user.UserHandler
 	SpaceHandler *space.SpaceHandler
+	PostHandler  *post.PostHandler
 }
 
 func Build() *Handlers {
-	mongoDB, err := GetMongoDatabase()
-	if err != nil {
-		log.Fatalf("Error connecting to MongoDB: %v", err)
-	}
 
 	sqldb, err := GetPostgreSQLDatabase()
 	if err != nil {
@@ -28,18 +29,25 @@ func Build() *Handlers {
 	}
 
 	userRepository := userRepository.NewUserRepository(sqldb)
-	spaceRepository := spaceRepository.NewSpaceRepository(mongoDB)
+	spaceRepository := spaceRepository.NewSpaceRepository(sqldb)
 	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(sqldb)
+	postRepository := postRepository.NewPostRepository(sqldb)
+	commentRepository := commentRepository.NewCommentRepository(sqldb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository)
+	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 
 	return &Handlers{
-		UserHandler: &user.Handler{
-			UseCase: userUsecase,
+		UserHandler: &user.UserHandler{
+			UseCase:     userUsecase,
+			PostUseCase: postUsecase,
 		},
 		SpaceHandler: &space.SpaceHandler{
 			SpaceUseCase: spaceUsecase,
+		},
+		PostHandler: &post.PostHandler{
+			PostUseCase: postUsecase,
 		},
 	}
 }

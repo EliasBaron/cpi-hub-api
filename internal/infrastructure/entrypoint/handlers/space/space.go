@@ -42,3 +42,19 @@ func (h *SpaceHandler) Get(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, "Space retrieved successfully", dto.ToSpaceWithUserDTO(space))
 }
+
+func (h *SpaceHandler) GetSpacesOrderedBy(context *gin.Context) {
+	orderBy := context.Query("order_by")
+	if orderBy == "" {
+		appErr := apperror.NewInvalidData("order_by query parameter is required", nil, "space_handler.go:GetSpacesOrderedBy")
+		response.NewError(context.Writer, appErr)
+		return
+	}
+	spaces, err := h.SpaceUseCase.GetAll(context.Request.Context(), orderBy)
+	if err != nil {
+		response.NewError(context.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(context.Writer, "Spaces retrieved successfully", dto.ToSpaceWithUserDTOs(spaces))
+}
