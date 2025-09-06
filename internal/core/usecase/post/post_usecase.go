@@ -4,7 +4,9 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,7 +15,7 @@ type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
-	SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error)
+	SearchPosts(ctx context.Context, params dto.SearchPostsParams) ([]*domain.ExtendedPost, error)
 	GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error)
 }
 
@@ -206,18 +208,25 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	return &domain.CommentWithUser{Comment: comment, User: user}, nil
 }
 
-func (p *postUseCase) SearchPosts(ctx context.Context, query string, page int) ([]*domain.ExtendedPost, error) {
-	if query == "" || len(strings.TrimSpace(query)) == 0 {
-		return []*domain.ExtendedPost{}, nil
+func (p *postUseCase) SearchPosts(ctx context.Context, params dto.SearchPostsParams) ([]*domain.ExtendedPost, error) {
+	var searchQuery string
+	if len(params.Query) > 0 {
+		searchQuery = "%" + strings.TrimSpace(params.Query) + "%"
+	} else {
+		searchQuery = ""
 	}
 
-	searchQuery := "%" + strings.TrimSpace(query) + "%"
+	var spaceID int
+	if len(params.SpaceID) > 0 {
+		spaceID, _ = strconv.Atoi(params.SpaceID)
+	}
 
 	searchCriteria := criteria.NewCriteriaBuilder().
-		WithFilter("title", searchQuery, criteria.OperatorILike).
-		WithFilter("content", searchQuery, criteria.OperatorILike).
+		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
+		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
+		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, len(params.SpaceID) > 0).
 		WithLogicalOperator(criteria.LogicalOperatorOr).
-		WithPagination(page, 10).
+		WithPagination(params.Page, 10).
 		WithSort("created_at", criteria.OrderDirectionDesc).
 		Build()
 
@@ -239,7 +248,7 @@ func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int, page
 
 	criteria := criteria.NewCriteriaBuilder().
 		WithFilter("space_id", userSpacesIds, criteria.OperatorIn).
-		WithPagination(page, 10).
+		WithPagination(page, 20).
 		WithSort("created_at", criteria.OrderDirectionDesc).
 		Build()
 

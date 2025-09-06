@@ -23,6 +23,12 @@ type PostDTO struct {
 	SpaceID   int       `json:"space_id"`
 }
 
+type SearchPostsParams struct {
+	Page    int
+	SpaceID string
+	Query   string
+}
+
 type PostExtendedDTO struct {
 	ID        int                  `json:"id"`
 	Title     string               `json:"title"`
