@@ -12,7 +12,7 @@ import (
 type UserUseCase interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Get(ctx context.Context, id int) (*domain.UserWithSpaces, error)
-	EditSpaces(ctx context.Context, dto dto.EditUserSpacesDTO) error
+	Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
 }
 
@@ -104,7 +104,7 @@ func (u *useCase) GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Sp
 	return u.spaceRepository.FindByIDs(ctx, spaceIDs)
 }
 
-func (u *useCase) EditSpaces(ctx context.Context, dto dto.EditUserSpacesDTO) error {
+func (u *useCase) Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error {
 	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
@@ -120,14 +120,14 @@ func (u *useCase) EditSpaces(ctx context.Context, dto dto.EditUserSpacesDTO) err
 	}
 
 	if user == nil {
-		return apperror.NewNotFound("User not found", nil, "user_usecase.go:EditSpaces")
+		return apperror.NewNotFound("User not found", nil, "user_usecase.go:Update")
 	}
 
 	if len(dto.SpaceIDs) == 0 {
-		return apperror.NewInvalidData("Space IDs cannot be empty", nil, "user_usecase.go:EditSpaces")
+		return apperror.NewInvalidData("Space IDs cannot be empty", nil, "user_usecase.go:Update")
 	}
 
-	if err := u.userSpaceRepository.EditUserSpaces(ctx, user.ID, dto.SpaceIDs, dto.Action); err != nil {
+	if err := u.userSpaceRepository.Update(ctx, user.ID, dto.SpaceIDs, dto.Action); err != nil {
 		return err
 	}
 

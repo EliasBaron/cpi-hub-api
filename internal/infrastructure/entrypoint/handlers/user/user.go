@@ -72,7 +72,7 @@ func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
 		return
 	}
 
-	err = h.UseCase.EditSpaces(c.Request.Context(), dto.EditUserSpacesDTO{
+	err = h.UseCase.Update(c.Request.Context(), dto.UpdateUserSpacesDTO{
 		UserID:   userId,
 		SpaceIDs: []int{spaceId},
 		Action:   domain.AddUserToSpace,
@@ -97,7 +97,7 @@ func (h *UserHandler) RemoveSpaceFromUser(c *gin.Context) {
 		return
 	}
 
-	err := h.UseCase.EditSpaces(c.Request.Context(), dto.EditUserSpacesDTO{
+	err := h.UseCase.Update(c.Request.Context(), dto.UpdateUserSpacesDTO{
 		UserID:   userId,
 		SpaceIDs: []int{spaceId},
 		Action:   domain.RemoveUserFromSpace,

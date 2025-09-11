@@ -45,7 +45,7 @@ func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID 
 
 }
 
-func (u *UserSpaceRepository) EditUserSpaces(ctx context.Context, userId int, spaceIDs []int, action string) error {
+func (u *UserSpaceRepository) Update(ctx context.Context, userId int, spaceIDs []int, action string) error {
 	switch action {
 	case domain.AddUserToSpace:
 		for _, spaceID := range spaceIDs {
@@ -62,7 +62,7 @@ func (u *UserSpaceRepository) EditUserSpaces(ctx context.Context, userId int, sp
 			}
 		}
 	default:
-		return apperror.NewInvalidData("invalid action", nil, "user_space_repository.go:EditUserSpaces")
+		return apperror.NewInvalidData("invalid action", nil, "user_space_repository.go:Update")
 	}
 
 	return nil
