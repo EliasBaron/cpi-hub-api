@@ -168,4 +168,3 @@ func ensureSchema(db *sql.DB) error {
 	}
 	return nil
 }
-

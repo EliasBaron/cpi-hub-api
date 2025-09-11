@@ -92,7 +92,7 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 		return nil, err
 	}
 
-	err = s.userSpaceRepository.AddUserToSpace(ctx, existingUser.ID, space.ID)
+	err = s.userSpaceRepository.EditUserSpaces(ctx, existingUser.ID, []int{space.ID}, domain.AddUserToSpace)
 	if err != nil {
 		return nil, err
 	}
