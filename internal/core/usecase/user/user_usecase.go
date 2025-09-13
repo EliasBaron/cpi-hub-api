@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/pkg/apperror"
+	"fmt"
 	"time"
 )
 
@@ -78,6 +79,8 @@ func (u *useCase) Get(ctx context.Context, id int) (*domain.UserWithSpaces, erro
 		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:GetUserWithSpaces")
 	}
 
+	fmt.Println("DEBUG: User found with ID:", user.ID)
+
 	spaceIDs, err := u.userSpaceRepository.FindSpacesIDsByUserID(ctx, user.ID)
 	if err != nil {
 		return nil, err
@@ -87,6 +90,10 @@ func (u *useCase) Get(ctx context.Context, id int) (*domain.UserWithSpaces, erro
 
 	if err != nil {
 		return nil, err
+	}
+
+	for i, space := range spaces {
+		fmt.Printf("DEBUG: Space %d: ID=%d, Name=%s\n", i, space.ID, space.Name)
 	}
 
 	return &domain.UserWithSpaces{
