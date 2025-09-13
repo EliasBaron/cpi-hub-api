@@ -1,9 +1,11 @@
 package space
 
 import (
+	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/core/usecase/space"
 	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	response "cpi-hub-api/pkg/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,17 +46,37 @@ func (h *SpaceHandler) Get(c *gin.Context) {
 }
 
 func (h *SpaceHandler) Search(context *gin.Context) {
-	orderBy := context.Query("order_by")
-	if orderBy == "" {
-		appErr := apperror.NewInvalidData("order_by query parameter is required", nil, "space_handler.go:Search")
+	var searchDTO dto.SearchSpacesDTO
+
+	if err := context.ShouldBindQuery(&searchDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid query parameters", err, "space_handler.go:Search")
 		response.NewError(context.Writer, appErr)
 		return
 	}
-	spaces, err := h.SpaceUseCase.GetAll(context.Request.Context(), orderBy)
+
+	page, pageSize := helpers.GetPaginationValues(context)
+	orderBy, sortDirection := helpers.GetSortValues(context)
+
+	searchCriteria := &domain.SpaceSearchCriteria{
+		CreatedBy:     searchDTO.CreatedBy,
+		OrderBy:       orderBy,
+		Page:          page,
+		PageSize:      pageSize,
+		SortDirection: sortDirection,
+	}
+
+	searchResult, err := h.SpaceUseCase.Search(context.Request.Context(), searchCriteria)
 	if err != nil {
 		response.NewError(context.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(context.Writer, "Spaces retrieved successfully", dto.ToSpaceWithUserDTOs(spaces))
+	responseDTO := dto.SearchSpacesResponseDTO{
+		Data:     dto.ToSpaceWithUserDTOs(searchResult.Data),
+		Page:     searchResult.Page,
+		PageSize: searchResult.PageSize,
+		Total:    searchResult.Total,
+	}
+
+	response.SuccessResponse(context.Writer, "Spaces retrieved successfully", responseDTO)
 }

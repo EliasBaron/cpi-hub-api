@@ -12,17 +12,6 @@ type CreatePost struct {
 	SpaceID   int    `json:"space_id" binding:"required"`
 }
 
-type PostDTO struct {
-	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	CreatedBy int       `json:"created_by"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	UpdatedBy int       `json:"updated_by"`
-	SpaceID   int       `json:"space_id"`
-}
-
 type SearchPostsParams struct {
 	Page    int
 	SpaceID string
@@ -47,19 +36,6 @@ func (c *CreatePost) ToDomain() *domain.Post {
 		Content:   c.Content,
 		CreatedBy: c.CreatedBy,
 		SpaceID:   c.SpaceID,
-	}
-}
-
-func ToPostDTO(post *domain.Post) PostDTO {
-	return PostDTO{
-		ID:        post.ID,
-		Title:     post.Title,
-		Content:   post.Content,
-		CreatedBy: post.CreatedBy,
-		CreatedAt: post.CreatedAt,
-		UpdatedAt: post.UpdatedAt,
-		UpdatedBy: post.UpdatedBy,
-		SpaceID:   post.SpaceID,
 	}
 }
 
@@ -90,15 +66,6 @@ func ToPostExtendedDTO(post *domain.ExtendedPost) PostExtendedDTO {
 		},
 		Comments: commentsDTO,
 	}
-}
-
-func ToPostDTOs(posts []*domain.Post) []PostDTO {
-	postDTOs := make([]PostDTO, 0, len(posts))
-	for _, post := range posts {
-		postDTOs = append(postDTOs, ToPostDTO(post))
-	}
-
-	return postDTOs
 }
 
 func ToPostExtendedDTOs(posts []*domain.ExtendedPost) []PostExtendedDTO {

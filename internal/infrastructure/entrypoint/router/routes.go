@@ -22,7 +22,6 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.POST("/spaces", handlers.SpaceHandler.Create)
 	v1.GET("/spaces/:space_id", handlers.SpaceHandler.Get)
 	v1.GET("/spaces", handlers.SpaceHandler.Search)
-	// /spaces?created_by=14&order_by=created_at&page=1&page_size=25 -> devuelve todos los spaces creados por el user con id 14 ordenados por created_at, paginados por 25 espacios por pagina
 
 	// posts
 	v1.POST("/posts", handlers.PostHandler.Create)

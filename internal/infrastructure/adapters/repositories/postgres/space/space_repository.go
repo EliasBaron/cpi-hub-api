@@ -128,3 +128,20 @@ func (u *SpaceRepository) Update(ctx context.Context, space *domain.Space) error
 
 	return err
 }
+
+func (u *SpaceRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	whereClause, params := mapper.ToPostgreSQLQueryWithOrderByAndPagination(criteria, false, false)
+
+	query := `
+        SELECT COUNT(*)
+        FROM spaces
+    ` + " " + whereClause
+
+	var count int
+	err := u.db.QueryRowContext(ctx, query, params...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

@@ -12,6 +12,14 @@ type FilterClause struct {
 }
 
 func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
+	return ToPostgreSQLQueryWithOrderBy(c, true)
+}
+
+func ToPostgreSQLQueryWithOrderBy(c *criteria.Criteria, includeOrderBy bool) (string, []interface{}) {
+	return ToPostgreSQLQueryWithOrderByAndPagination(c, includeOrderBy, true)
+}
+
+func ToPostgreSQLQueryWithOrderByAndPagination(c *criteria.Criteria, includeOrderBy bool, includePagination bool) (string, []interface{}) {
 	var whereParts []string
 	var params []interface{}
 	paramIndex := 1
@@ -45,12 +53,17 @@ func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 	}
 
 	// ORDER BY
-	if c.Sort.Field != "" {
-		query += fmt.Sprintf(" ORDER BY %s %s", c.Sort.Field, c.Sort.SortDirection)
+	if includeOrderBy && c.Sort.Field != "" {
+		// Ensure the field is properly qualified with table name for spaces
+		qualifiedField := c.Sort.Field
+		if !strings.Contains(qualifiedField, ".") {
+			qualifiedField = "spaces." + qualifiedField
+		}
+		query += fmt.Sprintf(" ORDER BY %s %s", qualifiedField, c.Sort.SortDirection)
 	}
 
 	// PAGINATE
-	if c.Pagination.PageSize > 0 {
+	if includePagination && c.Pagination.PageSize > 0 {
 		offset := (c.Pagination.Page - 1) * c.Pagination.PageSize
 		query += fmt.Sprintf(" LIMIT %d OFFSET %d", c.Pagination.PageSize, offset)
 	}
