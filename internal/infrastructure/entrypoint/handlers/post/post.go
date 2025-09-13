@@ -77,14 +77,14 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 	response.CreatedResponse(c.Writer, "Comment created successfully", dto.ToCommentWithUserAndPostDTO(createdComment))
 }
 
-func (h *PostHandler) SearchPosts(context *gin.Context) {
+func (h *PostHandler) Search(context *gin.Context) {
 	pageStr := context.Query("page")
 	page := 1
 	if pageStr != "" {
 		var err error
 		page, err = strconv.Atoi(pageStr)
 		if err != nil || page < 1 {
-			appErr := apperror.NewInvalidData("Invalid page number", err, "post_handler.go:SearchPosts")
+			appErr := apperror.NewInvalidData("Invalid page number", err, "post_handler.go:Search")
 			response.NewError(context.Writer, appErr)
 			return
 		}
