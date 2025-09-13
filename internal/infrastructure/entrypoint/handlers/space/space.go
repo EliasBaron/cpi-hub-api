@@ -43,10 +43,10 @@ func (h *SpaceHandler) Get(c *gin.Context) {
 	response.SuccessResponse(c.Writer, "Space retrieved successfully", dto.ToSpaceWithUserDTO(space))
 }
 
-func (h *SpaceHandler) GetSpacesOrderedBy(context *gin.Context) {
+func (h *SpaceHandler) Search(context *gin.Context) {
 	orderBy := context.Query("order_by")
 	if orderBy == "" {
-		appErr := apperror.NewInvalidData("order_by query parameter is required", nil, "space_handler.go:GetSpacesOrderedBy")
+		appErr := apperror.NewInvalidData("order_by query parameter is required", nil, "space_handler.go:Search")
 		response.NewError(context.Writer, appErr)
 		return
 	}
