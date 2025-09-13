@@ -35,12 +35,12 @@ func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 
 		if len(whereParts) > 1 {
 			if c.LogicalOperator == criteria.LogicalOperatorOr || len(whereParts) > 2 {
-				query += "WHERE (" + strings.Join(whereParts, logicalOp) + ")"
+				query += " WHERE (" + strings.Join(whereParts, logicalOp) + ")"
 			} else {
-				query += "WHERE " + strings.Join(whereParts, logicalOp)
+				query += " WHERE " + strings.Join(whereParts, logicalOp)
 			}
 		} else {
-			query += "WHERE " + whereParts[0]
+			query += " WHERE " + whereParts[0]
 		}
 	}
 
