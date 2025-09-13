@@ -34,7 +34,11 @@ func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 		}
 
 		if len(whereParts) > 1 {
-			query += " WHERE (" + strings.Join(whereParts, logicalOp) + ")"
+			if c.LogicalOperator == criteria.LogicalOperatorOr || len(whereParts) > 2 {
+				query += " WHERE (" + strings.Join(whereParts, logicalOp) + ")"
+			} else {
+				query += " WHERE " + strings.Join(whereParts, logicalOp)
+			}
 		} else {
 			query += " WHERE " + whereParts[0]
 		}
@@ -79,7 +83,23 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
 				args[i] = interface{}(val)
 			}
-			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ",")), args
+			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), args
+		case []interface{}:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
+				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
+				args[i] = val
+			}
+			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), args
+		case []string:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
+				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
+				args[i] = interface{}(val)
+			}
+			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), args
 		default:
 			return "", nil
 		}

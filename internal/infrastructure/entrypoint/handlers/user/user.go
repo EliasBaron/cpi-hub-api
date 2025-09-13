@@ -1,6 +1,7 @@
 package user
 
 import (
+	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/core/usecase/post"
 	"cpi-hub-api/internal/core/usecase/user"
@@ -71,13 +72,42 @@ func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
 		return
 	}
 
-	err = h.UseCase.AddSpaceToUser(c.Request.Context(), userId, spaceId)
+	err = h.UseCase.Update(c.Request.Context(), dto.UpdateUserSpacesDTO{
+		UserID:   userId,
+		SpaceIDs: []int{spaceId},
+		Action:   domain.AddUserToSpace,
+	})
+
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
 	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
+}
+
+func (h *UserHandler) RemoveSpaceFromUser(c *gin.Context) {
+	userIdStr, spaceIdStr := c.Param("user_id"), c.Param("space_id")
+	userId, err1 := strconv.Atoi(userIdStr)
+	spaceId, err2 := strconv.Atoi(spaceIdStr)
+
+	if err1 != nil || err2 != nil {
+		appErr := apperror.NewInvalidData("Invalid space_id or user_id (must be integer)", nil, "user_handler.go:RemoveSpaceFromUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	err := h.UseCase.Update(c.Request.Context(), dto.UpdateUserSpacesDTO{
+		UserID:   userId,
+		SpaceIDs: []int{spaceId},
+		Action:   domain.RemoveUserFromSpace,
+	})
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, "Space removed from user successfully", nil)
 }
 
 func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {

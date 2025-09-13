@@ -2,8 +2,9 @@ package user
 
 import (
 	"context"
+	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/pkg/apperror"
 	"database/sql"
-	"fmt"
 )
 
 type UserSpaceRepository struct {
@@ -14,7 +15,6 @@ func NewUserSpaceRepository(db *sql.DB) *UserSpaceRepository {
 	return &UserSpaceRepository{db: db}
 }
 
-// Devuelve todos los IDs de espacios asociados a un usuario
 func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error) {
 	query := `SELECT space_id FROM user_spaces WHERE user_id = $1`
 
@@ -45,14 +45,26 @@ func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID 
 
 }
 
-func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId int, spaceId int) error {
-	_, err := u.db.ExecContext(ctx,
-		"INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)",
-		userId, spaceId,
-	)
-	if err != nil {
-		return fmt.Errorf("error al agregar espacio a usuario: %w", err)
+func (u *UserSpaceRepository) Update(ctx context.Context, userId int, spaceIDs []int, action string) error {
+	switch action {
+	case domain.AddUserToSpace:
+		for _, spaceID := range spaceIDs {
+			_, err := u.db.ExecContext(ctx, "INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)", userId, spaceID)
+			if err != nil {
+				return err
+			}
+		}
+	case domain.RemoveUserFromSpace:
+		for _, spaceID := range spaceIDs {
+			_, err := u.db.ExecContext(ctx, "DELETE FROM user_spaces WHERE user_id = $1 AND space_id = $2", userId, spaceID)
+			if err != nil {
+				return err
+			}
+		}
+	default:
+		return apperror.NewInvalidData("invalid action", nil, "user_space_repository.go:Update")
 	}
+
 	return nil
 }
 
@@ -61,7 +73,7 @@ func (u *UserSpaceRepository) Exists(ctx context.Context, userId int, spaceId in
 	query := `SELECT EXISTS(SELECT 1 FROM user_spaces WHERE user_id = $1 AND space_id = $2)`
 	err := u.db.QueryRowContext(ctx, query, userId, spaceId).Scan(&exists)
 	if err != nil {
-		return false, fmt.Errorf("error al verificar existencia de espacio: %w", err)
+		return false, err
 	}
 	return exists, nil
 }

@@ -19,7 +19,7 @@ type SpaceRepository interface {
 }
 
 type UserSpaceRepository interface {
-	AddUserToSpace(ctx context.Context, userId int, spaceId int) error
+	Update(ctx context.Context, userId int, spaceIDs []int, action string) error
 	FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error)
 	Exists(ctx context.Context, userId int, spaceId int) (bool, error)
 }

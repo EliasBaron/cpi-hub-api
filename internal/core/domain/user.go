@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+const (
+	AddUserToSpace      = "add"
+	RemoveUserFromSpace = "remove"
+)
+
 type User struct {
 	ID        int
 	Name      string

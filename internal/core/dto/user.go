@@ -74,3 +74,9 @@ func ToUserDTOWithSpaces(user *domain.UserWithSpaces) UserDTOWithSpaces {
 		Spaces:   spaceDTOs,
 	}
 }
+
+type UpdateUserSpacesDTO struct {
+	UserID   int
+	SpaceIDs []int
+	Action   string
+}
