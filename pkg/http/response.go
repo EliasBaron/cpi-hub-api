@@ -13,6 +13,20 @@ type Response struct {
 	Error   string      `json:"error,omitempty"`
 }
 
+type PaginationData struct {
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
+	Total    int `json:"total"`
+}
+
+type PaginatedResponse struct {
+	Success    bool           `json:"success"`
+	Message    string         `json:"message"`
+	Data       interface{}    `json:"data,omitempty"`
+	Pagination PaginationData `json:"pagination"`
+	Error      string         `json:"error,omitempty"`
+}
+
 func JSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
@@ -64,4 +78,19 @@ func InternalServerErrorResponse(w http.ResponseWriter, message string) {
 func NewError(w http.ResponseWriter, err error) {
 	statusCode, message := apperror.StatusCodeAndMessage(err)
 	ErrorResponse(w, statusCode, message)
+}
+
+// PaginatedSuccessResponse creates a paginated success response
+func PaginatedSuccessResponse(w http.ResponseWriter, message string, data interface{}, page, pageSize, total int) {
+	response := PaginatedResponse{
+		Success: true,
+		Message: message,
+		Data:    data,
+		Pagination: PaginationData{
+			Page:     page,
+			PageSize: pageSize,
+			Total:    total,
+		},
+	}
+	JSONResponse(w, http.StatusOK, response)
 }

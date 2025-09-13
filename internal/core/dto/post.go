@@ -13,9 +13,27 @@ type CreatePost struct {
 }
 
 type SearchPostsParams struct {
-	Page    int
-	SpaceID string
-	Query   string
+	Page          int
+	PageSize      int
+	OrderBy       string
+	SortDirection string
+	SpaceID       int
+	Query         string
+}
+
+type InterestedPostsParams struct {
+	Page          int
+	PageSize      int
+	OrderBy       string
+	SortDirection string
+	UserID        int // required for interested posts
+}
+
+type PaginatedPostsResponse struct {
+	Data     []PostExtendedDTO `json:"data"`
+	Page     int               `json:"page"`
+	PageSize int               `json:"page_size"`
+	Total    int               `json:"total"`
 }
 
 type PostExtendedDTO struct {

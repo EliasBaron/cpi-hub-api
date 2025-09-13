@@ -24,7 +24,6 @@ func ToPostgreSQLQueryWithOrderByAndPagination(c *criteria.Criteria, includeOrde
 	var params []interface{}
 	paramIndex := 1
 
-	// WHERE
 	for _, f := range c.Filters {
 		clause, clauseParams := buildFilterClause(f, paramIndex)
 		if clause != "" {
@@ -52,17 +51,10 @@ func ToPostgreSQLQueryWithOrderByAndPagination(c *criteria.Criteria, includeOrde
 		}
 	}
 
-	// ORDER BY
 	if includeOrderBy && c.Sort.Field != "" {
-		// Ensure the field is properly qualified with table name for spaces
-		qualifiedField := c.Sort.Field
-		if !strings.Contains(qualifiedField, ".") {
-			qualifiedField = "spaces." + qualifiedField
-		}
-		query += fmt.Sprintf(" ORDER BY %s %s", qualifiedField, c.Sort.SortDirection)
+		query += fmt.Sprintf(" ORDER BY %s %s", c.Sort.Field, c.Sort.SortDirection)
 	}
 
-	// PAGINATE
 	if includePagination && c.Pagination.PageSize > 0 {
 		offset := (c.Pagination.Page - 1) * c.Pagination.PageSize
 		query += fmt.Sprintf(" LIMIT %d OFFSET %d", c.Pagination.PageSize, offset)

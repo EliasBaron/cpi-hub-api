@@ -28,8 +28,9 @@ type UserSpaceRepository interface {
 type PostRepository interface {
 	Create(ctx context.Context, post *Post) error
 	Find(ctx context.Context, criteria *criteria.Criteria) (*Post, error)
-	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*Post, error)
 	Update(ctx context.Context, post *Post) error
+	Search(ctx context.Context, criteria *criteria.Criteria) ([]*Post, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 
 type CommentRepository interface {
