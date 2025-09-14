@@ -12,11 +12,18 @@ type FilterClause struct {
 }
 
 func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
+	return ToPostgreSQLQueryWithOrderBy(c, true)
+}
+
+func ToPostgreSQLQueryWithOrderBy(c *criteria.Criteria, includeOrderBy bool) (string, []interface{}) {
+	return ToPostgreSQLQueryWithOrderByAndPagination(c, includeOrderBy, true)
+}
+
+func ToPostgreSQLQueryWithOrderByAndPagination(c *criteria.Criteria, includeOrderBy bool, includePagination bool) (string, []interface{}) {
 	var whereParts []string
 	var params []interface{}
 	paramIndex := 1
 
-	// WHERE
 	for _, f := range c.Filters {
 		clause, clauseParams := buildFilterClause(f, paramIndex)
 		if clause != "" {
@@ -44,13 +51,11 @@ func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 		}
 	}
 
-	// ORDER BY
-	if c.Sort.Field != "" {
+	if includeOrderBy && c.Sort.Field != "" {
 		query += fmt.Sprintf(" ORDER BY %s %s", c.Sort.Field, c.Sort.SortDirection)
 	}
 
-	// PAGINATE
-	if c.Pagination.PageSize > 0 {
+	if includePagination && c.Pagination.PageSize > 0 {
 		offset := (c.Pagination.Page - 1) * c.Pagination.PageSize
 		query += fmt.Sprintf(" LIMIT %d OFFSET %d", c.Pagination.PageSize, offset)
 	}

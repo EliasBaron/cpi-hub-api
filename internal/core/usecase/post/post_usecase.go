@@ -6,17 +6,21 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
-	"strconv"
 	"strings"
 	"time"
 )
 
+type SearchResult struct {
+	Posts []*domain.ExtendedPost
+	Total int
+}
+
 type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
+	Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error)
+	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
-	SearchPosts(ctx context.Context, params dto.SearchPostsParams) ([]*domain.ExtendedPost, error)
-	GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error)
 }
 
 type postUseCase struct {
@@ -41,14 +45,6 @@ func NewPostUsecase(
 		commentRepository:   commentRepo,
 		userSpaceRepository: userSpaceRepo,
 	}
-}
-
-func intsToInterfaces(ints []int) []interface{} {
-	res := make([]interface{}, len(ints))
-	for i, v := range ints {
-		res[i] = v
-	}
-	return res
 }
 
 func buildCriteria(field string, values []int) *criteria.Criteria {
@@ -208,54 +204,115 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	return &domain.CommentWithUser{Comment: comment, User: user}, nil
 }
 
-func (p *postUseCase) SearchPosts(ctx context.Context, params dto.SearchPostsParams) ([]*domain.ExtendedPost, error) {
+func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error) {
 	var searchQuery string
-	if len(params.Query) > 0 {
+	if len(params.Query) > 2 {
 		searchQuery = "%" + strings.TrimSpace(params.Query) + "%"
 	} else {
 		searchQuery = ""
 	}
 
 	var spaceID int
-	if len(params.SpaceID) > 0 {
-		spaceID, _ = strconv.Atoi(params.SpaceID)
+	if params.SpaceID > 0 {
+		spaceID = params.SpaceID
+	}
+
+	sortDirection := criteria.OrderDirectionDesc
+	if params.SortDirection == "asc" {
+		sortDirection = criteria.OrderDirectionAsc
+	}
+
+	var logicalOp criteria.LogicalOperator
+	if len(params.Query) > 0 {
+		logicalOp = criteria.LogicalOperatorOr
+	} else {
+		logicalOp = criteria.LogicalOperatorAnd
 	}
 
 	searchCriteria := criteria.NewCriteriaBuilder().
 		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
-		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, len(params.SpaceID) > 0).
-		WithLogicalOperator(criteria.LogicalOperatorOr).
-		WithPagination(params.Page, 10).
-		WithSort("created_at", criteria.OrderDirectionDesc).
+		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, spaceID > 0).
+		WithLogicalOperator(logicalOp).
+		WithPagination(params.Page, params.PageSize).
+		WithSort(params.OrderBy, sortDirection).
 		Build()
 
-	posts, err := p.postRepository.FindAll(ctx, searchCriteria)
+	// Get total count without pagination
+	countCriteria := criteria.NewCriteriaBuilder().
+		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
+		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
+		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, spaceID > 0).
+		WithLogicalOperator(logicalOp).
+		Build()
+
+	total, err := p.postRepository.Count(ctx, countCriteria)
 	if err != nil {
 		return nil, err
 	}
-	return p.buildExtendedPosts(ctx, posts)
+
+	posts, err := p.postRepository.Search(ctx, searchCriteria)
+	if err != nil {
+		return nil, err
+	}
+
+	extendedPosts, err := p.buildExtendedPosts(ctx, posts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchResult{
+		Posts: extendedPosts,
+		Total: total,
+	}, nil
 }
 
-func (p *postUseCase) GetPostsByUserSpaces(ctx context.Context, userId int, page int) ([]*domain.ExtendedPost, error) {
-	userSpacesIds, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, userId)
+func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error) {
+	sortDirection := criteria.OrderDirectionDesc
+	if params.SortDirection == "asc" {
+		sortDirection = criteria.OrderDirectionAsc
+	}
+
+	spaceIDs, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, params.UserID)
 	if err != nil {
 		return nil, err
 	}
-	if len(userSpacesIds) == 0 {
-		return []*domain.ExtendedPost{}, nil
+
+	if len(spaceIDs) == 0 {
+		return &SearchResult{
+			Posts: []*domain.ExtendedPost{},
+			Total: 0,
+		}, nil
 	}
 
-	criteria := criteria.NewCriteriaBuilder().
-		WithFilter("space_id", userSpacesIds, criteria.OperatorIn).
-		WithPagination(page, 20).
-		WithSort("created_at", criteria.OrderDirectionDesc).
+	searchCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("space_id", spaceIDs, criteria.OperatorIn).
+		WithPagination(params.Page, params.PageSize).
+		WithSort(params.OrderBy, sortDirection).
 		Build()
 
-	posts, err := p.postRepository.FindAll(ctx, criteria)
+	// Get total count without pagination
+	countCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("space_id", spaceIDs, criteria.OperatorIn).
+		Build()
+
+	total, err := p.postRepository.Count(ctx, countCriteria)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.buildExtendedPosts(ctx, posts)
+	posts, err := p.postRepository.Search(ctx, searchCriteria)
+	if err != nil {
+		return nil, err
+	}
+
+	extendedPosts, err := p.buildExtendedPosts(ctx, posts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchResult{
+		Posts: extendedPosts,
+		Total: total,
+	}, nil
 }

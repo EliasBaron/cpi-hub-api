@@ -12,7 +12,7 @@ import (
 type SpaceUseCase interface {
 	Create(ctx context.Context, space *domain.Space) (*domain.SpaceWithUser, error)
 	Get(ctx context.Context, id string) (*domain.SpaceWithUser, error)
-	GetAll(ctx context.Context, sortField string) ([]*domain.SpaceWithUser, error)
+	Search(ctx context.Context, criteria *domain.SpaceSearchCriteria) (*domain.SearchResult, error)
 }
 
 type spaceUseCase struct {
@@ -128,24 +128,46 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 	}, nil
 }
 
-func (s *spaceUseCase) GetAll(ctx context.Context, sortField string) ([]*domain.SpaceWithUser, error) {
-	criteria := criteria.NewCriteriaBuilder().
-		WithSort(sortField, criteria.OrderDirectionDesc).
-		Build()
+func (s *spaceUseCase) Search(ctx context.Context, searchCriteria *domain.SpaceSearchCriteria) (*domain.SearchResult, error) {
+	var direction criteria.Direction
+	if searchCriteria.SortDirection == "asc" {
+		direction = criteria.OrderDirectionAsc
+	} else {
+		direction = criteria.OrderDirectionDesc
+	}
+
+	criteriaBuilder := criteria.NewCriteriaBuilder().
+		WithSort(searchCriteria.OrderBy, direction).
+		WithPagination(searchCriteria.Page, searchCriteria.PageSize)
+
+	if searchCriteria.CreatedBy != nil {
+		criteriaBuilder.WithFilter("created_by", *searchCriteria.CreatedBy, criteria.OperatorEqual)
+	}
+
+	criteria := criteriaBuilder.Build()
+
+	totalCount, err := s.spaceRepository.Count(ctx, criteria)
+	if err != nil {
+		return nil, err
+	}
 
 	spaces, err := s.spaceRepository.FindAll(ctx, criteria)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(spaces) == 0 {
-		return []*domain.SpaceWithUser{}, nil
+	var spacesWithUsers []*domain.SpaceWithUser
+	if len(spaces) > 0 {
+		spacesWithUsers, err = s.makeSpacesWithUsers(ctx, spaces)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	spacesWithUsers, err := s.makeSpacesWithUsers(ctx, spaces)
-	if err != nil {
-		return nil, err
-	}
-
-	return spacesWithUsers, nil
+	return &domain.SearchResult{
+		Data:     spacesWithUsers,
+		Page:     searchCriteria.Page,
+		PageSize: searchCriteria.PageSize,
+		Total:    totalCount,
+	}, nil
 }

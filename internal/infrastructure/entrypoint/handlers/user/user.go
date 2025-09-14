@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/usecase/post"
 	"cpi-hub-api/internal/core/usecase/user"
 	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	response "cpi-hub-api/pkg/http"
 	"strconv"
 
@@ -34,7 +35,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "User created successfully", dto.ToUserDTO(createdUser))
+	response.CreatedResponse(c.Writer, dto.ToUserDTO(createdUser))
 }
 
 func (h *UserHandler) Get(c *gin.Context) {
@@ -52,7 +53,7 @@ func (h *UserHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTOWithSpaces(user))
+	response.SuccessResponse(c.Writer, dto.ToUserDTOWithSpaces(user))
 }
 
 func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
@@ -83,7 +84,7 @@ func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
+	response.SuccessResponse(c.Writer, nil)
 }
 
 func (h *UserHandler) RemoveSpaceFromUser(c *gin.Context) {
@@ -107,7 +108,7 @@ func (h *UserHandler) RemoveSpaceFromUser(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Space removed from user successfully", nil)
+	response.SuccessResponse(c.Writer, nil)
 }
 
 func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
@@ -130,29 +131,39 @@ func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
 		spacesDTO[i] = dto.ToSpaceDTO(space)
 	}
 
-	response.SuccessResponse(c.Writer, "Spaces retrieved successfully", spacesDTO)
+	response.SuccessResponse(c.Writer, spacesDTO)
 }
 
-func (h *UserHandler) GetPostsByUserSpaces(c *gin.Context) {
-	userIDstr := c.Param("user_id")
-	userID, err := strconv.Atoi(userIDstr)
+func (h *UserHandler) GetInterestedPosts(c *gin.Context) {
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
-		appErr := apperror.NewInvalidData("Invalid user ID", err, "user_handler.go:GetPostsByUserSpaces")
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:GetInterestedPosts")
 		response.NewError(c.Writer, appErr)
 		return
 	}
 
-	pageStr := c.Query("page")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
+	page, pageSize := helpers.GetPaginationValues(c)
+	orderBy, sortDirection := helpers.GetSortValues(c)
 
-	posts, err := h.PostUseCase.GetPostsByUserSpaces(c.Request.Context(), userID, page)
+	searchResult, err := h.PostUseCase.GetInterestedPosts(c.Request.Context(), dto.InterestedPostsParams{
+		Page:          page,
+		PageSize:      pageSize,
+		OrderBy:       orderBy,
+		SortDirection: sortDirection,
+		UserID:        userId,
+	})
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
+	data := dto.PaginatedPostsResponse{
+		Data:     dto.ToPostExtendedDTOs(searchResult.Posts),
+		Page:     page,
+		PageSize: pageSize,
+		Total:    searchResult.Total,
+	}
+
+	response.SuccessResponse(c.Writer, data)
 }

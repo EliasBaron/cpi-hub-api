@@ -26,6 +26,21 @@ type SimpleSpaceDto struct {
 	Name string `json:"name"`
 }
 
+type SearchSpacesDTO struct {
+	CreatedBy     *int   `form:"created_by" json:"created_by"`
+	OrderBy       string `form:"order_by" json:"order_by"`
+	Page          int    `form:"page" json:"page"`
+	PageSize      int    `form:"page_size" json:"page_size"`
+	SortDirection string `form:"sort_direction" json:"sort_direction"`
+}
+
+type SearchSpacesResponseDTO struct {
+	Data     []SpaceWithUserDTO `json:"data"`
+	Page     int                `json:"page"`
+	PageSize int                `json:"page_size"`
+	Total    int                `json:"total"`
+}
+
 type SpaceWithUserDTO struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`

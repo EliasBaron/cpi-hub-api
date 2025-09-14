@@ -8,6 +8,7 @@ import (
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type PostRepository struct {
@@ -59,7 +60,6 @@ func (p *PostRepository) Find(ctx context.Context, criteria *criteria.Criteria) 
 }
 
 func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Post, error) {
-	fmt.Println("criteria", criteria)
 	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
 	queryParams := QueryParams{
 		WhereClause: whereClause,
@@ -120,4 +120,47 @@ func (p *PostRepository) Update(ctx context.Context, post *domain.Post) error {
 		"UPDATE posts SET title=$1, content=$2, updated_at=$3, updated_by=$4, space_id=$5 WHERE id=$6",
 		postEntity.Title, postEntity.Content, postEntity.UpdatedAt, postEntity.UpdatedBy, postEntity.SpaceID, postEntity.ID)
 	return err
+}
+
+func (p *PostRepository) Search(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Post, error) {
+	var posts []*domain.Post
+
+	whereClause, params := mapper.ToPostgreSQLQueryWithOrderByAndPagination(criteria, true, true)
+
+	if criteria.Sort.Field != "" && !strings.Contains(criteria.Sort.Field, ".") {
+		oldPattern := fmt.Sprintf("ORDER BY %s", criteria.Sort.Field)
+		newPattern := fmt.Sprintf("ORDER BY %s", criteria.Sort.Field)
+		whereClause = strings.Replace(whereClause, oldPattern, newPattern, 1)
+	}
+
+	query := "SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id FROM posts" + whereClause
+
+	rows, err := p.db.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var postEntity entity.PostEntity
+		if err := p.scanPostEntity(rows, &postEntity); err != nil {
+			return nil, err
+		}
+		posts = append(posts, mapper.ToDomainPost(&postEntity))
+	}
+
+	return posts, rows.Err()
+}
+
+func (p *PostRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+
+	query := "SELECT COUNT(*) FROM posts"
+	if whereClause != "" {
+		query += whereClause
+	}
+
+	var count int
+	err := p.db.QueryRowContext(ctx, query, params...).Scan(&count)
+	return count, err
 }
