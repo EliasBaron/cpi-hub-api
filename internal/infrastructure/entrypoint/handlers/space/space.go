@@ -30,7 +30,7 @@ func (h *SpaceHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Space created successfully", dto.ToSpaceWithUserDTO(createdSpace))
+	response.CreatedResponse(c.Writer, dto.ToSpaceWithUserDTO(createdSpace))
 }
 
 func (h *SpaceHandler) Get(c *gin.Context) {
@@ -42,7 +42,7 @@ func (h *SpaceHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Space retrieved successfully", dto.ToSpaceWithUserDTO(space))
+	response.SuccessResponse(c.Writer, dto.ToSpaceWithUserDTO(space))
 }
 
 func (h *SpaceHandler) Search(context *gin.Context) {
@@ -78,5 +78,5 @@ func (h *SpaceHandler) Search(context *gin.Context) {
 		Total:    searchResult.Total,
 	}
 
-	response.SuccessResponse(context.Writer, "Spaces retrieved successfully", responseDTO)
+	response.SuccessResponse(context.Writer, responseDTO)
 }

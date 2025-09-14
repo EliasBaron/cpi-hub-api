@@ -6,11 +6,9 @@ import (
 	"net/http"
 )
 
-type Response struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
+type ErrorResponseData struct {
+	StatusCode int    `json:"status_code"`
+	Message    string `json:"message"`
 }
 
 type PaginationData struct {
@@ -20,11 +18,8 @@ type PaginationData struct {
 }
 
 type PaginatedResponse struct {
-	Success    bool           `json:"success"`
-	Message    string         `json:"message"`
 	Data       interface{}    `json:"data,omitempty"`
 	Pagination PaginationData `json:"pagination"`
-	Error      string         `json:"error,omitempty"`
 }
 
 func JSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
@@ -36,30 +31,20 @@ func JSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	}
 }
 
-func SuccessResponse(w http.ResponseWriter, message string, data interface{}) {
-	response := Response{
-		Success: true,
-		Message: message,
-		Data:    data,
-	}
-	JSONResponse(w, http.StatusOK, response)
+func SuccessResponse(w http.ResponseWriter, data interface{}) {
+	JSONResponse(w, http.StatusOK, data)
 }
 
 func ErrorResponse(w http.ResponseWriter, statusCode int, message string) {
-	response := Response{
-		Success: false,
-		Error:   message,
+	response := ErrorResponseData{
+		StatusCode: statusCode,
+		Message:    message,
 	}
 	JSONResponse(w, statusCode, response)
 }
 
-func CreatedResponse(w http.ResponseWriter, message string, data interface{}) {
-	response := Response{
-		Success: true,
-		Message: message,
-		Data:    data,
-	}
-	JSONResponse(w, http.StatusCreated, response)
+func CreatedResponse(w http.ResponseWriter, data interface{}) {
+	JSONResponse(w, http.StatusCreated, data)
 }
 
 func BadRequestResponse(w http.ResponseWriter, message string) {
@@ -81,11 +66,9 @@ func NewError(w http.ResponseWriter, err error) {
 }
 
 // PaginatedSuccessResponse creates a paginated success response
-func PaginatedSuccessResponse(w http.ResponseWriter, message string, data interface{}, page, pageSize, total int) {
+func PaginatedSuccessResponse(w http.ResponseWriter, data interface{}, page, pageSize, total int) {
 	response := PaginatedResponse{
-		Success: true,
-		Message: message,
-		Data:    data,
+		Data: data,
 		Pagination: PaginationData{
 			Page:     page,
 			PageSize: pageSize,

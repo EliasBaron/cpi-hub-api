@@ -129,11 +129,19 @@ func (u *useCase) Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	}
 
 	for _, spaceID := range dto.SpaceIDs {
-		exists, err := u.userSpaceRepository.Exists(ctx, user.ID, spaceID)
+		exists, err := u.spaceRepository.Find(ctx, &criteria.Criteria{
+			Filters: []criteria.Filter{
+				{
+					Field:    "id",
+					Value:    spaceID,
+					Operator: criteria.OperatorEqual,
+				},
+			},
+		})
 		if err != nil {
 			return err
 		}
-		if !exists {
+		if exists == nil {
 			return apperror.NewInvalidData("Space not found: "+strconv.Itoa(spaceID), nil, "user_usecase.go:Update")
 		}
 	}

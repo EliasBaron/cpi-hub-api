@@ -35,7 +35,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "User created successfully", dto.ToUserDTO(createdUser))
+	response.CreatedResponse(c.Writer, dto.ToUserDTO(createdUser))
 }
 
 func (h *UserHandler) Get(c *gin.Context) {
@@ -53,7 +53,7 @@ func (h *UserHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "User retrieved successfully", dto.ToUserDTOWithSpaces(user))
+	response.SuccessResponse(c.Writer, dto.ToUserDTOWithSpaces(user))
 }
 
 func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
@@ -84,7 +84,7 @@ func (h *UserHandler) AddSpaceToUser(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Space added to user successfully", nil)
+	response.SuccessResponse(c.Writer, nil)
 }
 
 func (h *UserHandler) RemoveSpaceFromUser(c *gin.Context) {
@@ -108,7 +108,7 @@ func (h *UserHandler) RemoveSpaceFromUser(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Space removed from user successfully", nil)
+	response.SuccessResponse(c.Writer, nil)
 }
 
 func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
@@ -131,7 +131,7 @@ func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
 		spacesDTO[i] = dto.ToSpaceDTO(space)
 	}
 
-	response.SuccessResponse(c.Writer, "Spaces retrieved successfully", spacesDTO)
+	response.SuccessResponse(c.Writer, spacesDTO)
 }
 
 func (h *UserHandler) GetInterestedPosts(c *gin.Context) {
@@ -165,5 +165,5 @@ func (h *UserHandler) GetInterestedPosts(c *gin.Context) {
 		Total:    searchResult.Total,
 	}
 
-	response.SuccessResponse(c.Writer, "Interested posts retrieved successfully", data)
+	response.SuccessResponse(c.Writer, data)
 }

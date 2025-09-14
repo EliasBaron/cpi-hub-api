@@ -30,7 +30,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Post created successfully", dto.ToPostExtendedDTO(createdPost))
+	response.CreatedResponse(c.Writer, dto.ToPostExtendedDTO(createdPost))
 }
 
 func (h *PostHandler) Get(c *gin.Context) {
@@ -48,7 +48,7 @@ func (h *PostHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Post retrieved successfully", dto.ToPostExtendedDTO(post))
+	response.SuccessResponse(c.Writer, dto.ToPostExtendedDTO(post))
 }
 
 func (h *PostHandler) AddComment(c *gin.Context) {
@@ -75,7 +75,7 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Comment created successfully", dto.ToCommentWithUserAndPostDTO(createdComment))
+	response.CreatedResponse(c.Writer, dto.ToCommentWithUserAndPostDTO(createdComment))
 }
 
 func (h *PostHandler) Search(context *gin.Context) {
@@ -115,7 +115,7 @@ func (h *PostHandler) Search(context *gin.Context) {
 		Total:    searchResult.Total,
 	}
 
-	response.SuccessResponse(context.Writer, "Posts retrieved successfully", data)
+	response.SuccessResponse(context.Writer, data)
 }
 
 func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
@@ -157,5 +157,5 @@ func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
 		Total:    searchResult.Total,
 	}
 
-	response.SuccessResponse(context.Writer, "Interested posts retrieved successfully", data)
+	response.SuccessResponse(context.Writer, data)
 }
