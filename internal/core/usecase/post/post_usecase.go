@@ -144,6 +144,7 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 
 	existingSpace.UpdatedAt = time.Now()
 	existingSpace.UpdatedBy = post.CreatedBy
+	existingSpace.Posts += 1
 	if err := p.spaceRepository.Update(ctx, existingSpace); err != nil {
 		return nil, err
 	}

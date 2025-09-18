@@ -10,6 +10,8 @@ type Space struct {
 	CreatedBy   int
 	UpdatedAt   time.Time
 	UpdatedBy   int
+	Members     int
+	Posts       int
 }
 
 type SpaceWithUser struct {

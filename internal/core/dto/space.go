@@ -15,6 +15,8 @@ type SpaceDTO struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Users       int    `json:"users_count"`
+	Posts       int    `json:"posts_count"`
 	CreatedBy   int    `json:"created_by"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
@@ -44,6 +46,8 @@ type SearchSpacesResponseDTO struct {
 type SpaceWithUserDTO struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
+	Members     int     `json:"members"`
+	Posts       int     `json:"posts"`
 	Description string  `json:"description"`
 	CreatedAt   string  `json:"created_at"`
 	UpdatedAt   string  `json:"updated_at"`
@@ -63,6 +67,8 @@ func ToSpaceWithUserDTO(space *domain.SpaceWithUser) SpaceWithUserDTO {
 		ID:          space.Space.ID,
 		Name:        space.Space.Name,
 		Description: space.Space.Description,
+		Members:     space.Space.Members,
+		Posts:       space.Space.Posts,
 		CreatedAt:   space.Space.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   space.Space.UpdatedAt.Format(time.RFC3339),
 		CreatedBy: UserDTO{

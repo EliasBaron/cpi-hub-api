@@ -21,8 +21,8 @@ func (u *SpaceRepository) Create(ctx context.Context, space *domain.Space) error
 	var spaceEntity = *mapper.ToPostgresSpace(space)
 
 	if err := u.db.QueryRowContext(ctx,
-		"INSERT INTO spaces (name, description, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-		spaceEntity.Name, spaceEntity.Description, spaceEntity.CreatedBy, spaceEntity.CreatedAt, spaceEntity.UpdatedBy, spaceEntity.UpdatedAt).Scan(&spaceEntity.ID); err != nil {
+		"INSERT INTO spaces (name, description, members_count, posts_count, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+		spaceEntity.Name, spaceEntity.Description, spaceEntity.Members, spaceEntity.Posts, spaceEntity.CreatedBy, spaceEntity.CreatedAt, spaceEntity.UpdatedBy, spaceEntity.UpdatedAt).Scan(&spaceEntity.ID); err != nil {
 		return err
 	}
 
@@ -40,7 +40,7 @@ func (u *SpaceRepository) findSpaceByField(ctx context.Context, whereClause stri
 	var spaceEntity entity.SpaceEntity
 
 	query := `
-		SELECT id, name, description, created_by, created_at, updated_by, updated_at
+		SELECT id, name, description, members_count, posts_count, created_by, created_at, updated_by, updated_at
 		FROM spaces
 	` + " " + whereClause + " LIMIT 1"
 
@@ -48,6 +48,8 @@ func (u *SpaceRepository) findSpaceByField(ctx context.Context, whereClause stri
 		&spaceEntity.ID,
 		&spaceEntity.Name,
 		&spaceEntity.Description,
+		&spaceEntity.Members,
+		&spaceEntity.Posts,
 		&spaceEntity.CreatedBy,
 		&spaceEntity.CreatedAt,
 		&spaceEntity.UpdatedBy,
@@ -89,7 +91,7 @@ func (u *SpaceRepository) FindAll(ctx context.Context, criteria *criteria.Criter
 	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
 
 	query := `
-        SELECT id, name, description, created_by, created_at, updated_by, updated_at
+        SELECT id, name, description, members_count, posts_count, created_by, created_at, updated_by, updated_at
         FROM spaces
     ` + " " + whereClause
 
@@ -106,6 +108,8 @@ func (u *SpaceRepository) FindAll(ctx context.Context, criteria *criteria.Criter
 			&spaceEntity.ID,
 			&spaceEntity.Name,
 			&spaceEntity.Description,
+			&spaceEntity.Members,
+			&spaceEntity.Posts,
 			&spaceEntity.CreatedBy,
 			&spaceEntity.CreatedAt,
 			&spaceEntity.UpdatedBy,
@@ -123,8 +127,8 @@ func (u *SpaceRepository) Update(ctx context.Context, space *domain.Space) error
 	spaceEntity := mapper.ToPostgresSpace(space)
 
 	_, err := u.db.ExecContext(ctx,
-		"UPDATE spaces SET name=$1, description=$2, updated_by=$3, updated_at=$4 WHERE id=$5",
-		spaceEntity.Name, spaceEntity.Description, spaceEntity.UpdatedBy, spaceEntity.UpdatedAt, spaceEntity.ID)
+		"UPDATE spaces SET name=$1, description=$2, members_count=$3, posts_count=$4, updated_by=$5, updated_at=$6 WHERE id=$7",
+		spaceEntity.Name, spaceEntity.Description, spaceEntity.Members, spaceEntity.Posts, spaceEntity.UpdatedBy, spaceEntity.UpdatedAt, spaceEntity.ID)
 
 	return err
 }

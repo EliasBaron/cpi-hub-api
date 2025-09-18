@@ -150,5 +150,33 @@ func (u *useCase) Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 		return err
 	}
 
+	for _, spaceID := range dto.SpaceIDs {
+		space, err := u.spaceRepository.Find(ctx, &criteria.Criteria{
+			Filters: []criteria.Filter{
+				{
+					Field:    "id",
+					Value:    spaceID,
+					Operator: criteria.OperatorEqual,
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+		if space == nil {
+			continue
+		}
+
+		if dto.Action == domain.AddUserToSpace {
+			space.Members += 1
+		} else if dto.Action == domain.RemoveUserFromSpace && space.Members > 0 {
+			space.Members -= 1
+		}
+
+		if err := u.spaceRepository.Update(ctx, space); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

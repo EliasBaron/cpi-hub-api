@@ -86,6 +86,7 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 
 	space.CreatedAt, space.UpdatedAt = time.Now(), time.Now()
 	space.UpdatedBy, space.CreatedBy = existingUser.ID, existingUser.ID
+	space.Members, space.Posts = 1, 0
 
 	err = s.spaceRepository.Create(ctx, space)
 	if err != nil {
@@ -119,6 +120,8 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 			ID:          space.ID,
 			Name:        space.Name,
 			Description: space.Description,
+			Members:     space.Members,
+			Posts:       space.Posts,
 			CreatedAt:   space.CreatedAt,
 			UpdatedAt:   space.UpdatedAt,
 			CreatedBy:   space.CreatedBy,

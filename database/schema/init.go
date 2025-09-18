@@ -21,6 +21,8 @@ func EnsureSchema(db *sql.DB) error {
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
+            members_count INT NOT NULL DEFAULT 0,
+			posts_count INT NOT NULL DEFAULT 0,
             created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             created_at TIMESTAMP NOT NULL DEFAULT now(),
             updated_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
