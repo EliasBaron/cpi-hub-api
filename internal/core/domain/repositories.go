@@ -23,6 +23,7 @@ type UserSpaceRepository interface {
 	Update(ctx context.Context, userId int, spaceIDs []int, action string) error
 	FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error)
 	Exists(ctx context.Context, userId int, spaceId int) (bool, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 
 type PostRepository interface {
