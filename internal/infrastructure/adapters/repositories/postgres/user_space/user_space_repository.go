@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"cpi-hub-api/pkg/apperror"
 	"database/sql"
 )
@@ -76,4 +78,17 @@ func (u *UserSpaceRepository) Exists(ctx context.Context, userId int, spaceId in
 		return false, err
 	}
 	return exists, nil
+}
+
+func (p *UserSpaceRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+
+	query := "SELECT COUNT(*) FROM user_spaces"
+	if whereClause != "" {
+		query += whereClause
+	}
+
+	var count int
+	err := p.db.QueryRowContext(ctx, query, params...).Scan(&count)
+	return count, err
 }

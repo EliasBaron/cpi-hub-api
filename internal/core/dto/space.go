@@ -35,16 +35,18 @@ type SearchSpacesDTO struct {
 }
 
 type SearchSpacesResponseDTO struct {
-	Data     []SpaceWithUserDTO `json:"data"`
-	Page     int                `json:"page"`
-	PageSize int                `json:"page_size"`
-	Total    int                `json:"total"`
+	Data     []SpaceWithUserAndCountDTO `json:"data"`
+	Page     int                        `json:"page"`
+	PageSize int                        `json:"page_size"`
+	Total    int                        `json:"total"`
 }
 
-type SpaceWithUserDTO struct {
+type SpaceWithUserAndCountDTO struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
+	Users       int     `json:"users"`
+	Posts       int     `json:"posts"`
 	CreatedAt   string  `json:"created_at"`
 	UpdatedAt   string  `json:"updated_at"`
 	CreatedBy   UserDTO `json:"created_by"`
@@ -58,11 +60,13 @@ func (c *CreateSpace) ToDomain() *domain.Space {
 	}
 }
 
-func ToSpaceWithUserDTO(space *domain.SpaceWithUser) SpaceWithUserDTO {
-	return SpaceWithUserDTO{
+func ToSpaceWithUserDTO(space *domain.SpaceWithUserAndCounts) SpaceWithUserAndCountDTO {
+	return SpaceWithUserAndCountDTO{
 		ID:          space.Space.ID,
 		Name:        space.Space.Name,
 		Description: space.Space.Description,
+		Users:       space.SpaceCounts.Users,
+		Posts:       space.SpaceCounts.Posts,
 		CreatedAt:   space.Space.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   space.Space.UpdatedAt.Format(time.RFC3339),
 		CreatedBy: UserDTO{
@@ -87,8 +91,8 @@ func ToSpaceDTO(space *domain.Space) SpaceDTO {
 	}
 }
 
-func ToSpaceWithUserDTOs(spaces []*domain.SpaceWithUser) []SpaceWithUserDTO {
-	spacesWithUserDTOs := make([]SpaceWithUserDTO, 0, len(spaces))
+func ToSpaceWithUserDTOs(spaces []*domain.SpaceWithUserAndCounts) []SpaceWithUserAndCountDTO {
+	spacesWithUserDTOs := make([]SpaceWithUserAndCountDTO, 0, len(spaces))
 
 	for _, space := range spaces {
 		spacesWithUserDTOs = append(spacesWithUserDTOs, ToSpaceWithUserDTO(space))
