@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -273,11 +274,18 @@ func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.Interes
 		sortDirection = criteria.OrderDirectionAsc
 	}
 
+	fmt.Println("params.UserID", params.UserID)
+	fmt.Println("params.Page", params.Page)
+	fmt.Println("params.PageSize", params.PageSize)
+	fmt.Println("params.OrderBy", params.OrderBy)
+	fmt.Println("params.SortDirection", params.SortDirection)
+
 	spaceIDs, err := p.userSpaceRepository.FindSpacesIDsByUserID(ctx, params.UserID)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println("spaceIDs", spaceIDs)
 	if len(spaceIDs) == 0 {
 		return &SearchResult{
 			Posts: []*domain.ExtendedPost{},
@@ -291,10 +299,14 @@ func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.Interes
 		WithSort(params.OrderBy, sortDirection).
 		Build()
 
+	fmt.Println("searchCriteria", searchCriteria)
+
 	// Get total count without pagination
 	countCriteria := criteria.NewCriteriaBuilder().
 		WithFilter("space_id", spaceIDs, criteria.OperatorIn).
 		Build()
+
+	fmt.Println("countCriteria", countCriteria)
 
 	total, err := p.postRepository.Count(ctx, countCriteria)
 	if err != nil {
@@ -305,6 +317,8 @@ func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.Interes
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("posts", posts)
 
 	extendedPosts, err := p.buildExtendedPosts(ctx, posts)
 	if err != nil {

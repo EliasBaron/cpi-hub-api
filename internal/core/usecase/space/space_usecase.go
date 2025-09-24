@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
+	"strconv"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type SpaceUseCase interface {
 	Create(ctx context.Context, space *domain.Space) (*domain.SpaceWithUserAndCounts, error)
 	Get(ctx context.Context, id string) (*domain.SpaceWithUserAndCounts, error)
 	Search(ctx context.Context, criteria *domain.SpaceSearchCriteria) (*domain.SearchResult, error)
+	GetUsersBySpace(ctx context.Context, spaceID string) ([]*domain.User, error)
 }
 
 type spaceUseCase struct {
@@ -216,4 +218,36 @@ func (s *spaceUseCase) Search(ctx context.Context, searchCriteria *domain.SpaceS
 		PageSize: searchCriteria.PageSize,
 		Total:    totalCount,
 	}, nil
+}
+
+func (s *spaceUseCase) GetUsersBySpace(ctx context.Context, spaceID string) ([]*domain.User, error) {
+	spaceIDInt, err := strconv.Atoi(spaceID)
+	if err != nil {
+		return nil, apperror.NewInvalidData("Invalid space ID format", err, "space_usecase.go:GetUsersBySpace")
+	}
+
+	_, err = helpers.FindEntity(ctx, s.spaceRepository, "id", spaceID, "Space not found")
+	if err != nil {
+		return nil, err
+	}
+
+	userIDs, err := s.userSpaceRepository.FindUserIDsBySpaceID(ctx, spaceIDInt)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(userIDs) == 0 {
+		return []*domain.User{}, nil
+	}
+
+	var users []*domain.User
+	for _, userID := range userIDs {
+		user, err := helpers.FindEntity(ctx, s.userRepository, "id", strconv.Itoa(userID), "User not found")
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
 }
