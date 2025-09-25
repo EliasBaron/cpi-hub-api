@@ -27,11 +27,12 @@ type SimpleSpaceDto struct {
 }
 
 type SearchSpacesDTO struct {
-	CreatedBy     *int   `form:"created_by" json:"created_by"`
-	OrderBy       string `form:"order_by" json:"order_by"`
-	Page          int    `form:"page" json:"page"`
-	PageSize      int    `form:"page_size" json:"page_size"`
-	SortDirection string `form:"sort_direction" json:"sort_direction"`
+	Name          *string `form:"name" json:"name"`
+	CreatedBy     *int    `form:"created_by" json:"created_by"`
+	OrderBy       string  `form:"order_by" json:"order_by"`
+	Page          int     `form:"page" json:"page"`
+	PageSize      int     `form:"page_size" json:"page_size"`
+	SortDirection string  `form:"sort_direction" json:"sort_direction"`
 }
 
 type SearchSpacesResponseDTO struct {

@@ -24,6 +24,7 @@ type SpaceCounts struct {
 }
 
 type SpaceSearchCriteria struct {
+	Name          *string
 	CreatedBy     *int
 	OrderBy       string
 	Page          int
