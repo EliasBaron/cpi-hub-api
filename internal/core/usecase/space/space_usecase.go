@@ -188,6 +188,10 @@ func (s *spaceUseCase) Search(ctx context.Context, searchCriteria *domain.SpaceS
 		WithSort(searchCriteria.OrderBy, direction).
 		WithPagination(searchCriteria.Page, searchCriteria.PageSize)
 
+	if searchCriteria.Name != nil {
+		criteriaBuilder.WithFilter("name", "%"+*searchCriteria.Name+"%", criteria.OperatorILike)
+	}
+
 	if searchCriteria.CreatedBy != nil {
 		criteriaBuilder.WithFilter("created_by", *searchCriteria.CreatedBy, criteria.OperatorEqual)
 	}
