@@ -58,6 +58,7 @@ func (h *SpaceHandler) Search(context *gin.Context) {
 	orderBy, sortDirection := helpers.GetSortValues(context)
 
 	searchCriteria := &domain.SpaceSearchCriteria{
+		Name:          searchDTO.Name,
 		CreatedBy:     searchDTO.CreatedBy,
 		OrderBy:       orderBy,
 		Page:          page,
