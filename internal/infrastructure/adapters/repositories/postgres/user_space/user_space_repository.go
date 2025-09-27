@@ -53,8 +53,6 @@ func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID 
 		return nil, err
 	}
 
-	fmt.Println("spaceIDs", spaceIDs)
-	fmt.Println("spaceIDs == nil", spaceIDs == nil)
 	return spaceIDs, nil
 }
 
