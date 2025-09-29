@@ -209,6 +209,11 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 		spaceID = params.SpaceID
 	}
 
+	var userID int
+	if params.UserID > 0 {
+		userID = params.UserID
+	}
+
 	sortDirection := criteria.OrderDirectionDesc
 	if params.SortDirection == "asc" {
 		sortDirection = criteria.OrderDirectionAsc
@@ -225,6 +230,7 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, spaceID > 0).
+		WithFilterAndCondition("created_by", userID, criteria.OperatorEqual, userID > 0).
 		WithLogicalOperator(logicalOp).
 		WithPagination(params.Page, params.PageSize).
 		WithSort(params.OrderBy, sortDirection).
@@ -234,6 +240,7 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, spaceID > 0).
+		WithFilterAndCondition("created_by", userID, criteria.OperatorEqual, userID > 0).
 		WithLogicalOperator(logicalOp).
 		Build()
 
