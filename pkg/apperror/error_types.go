@@ -12,6 +12,7 @@ const (
 	InternalServer
 	InvalidData
 	PayloadTooLarge
+	Unauthorized
 )
 
 // String returns the string representation of the error type
@@ -19,6 +20,8 @@ func (e ErrorType) String() string {
 	switch e {
 	case NotFound:
 		return "NotFound"
+	case Unauthorized:
+		return "Unauthorized"
 	case UnexpectedDatabaseError:
 		return "UnexpectedDatabaseError"
 	case Forbidden:

@@ -27,6 +27,15 @@ func NewNotFound(message string, error interface{}, thrownAt string) error {
 	)
 }
 
+func NewUnauthorized(message string, error interface{}, thrownAt string) error {
+	return NewError(
+		Unauthorized,
+		message,
+		error,
+		thrownAt,
+	)
+}
+
 // NewUnexpectedDatabaseError corresponds to an unexpected error thrown by the database wrapper
 func NewUnexpectedDatabaseError(message string, error interface{}, thrownAt string) error {
 	return NewError(

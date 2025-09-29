@@ -53,7 +53,42 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, dto.ToUserDTO(user))
+	token, err := helpers.CreateToken(user.Email, user.ID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+token)
+
+	loginResponse := dto.LoginResponse{
+		User:  dto.ToUserDTO(user),
+		Token: token,
+	}
+
+	response.SuccessResponse(c.Writer, loginResponse)
+}
+
+func (h *UserHandler) GetCurrentUser(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	if token == "" {
+		response.NewError(c.Writer, apperror.NewUnauthorized("Missing authorization token", nil, "user_handler.go:GetCurrentUser"))
+		return
+	}
+
+	userId, err := helpers.GetUserIdFromToken(token)
+	if err != nil {
+		response.NewError(c.Writer, apperror.NewUnauthorized("Invalid token", err, "user_handler.go:GetCurrentUser"))
+		return
+	}
+
+	user, err := h.UseCase.Get(c.Request.Context(), userId)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, dto.ToUserDTOWithSpaces(user))
 }
 
 func (h *UserHandler) Get(c *gin.Context) {
