@@ -15,6 +15,10 @@ func ToPostgreSQLQuery(c *criteria.Criteria) (string, []interface{}) {
 	return ToPostgreSQLQueryWithOrderBy(c, true)
 }
 
+func ToPostgreSQLCountQuery(c *criteria.Criteria) (string, []interface{}) {
+	return ToPostgreSQLQueryWithOrderByAndPagination(c, false, false)
+}
+
 func ToPostgreSQLQueryWithOrderBy(c *criteria.Criteria, includeOrderBy bool) (string, []interface{}) {
 	return ToPostgreSQLQueryWithOrderByAndPagination(c, includeOrderBy, true)
 }
@@ -61,6 +65,152 @@ func ToPostgreSQLQueryWithOrderByAndPagination(c *criteria.Criteria, includeOrde
 	}
 
 	return query, params
+}
+
+func ToPostgreSQLQueryWithAlias(c *criteria.Criteria, tableAlias string) (string, []interface{}) {
+	return ToPostgreSQLQueryWithAliasAndOrderByAndPagination(c, tableAlias, true, true)
+}
+
+func ToPostgreSQLQueryWithAliasAndOrderByAndPagination(c *criteria.Criteria, tableAlias string, includeOrderBy bool, includePagination bool) (string, []interface{}) {
+	var whereParts []string
+	var params []interface{}
+	paramIndex := 1
+
+	for _, f := range c.Filters {
+		clause, clauseParams := buildFilterClauseWithAlias(f, tableAlias, paramIndex)
+		if clause != "" {
+			whereParts = append(whereParts, clause)
+			params = append(params, clauseParams...)
+			paramIndex += len(clauseParams)
+		}
+	}
+
+	query := ""
+	if len(whereParts) > 0 {
+		logicalOp := " AND "
+		if c.LogicalOperator == criteria.LogicalOperatorOr {
+			logicalOp = " OR "
+		}
+
+		if len(whereParts) > 1 {
+			if c.LogicalOperator == criteria.LogicalOperatorOr || len(whereParts) > 2 {
+				query += " WHERE (" + strings.Join(whereParts, logicalOp) + ")"
+			} else {
+				query += " WHERE " + strings.Join(whereParts, logicalOp)
+			}
+		} else {
+			query += " WHERE " + whereParts[0]
+		}
+	}
+
+	if includeOrderBy && c.Sort.Field != "" {
+		orderField := c.Sort.Field
+		if tableAlias != "" {
+			orderField = tableAlias + "." + c.Sort.Field
+		}
+		query += fmt.Sprintf(" ORDER BY %s %s", orderField, c.Sort.SortDirection)
+	}
+
+	if includePagination && c.Pagination.PageSize > 0 {
+		offset := (c.Pagination.Page - 1) * c.Pagination.PageSize
+		query += fmt.Sprintf(" LIMIT %d OFFSET %d", c.Pagination.PageSize, offset)
+	}
+
+	return query, params
+}
+
+func buildFilterClauseWithAlias(filter criteria.Filter, tableAlias string, startIndex int) (string, []interface{}) {
+	var params []interface{}
+	fieldName := filter.Field
+	if tableAlias != "" {
+		fieldName = tableAlias + "." + filter.Field
+	}
+
+	switch filter.Operator {
+	case criteria.OperatorEqual:
+		return fmt.Sprintf("%s = $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorNotEqual:
+		return fmt.Sprintf("%s != $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorLike:
+		return fmt.Sprintf("%s LIKE $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorILike:
+		return fmt.Sprintf("%s ILIKE $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorIn:
+		switch v := filter.Value.(type) {
+		case []int:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
+				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
+				args[i] = interface{}(val)
+			}
+			return fmt.Sprintf("%s IN (%s)", fieldName, strings.Join(placeholders, ", ")), args
+		case []interface{}:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
+				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
+				args[i] = val
+			}
+			return fmt.Sprintf("%s IN (%s)", fieldName, strings.Join(placeholders, ", ")), args
+		case []string:
+			placeholders := make([]string, len(v))
+			args := make([]interface{}, len(v))
+			for i, val := range v {
+				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
+				args[i] = interface{}(val)
+			}
+			return fmt.Sprintf("%s IN (%s)", fieldName, strings.Join(placeholders, ", ")), args
+		default:
+			return "", nil
+		}
+
+	case criteria.OperatorNotIn:
+		if values, ok := filter.Value.([]interface{}); ok {
+			placeholders := make([]string, len(values))
+			for i, _ := range values {
+				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
+				params = append(params, values[i])
+			}
+			return fmt.Sprintf("%s NOT IN (%s)", fieldName, strings.Join(placeholders, ", ")), params
+		}
+		return fmt.Sprintf("%s NOT IN ($%d)", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorGt:
+		return fmt.Sprintf("%s > $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorGte:
+		return fmt.Sprintf("%s >= $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorLt:
+		return fmt.Sprintf("%s < $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorLte:
+		return fmt.Sprintf("%s <= $%d", fieldName, startIndex), []interface{}{filter.Value}
+
+	case criteria.OperatorRegex:
+		if pattern, ok := filter.Value.(string); ok {
+			return fmt.Sprintf("%s ILIKE $%d", fieldName, startIndex), []interface{}{pattern}
+		}
+		return "", nil
+
+	case criteria.OperatorExists:
+		if exists, ok := filter.Value.(bool); ok {
+			if exists {
+				return fmt.Sprintf("%s IS NOT NULL", fieldName), nil
+			} else {
+				return fmt.Sprintf("%s IS NULL", fieldName), nil
+			}
+		}
+		return "", nil
+
+	default:
+		return "", nil
+	}
 }
 
 func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interface{}) {

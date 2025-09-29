@@ -18,7 +18,7 @@ type ExtendedPost struct {
 	Post     *Post
 	Space    *Space
 	User     *User
-	Comments []*CommentWithUser
+	Comments []*CommentWithInfo
 }
 
 type Comment struct {
@@ -31,7 +31,8 @@ type Comment struct {
 	UpdatedBy int
 }
 
-type CommentWithUser struct {
+type CommentWithInfo struct {
 	Comment *Comment
 	User    *User
+	Space   *Space
 }
