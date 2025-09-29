@@ -8,6 +8,8 @@ import (
 	"cpi-hub-api/pkg/apperror"
 	"strconv"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUseCase interface {
@@ -51,6 +53,12 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
+
+	cryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, apperror.NewInvalidData("Failed to hash password", err, "user_usecase.go:Create")
+	}
+	user.Password = string(cryptedPassword)
 
 	err = u.userRepository.Create(ctx, user)
 	if err != nil {
