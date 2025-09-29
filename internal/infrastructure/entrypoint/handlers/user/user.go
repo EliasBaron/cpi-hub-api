@@ -38,6 +38,24 @@ func (h *UserHandler) Create(c *gin.Context) {
 	response.CreatedResponse(c.Writer, dto.ToUserDTO(createdUser))
 }
 
+func (h *UserHandler) Login(c *gin.Context) {
+	var loginDTO dto.LoginUser
+
+	if err := c.ShouldBindJSON(&loginDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid login data", err, "user_handler.go:Login")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	user, err := h.UseCase.Login(c.Request.Context(), loginDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, dto.ToUserDTO(user))
+}
+
 func (h *UserHandler) Get(c *gin.Context) {
 	idStr := c.Param("user_id")
 	id, err := strconv.Atoi(idStr)

@@ -17,6 +17,7 @@ type UserUseCase interface {
 	Get(ctx context.Context, id int) (*domain.UserWithSpaces, error)
 	Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
+	Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error)
 }
 
 type useCase struct {
@@ -159,4 +160,31 @@ func (u *useCase) Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	}
 
 	return nil
+}
+
+func (u *useCase) Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error) {
+	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "email",
+				Value:    loginUser.Email,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, apperror.NewInvalidData("Invalid email", nil, "user_usecase.go:Login")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginUser.Password))
+	if err != nil {
+		return nil, apperror.NewInvalidData("Invalid password", nil, "user_usecase.go:Login")
+	}
+
+	return user, nil
 }
