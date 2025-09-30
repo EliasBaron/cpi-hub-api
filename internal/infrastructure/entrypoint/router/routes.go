@@ -12,6 +12,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	// users
 	v1.POST("/users", handlers.UserHandler.Create)
 	v1.GET("/users/:user_id", handlers.UserHandler.Get)
+	v1.GET("/users", handlers.UserHandler.Search)
 
 	// users spaces
 	v1.PUT("/users/:user_id/spaces/:space_id/add", handlers.UserHandler.AddSpaceToUser)

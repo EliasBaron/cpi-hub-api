@@ -167,3 +167,29 @@ func (h *UserHandler) GetInterestedPosts(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, data)
 }
+
+func (h *UserHandler) Search(c *gin.Context) {
+	var searchParams dto.SearchUsersParams
+
+	if err := c.ShouldBindQuery(&searchParams); err != nil {
+		appErr := apperror.NewInvalidData("Invalid search parameters", err, "user_handler.go:Search")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	page, pageSize := helpers.GetPaginationValues(c)
+	orderBy, sortDirection := helpers.GetSortValues(c)
+
+	searchParams.Page = page
+	searchParams.PageSize = pageSize
+	searchParams.OrderBy = orderBy
+	searchParams.SortDirection = sortDirection
+
+	result, err := h.UseCase.Search(c.Request.Context(), searchParams)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, result)
+}

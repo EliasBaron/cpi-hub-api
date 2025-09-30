@@ -64,3 +64,61 @@ func (u *UserRepository) findUserByField(ctx context.Context, whereClause string
 
 	return mapper.ToDomainUser(&userEntity), nil
 }
+
+func (u *UserRepository) Search(ctx context.Context, criteria *criteria.Criteria) ([]*domain.User, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+
+	return u.findUsersByField(ctx, query, params)
+}
+
+func (u *UserRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+
+	var count int
+	countQuery := "SELECT COUNT(*) FROM users " + query
+
+	err := u.db.QueryRowContext(ctx, countQuery, params...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (u *UserRepository) findUsersByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.User, error) {
+	query := `
+		SELECT id, name, last_name, email, password, created_at, updated_at, image
+		FROM users
+	` + " " + whereClause
+
+	rows, err := u.db.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*domain.User
+	for rows.Next() {
+		var userEntity entity.UserEntity
+		err := rows.Scan(
+			&userEntity.ID,
+			&userEntity.Name,
+			&userEntity.LastName,
+			&userEntity.Email,
+			&userEntity.Password,
+			&userEntity.CreatedAt,
+			&userEntity.UpdatedAt,
+			&userEntity.Image,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, mapper.ToDomainUser(&userEntity))
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
