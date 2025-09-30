@@ -22,6 +22,7 @@ type SpaceRepository interface {
 type UserSpaceRepository interface {
 	Update(ctx context.Context, userId int, spaceIDs []int, action string) error
 	FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error)
+	FindUserIDsBySpaceID(ctx context.Context, spaceID int) ([]int, error)
 	Exists(ctx context.Context, userId int, spaceId int) (bool, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
@@ -36,5 +37,6 @@ type PostRepository interface {
 
 type CommentRepository interface {
 	Create(ctx context.Context, comment *Comment) error
-	FindAll(ctx context.Context, c *criteria.Criteria) ([]*Comment, error)
+	Find(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }

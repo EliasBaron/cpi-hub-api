@@ -7,6 +7,7 @@ import (
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
 	"cpi-hub-api/pkg/apperror"
 	"database/sql"
+	"fmt"
 )
 
 type UserSpaceRepository struct {
@@ -17,34 +18,46 @@ func NewUserSpaceRepository(db *sql.DB) *UserSpaceRepository {
 	return &UserSpaceRepository{db: db}
 }
 
-func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error) {
-	query := `SELECT space_id FROM user_spaces WHERE user_id = $1`
+func (r *UserSpaceRepository) findIDsByField(ctx context.Context, selectField, whereField string, whereValue int) ([]int, error) {
+	query := fmt.Sprintf(`SELECT %s FROM user_spaces WHERE %s = $1`, selectField, whereField)
 
-	rows, err := r.db.QueryContext(ctx, query, userID)
+	rows, err := r.db.QueryContext(ctx, query, whereValue)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var spaceIDs []int
+	var ids []int
 	for rows.Next() {
 		var id int
 		if err := rows.Scan(&id); err != nil {
 			return nil, err
 		}
-		spaceIDs = append(spaceIDs, id)
+		ids = append(ids, id)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	if spaceIDs == nil {
+	if ids == nil {
 		return []int{}, nil
 	}
 
-	return spaceIDs, nil
+	return ids, nil
+}
 
+func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error) {
+	spaceIDs, err := r.findIDsByField(ctx, "space_id", "user_id", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return spaceIDs, nil
+}
+
+func (r *UserSpaceRepository) FindUserIDsBySpaceID(ctx context.Context, spaceID int) ([]int, error) {
+	return r.findIDsByField(ctx, "user_id", "space_id", spaceID)
 }
 
 func (u *UserSpaceRepository) Update(ctx context.Context, userId int, spaceIDs []int, action string) error {

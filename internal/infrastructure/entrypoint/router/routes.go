@@ -22,13 +22,14 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.POST("/spaces", handlers.SpaceHandler.Create)
 	v1.GET("/spaces/:space_id", handlers.SpaceHandler.Get)
 	v1.GET("/spaces", handlers.SpaceHandler.Search)
+	v1.GET("/spaces/:space_id/users", handlers.SpaceHandler.GetUsersBySpace)
 
 	// posts
 	v1.POST("/posts", handlers.PostHandler.Create)
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
 	v1.GET("/posts", handlers.PostHandler.Search)
-
-	//comments
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 
+	//comments
+	v1.GET("/comments", handlers.CommentHandler.Search)
 }

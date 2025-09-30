@@ -81,3 +81,20 @@ func (h *SpaceHandler) Search(context *gin.Context) {
 
 	response.SuccessResponse(context.Writer, responseDTO)
 }
+
+func (h *SpaceHandler) GetUsersBySpace(c *gin.Context) {
+	spaceID := c.Param("space_id")
+
+	users, err := h.SpaceUseCase.GetUsersBySpace(c.Request.Context(), spaceID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	userDTOs := make([]dto.UserDTO, len(users))
+	for i, user := range users {
+		userDTOs[i] = dto.ToUserDTO(user)
+	}
+
+	response.SuccessResponse(c.Writer, userDTOs)
+}
