@@ -80,3 +80,18 @@ type UpdateUserSpacesDTO struct {
 	SpaceIDs []int
 	Action   string
 }
+
+type SearchUsersParams struct {
+	FullName      string `form:"full_name"`
+	Page          int    `form:"page"`
+	PageSize      int    `form:"page_size"`
+	OrderBy       string `form:"order_by"`
+	SortDirection string `form:"sort_direction"`
+}
+
+type PaginatedUsersResponse struct {
+	Data     []UserDTO `json:"data"`
+	Page     int       `json:"page"`
+	PageSize int       `json:"page_size"`
+	Total    int       `json:"total"`
+}

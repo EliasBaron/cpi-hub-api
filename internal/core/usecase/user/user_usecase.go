@@ -15,6 +15,7 @@ type UserUseCase interface {
 	Get(ctx context.Context, id int) (*domain.UserWithSpaces, error)
 	Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
+	Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error)
 }
 
 type useCase struct {
@@ -151,4 +152,52 @@ func (u *useCase) Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	}
 
 	return nil
+}
+
+func (u *useCase) Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error) {
+	builder := criteria.NewCriteriaBuilder()
+
+	if params.FullName != "" {
+		builder.WithFilter("CONCAT(name, ' ', last_name)", "%"+params.FullName+"%", criteria.OperatorILike)
+	}
+
+	builder.WithPagination(params.Page, params.PageSize)
+
+	if params.OrderBy != "" {
+		var direction criteria.Direction = criteria.OrderDirectionDesc
+		if params.SortDirection == "asc" {
+			direction = criteria.OrderDirectionAsc
+		}
+		builder.WithSort(params.OrderBy, direction)
+	}
+
+	searchCriteria := builder.Build()
+
+	users, err := u.userRepository.Search(ctx, searchCriteria)
+	if err != nil {
+		return nil, err
+	}
+
+	countBuilder := criteria.NewCriteriaBuilder()
+	if params.FullName != "" {
+		countBuilder.WithFilter("CONCAT(name, ' ', last_name)", "%"+params.FullName+"%", criteria.OperatorILike)
+	}
+	countCriteria := countBuilder.Build()
+
+	total, err := u.userRepository.Count(ctx, countCriteria)
+	if err != nil {
+		return nil, err
+	}
+
+	userDTOs := make([]dto.UserDTO, len(users))
+	for i, user := range users {
+		userDTOs[i] = dto.ToUserDTO(user)
+	}
+
+	return &dto.PaginatedUsersResponse{
+		Data:     userDTOs,
+		Page:     params.Page,
+		PageSize: params.PageSize,
+		Total:    total,
+	}, nil
 }
