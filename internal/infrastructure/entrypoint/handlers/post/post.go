@@ -93,12 +93,24 @@ func (h *PostHandler) Search(context *gin.Context) {
 		}
 	}
 
+	var userID int
+	if userIDStr := context.Query("user_id"); userIDStr != "" {
+		if id, err := strconv.Atoi(userIDStr); err == nil && id > 0 {
+			userID = id
+		} else {
+			appErr := apperror.NewInvalidData("Invalid user_id parameter (must be positive integer)", err, "post_handler.go:Search")
+			response.NewError(context.Writer, appErr)
+			return
+		}
+	}
+
 	searchParams := dto.SearchPostsParams{
 		Page:          page,
 		PageSize:      pageSize,
 		OrderBy:       orderBy,
 		SortDirection: sortDirection,
 		SpaceID:       spaceID,
+		UserID:        userID,
 		Query:         context.Query("q"),
 	}
 

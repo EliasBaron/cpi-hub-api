@@ -18,6 +18,7 @@ type SearchPostsParams struct {
 	OrderBy       string
 	SortDirection string
 	SpaceID       int
+	UserID        int
 	Query         string
 }
 

@@ -30,8 +30,8 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.POST("/posts", handlers.PostHandler.Create)
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
 	v1.GET("/posts", handlers.PostHandler.Search)
-
-	//comments
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 
+	//comments
+	v1.GET("/comments", handlers.CommentHandler.Search)
 }

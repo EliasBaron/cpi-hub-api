@@ -36,6 +36,11 @@ func (c *CommentRepository) FindAll(ctx context.Context, criteria *criteria.Crit
 	return c.findAllByField(ctx, query, params)
 }
 
+func (c *CommentRepository) FindWithSpace(ctx context.Context, criteria *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
+	query, params := mapper.ToPostgreSQLQuery(criteria)
+	return c.findWithSpaceByField(ctx, query, params)
+}
+
 func (c *CommentRepository) findAllByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.Comment, error) {
 	var comments []*domain.Comment
 	query := `
@@ -70,13 +75,152 @@ func (c *CommentRepository) findAllByField(ctx context.Context, whereClause stri
 	return comments, nil
 }
 
-func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.Comment, error) {
-	comments, err := c.FindAll(ctx, criteria)
+func (c *CommentRepository) findWithSpaceByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.CommentWithInfo, error) {
+	var commentsWithInfo []*domain.CommentWithInfo
+	query := `
+		SELECT 
+			c.id, c.post_id, c.content, c.created_by, c.created_at,
+			u.id, u.name, u.last_name, u.email, u.image, u.created_at,
+			s.id, s.name, s.description, s.created_at
+		FROM comments c
+		INNER JOIN posts p ON c.post_id = p.id
+		INNER JOIN spaces s ON p.space_id = s.id
+		INNER JOIN users u ON c.created_by = u.id
+	` + " " + whereClause
+
+	rows, err := c.db.QueryContext(ctx, query, params...)
 	if err != nil {
 		return nil, err
 	}
-	if len(comments) == 0 {
-		return nil, nil
+	defer rows.Close()
+
+	for rows.Next() {
+		var commentEntity entity.CommentEntity
+		var userEntity entity.UserEntity
+		var spaceEntity entity.SpaceEntity
+
+		if err := rows.Scan(
+			&commentEntity.ID,
+			&commentEntity.PostID,
+			&commentEntity.Content,
+			&commentEntity.CreatedBy,
+			&commentEntity.CreatedAt,
+			&userEntity.ID,
+			&userEntity.Name,
+			&userEntity.LastName,
+			&userEntity.Email,
+			&userEntity.Image,
+			&userEntity.CreatedAt,
+			&spaceEntity.ID,
+			&spaceEntity.Name,
+			&spaceEntity.Description,
+			&spaceEntity.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		comment := mapper.ToDomainComment(&commentEntity)
+		user := mapper.ToDomainUser(&userEntity)
+		space := mapper.ToDomainSpace(&spaceEntity)
+
+		commentsWithInfo = append(commentsWithInfo, &domain.CommentWithInfo{
+			Comment: comment,
+			User:    user,
+			Space:   space,
+		})
 	}
-	return comments[0], nil
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return commentsWithInfo, nil
+}
+
+func (c *CommentRepository) findWithInfoByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.CommentWithInfo, error) {
+	var commentsWithInfo []*domain.CommentWithInfo
+	query := `
+		SELECT 
+			c.id, c.post_id, c.content, c.created_by, c.created_at,
+			u.id, u.name, u.last_name, u.email, u.image, u.created_at,
+			s.id, s.name, s.description, s.created_at
+		FROM comments c
+		INNER JOIN posts p ON c.post_id = p.id
+		INNER JOIN spaces s ON p.space_id = s.id
+		INNER JOIN users u ON c.created_by = u.id
+	` + " " + whereClause
+
+	rows, err := c.db.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var commentEntity entity.CommentEntity
+		var userEntity entity.UserEntity
+		var spaceEntity entity.SpaceEntity
+
+		if err := rows.Scan(
+			&commentEntity.ID,
+			&commentEntity.PostID,
+			&commentEntity.Content,
+			&commentEntity.CreatedBy,
+			&commentEntity.CreatedAt,
+			&userEntity.ID,
+			&userEntity.Name,
+			&userEntity.LastName,
+			&userEntity.Email,
+			&userEntity.Image,
+			&userEntity.CreatedAt,
+			&spaceEntity.ID,
+			&spaceEntity.Name,
+			&spaceEntity.Description,
+			&spaceEntity.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		comment := mapper.ToDomainComment(&commentEntity)
+		user := mapper.ToDomainUser(&userEntity)
+		space := mapper.ToDomainSpace(&spaceEntity)
+
+		commentsWithInfo = append(commentsWithInfo, &domain.CommentWithInfo{
+			Comment: comment,
+			User:    user,
+			Space:   space,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return commentsWithInfo, nil
+}
+
+func (c *CommentRepository) buildQueryWithAliases(criteria *criteria.Criteria) (string, []interface{}) {
+	return mapper.ToPostgreSQLQueryWithAlias(criteria, "c")
+}
+
+func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
+	query, params := c.buildQueryWithAliases(criteria)
+	return c.findWithInfoByField(ctx, query, params)
+}
+
+func (c *CommentRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	query, params := mapper.ToPostgreSQLCountQuery(criteria)
+
+	countQuery := `
+		SELECT COUNT(*)
+		FROM comments
+	` + " " + query
+
+	var count int
+	err := c.db.QueryRowContext(ctx, countQuery, params...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

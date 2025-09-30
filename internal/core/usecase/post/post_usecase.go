@@ -20,7 +20,7 @@ type PostUseCase interface {
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error)
 	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
-	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error)
+	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error)
 }
 
 type postUseCase struct {
@@ -47,36 +47,19 @@ func NewPostUsecase(
 	}
 }
 
-func buildCriteria(field string, values []int) *criteria.Criteria {
-	return &criteria.Criteria{
-		Filters: []criteria.Filter{
-			{Field: field, Value: values, Operator: criteria.OperatorIn},
-		},
-	}
-}
+func (p *postUseCase) getCommentsWithUsers(ctx context.Context, postIDs []int) (map[int][]*domain.CommentWithInfo, error) {
+	comments, err := p.commentRepository.Find(ctx, criteria.NewCriteriaBuilder().
+		WithFilter("post_id", postIDs, criteria.OperatorIn).
+		WithSort("created_at", criteria.OrderDirectionDesc).
+		Build())
 
-func (p *postUseCase) getCommentsWithUsers(ctx context.Context, postIDs []int) (map[int][]*domain.CommentWithUser, error) {
-	comments, err := p.commentRepository.FindAll(ctx, buildCriteria("post_id", postIDs))
 	if err != nil {
 		return nil, err
 	}
 
-	commentsMap := make(map[int][]*domain.CommentWithUser)
-	userCache := make(map[int]*domain.User)
-
+	commentsMap := make(map[int][]*domain.CommentWithInfo)
 	for _, comment := range comments {
-		user := userCache[comment.CreatedBy]
-		if user == nil {
-			user, err = helpers.FindEntity(ctx, p.userRepository, "id", comment.CreatedBy, "User not found for comment")
-			if err != nil {
-				return nil, err
-			}
-			userCache[comment.CreatedBy] = user
-		}
-		commentsMap[comment.PostID] = append(commentsMap[comment.PostID], &domain.CommentWithUser{
-			Comment: comment,
-			User:    user,
-		})
+		commentsMap[comment.Comment.PostID] = append(commentsMap[comment.Comment.PostID], comment)
 	}
 	return commentsMap, nil
 }
@@ -98,6 +81,7 @@ func (p *postUseCase) buildExtendedPosts(
 	}
 
 	spaceCache := make(map[int]*domain.Space)
+	userCache := make(map[int]*domain.User)
 	result := make([]*domain.ExtendedPost, 0, len(posts))
 
 	for _, post := range posts {
@@ -110,9 +94,13 @@ func (p *postUseCase) buildExtendedPosts(
 			spaceCache[post.SpaceID] = space
 		}
 
-		user, err := helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
-		if err != nil {
-			return nil, err
+		user := userCache[post.CreatedBy]
+		if user == nil {
+			user, err = helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
+			if err != nil {
+				return nil, err
+			}
+			userCache[post.CreatedBy] = user
 		}
 
 		result = append(result, &domain.ExtendedPost{
@@ -152,7 +140,7 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 		Post:     post,
 		Space:    existingSpace,
 		User:     existingUser,
-		Comments: []*domain.CommentWithUser{},
+		Comments: []*domain.CommentWithInfo{},
 	}, nil
 }
 
@@ -168,7 +156,7 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, er
 	return extendedPosts[0], nil
 }
 
-func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithUser, error) {
+func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error) {
 	user, err := helpers.FindEntity(ctx, p.userRepository, "id", comment.CreatedBy, "User not found")
 	if err != nil {
 		return nil, err
@@ -201,7 +189,11 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 		return nil, err
 	}
 
-	return &domain.CommentWithUser{Comment: comment, User: user}, nil
+	return &domain.CommentWithInfo{
+		Comment: comment,
+		User:    user,
+		Space:   space,
+	}, nil
 }
 
 func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error) {
@@ -215,6 +207,11 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 	var spaceID int
 	if params.SpaceID > 0 {
 		spaceID = params.SpaceID
+	}
+
+	var userID int
+	if params.UserID > 0 {
+		userID = params.UserID
 	}
 
 	sortDirection := criteria.OrderDirectionDesc
@@ -233,16 +230,17 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, spaceID > 0).
+		WithFilterAndCondition("created_by", userID, criteria.OperatorEqual, userID > 0).
 		WithLogicalOperator(logicalOp).
 		WithPagination(params.Page, params.PageSize).
 		WithSort(params.OrderBy, sortDirection).
 		Build()
 
-	// Get total count without pagination
 	countCriteria := criteria.NewCriteriaBuilder().
 		WithFilterAndCondition("title", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("content", searchQuery, criteria.OperatorILike, len(params.Query) > 0).
 		WithFilterAndCondition("space_id", spaceID, criteria.OperatorEqual, spaceID > 0).
+		WithFilterAndCondition("created_by", userID, criteria.OperatorEqual, userID > 0).
 		WithLogicalOperator(logicalOp).
 		Build()
 
