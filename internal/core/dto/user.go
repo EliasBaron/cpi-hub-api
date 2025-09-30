@@ -85,3 +85,18 @@ type LoginUser struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
+
+type SearchUsersParams struct {
+	FullName      string `form:"full_name"`
+	Page          int    `form:"page"`
+	PageSize      int    `form:"page_size"`
+	OrderBy       string `form:"order_by"`
+	SortDirection string `form:"sort_direction"`
+}
+
+type PaginatedUsersResponse struct {
+	Data     []UserDTO `json:"data"`
+	Page     int       `json:"page"`
+	PageSize int       `json:"page_size"`
+	Total    int       `json:"total"`
+}
