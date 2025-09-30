@@ -18,7 +18,7 @@ type UserHandler struct {
 	PostUseCase post.PostUseCase
 }
 
-func (h *UserHandler) Create(c *gin.Context) {
+func (h *UserHandler) Register(c *gin.Context) {
 	var createUserDTO dto.CreateUser
 
 	if err := c.ShouldBindJSON(&createUserDTO); err != nil {
@@ -35,7 +35,20 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, dto.ToUserDTO(createdUser))
+	token, err := helpers.CreateToken(createdUser.Email, createdUser.ID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+token)
+
+	registerResponse := dto.AuthResponse{
+		User:  dto.ToUserDTO(createdUser),
+		Token: token,
+	}
+
+	response.CreatedResponse(c.Writer, registerResponse)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
@@ -61,7 +74,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	c.Header("Authorization", "Bearer "+token)
 
-	loginResponse := dto.LoginResponse{
+	loginResponse := dto.AuthResponse{
 		User:  dto.ToUserDTO(user),
 		Token: token,
 	}
