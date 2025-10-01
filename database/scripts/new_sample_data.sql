@@ -378,3 +378,151 @@ INSERT INTO comments (post_id, content, created_by, created_at) VALUES
                                                                     (67, 'Recomiendo aprender a usar overlays', 13, NOW());
 
 
+-- =========================
+-- POSTS 71–100
+-- =========================
+INSERT INTO posts (title, content, created_by, space_id, updated_by, created_at, updated_at) VALUES
+-- Fotografía (espacio 1)
+('Fotografía callejera: consejos prácticos', 'Cómo capturar momentos espontáneos en la ciudad', 8, 1, 8, NOW(), NOW()),
+('Mejor horario para fotos al aire libre', 'Golden hour o blue hour: ¿cuál prefieren?', 12, 1, 12, NOW(), NOW()),
+
+-- Fitness (espacio 2)
+('Rutinas con bandas elásticas', 'Entrenamiento completo sin pesas', 3, 2, 3, NOW(), NOW()),
+('Errores comunes en el gimnasio', 'Cosas que debemos evitar para progresar', 10, 2, 10, NOW(), NOW()),
+
+-- Cine y series (espacio 3)
+('Películas animadas para adultos', 'Más allá de Pixar: recomendaciones', 6, 3, 6, NOW(), NOW()),
+('Series con mejores soundtracks', 'OSTs que marcaron la diferencia', 14, 3, 14, NOW(), NOW()),
+
+-- Emprendimientos (espacio 4)
+('Cómo armar un pitch deck ganador', 'Estructura básica para captar inversores', 9, 4, 9, NOW(), NOW()),
+('Productividad en startups', 'Herramientas y hábitos para no perder el foco', 2, 4, 2, NOW(), NOW()),
+
+-- Idiomas (espacio 5)
+('Técnicas para aprender vocabulario rápido', 'Métodos de memorización efectivos', 5, 5, 5, NOW(), NOW()),
+('Libros para practicar inglés intermedio', 'Lecturas fáciles y entretenidas', 13, 5, 13, NOW(), NOW()),
+
+-- Medio ambiente (espacio 6)
+('Compostaje casero', 'Cómo convertir residuos en abono', 1, 6, 1, NOW(), NOW()),
+('¿Es rentable instalar energía eólica en casa?', 'Discusión sobre pros y contras', 7, 6, 7, NOW(), NOW()),
+
+-- Psicología (espacio 7)
+('La importancia del sueño en la salud mental', 'Dormir bien es clave para el bienestar', 11, 7, 11, NOW(), NOW()),
+('Cómo superar la procrastinación', 'Técnicas prácticas que me ayudaron', 4, 7, 4, NOW(), NOW()),
+
+-- Historia (espacio 8)
+('La caída del Imperio Romano', 'Factores que explican su final', 8, 8, 8, NOW(), NOW()),
+('Inventos que cambiaron la historia', 'Desde la imprenta hasta internet', 14, 8, 14, NOW(), NOW()),
+
+-- Astronomía (espacio 9)
+('Agujeros negros: lo que sabemos hoy', 'Reseña de descubrimientos recientes', 6, 9, 6, NOW(), NOW()),
+('Viajes espaciales privados', 'El rol de SpaceX, Blue Origin y otros', 10, 9, 10, NOW(), NOW()),
+
+-- Filosofía (espacio 10)
+('El mito de la caverna explicado', 'Aplicaciones en la vida moderna', 5, 10, 5, NOW(), NOW()),
+('La felicidad según Aristóteles', 'Una mirada a la ética eudaimónica', 13, 10, 13, NOW(), NOW()),
+
+-- Cueva gamer (espacio 11)
+('Shooters competitivos más jugados', 'CS:GO, Valorant, Apex: ¿cuál prefieren?', 9, 11, 9, NOW(), NOW()),
+('La evolución de los juegos móviles', 'De Snake a Genshin Impact', 2, 11, 2, NOW(), NOW()),
+
+-- Lectura (espacio 12)
+('Mejores novelas cortas', 'Historias rápidas pero profundas', 7, 12, 7, NOW(), NOW()),
+('Autores latinoamericanos recomendados', 'Más allá de García Márquez', 1, 12, 1, NOW(), NOW()),
+
+-- UNQUI (espacio 13)
+('Consejos para exámenes finales', 'Tips de estudio y organización', 3, 13, 3, NOW(), NOW()),
+('Bibliografía útil para Introducción a la Programación', 'Guías y libros recomendados', 12, 13, 12, NOW(), NOW()),
+
+-- Tecnología (espacio 14)
+('Kubernetes vs Docker Swarm', 'Comparación para orquestación de contenedores', 4, 14, 4, NOW(), NOW()),
+('Novedades de Python 3.12', 'Principales cambios y mejoras', 8, 14, 8, NOW(), NOW()),
+
+-- Música (espacio 15)
+('Álbumes icónicos del rock', 'Discos que marcaron época', 6, 15, 6, NOW(), NOW()),
+('Mejores auriculares calidad/precio 2024', 'Opciones accesibles para buena música', 13, 15, 13, NOW(), NOW()),
+
+-- Deportes (espacio 16)
+('Mejores mundiales de fútbol de la historia', '¿Cuál fue el más emocionante?', 5, 16, 5, NOW(), NOW()),
+('El auge del pádel', '¿Moda pasajera o deporte consolidado?', 11, 16, 11, NOW(), NOW()),
+
+-- Arte y diseño (espacio 17)
+('Diseño minimalista: pros y contras', 'Una tendencia que sigue vigente', 2, 17, 2, NOW(), NOW()),
+('Inteligencia artificial en el arte', '¿Amenaza o herramienta?', 14, 17, 14, NOW(), NOW()),
+
+-- Cocina (espacio 18)
+('Recetas rápidas para estudiantes', 'Platos fáciles con pocos ingredientes', 9, 18, 9, NOW(), NOW()),
+('Pan casero paso a paso', 'Mi experiencia horneando pan en casa', 7, 18, 7, NOW(), NOW()),
+
+-- Viajes (espacio 19)
+('Destinos económicos en Sudamérica', 'Opciones para viajar con poco presupuesto', 10, 19, 10, NOW(), NOW()),
+('Consejos para viajar solo', 'Ventajas y precauciones', 3, 19, 3, NOW(), NOW()),
+
+-- Ciencia (espacio 20)
+('Avances en biotecnología 2024', 'Lo último en edición genética', 1, 20, 1, NOW(), NOW()),
+('Teorías sobre la materia oscura', 'Hipótesis actuales', 12, 20, 12, NOW(), NOW());
+
+-- =========================
+-- COMMENTS 71–100
+-- =========================
+INSERT INTO comments (post_id, content, created_by, created_at) VALUES
+(71, 'Me gusta capturar escenas con un 35mm fijo', 2, NOW()),
+(71, 'La clave es pasar desapercibido', 6, NOW()),
+(72, 'Golden hour siempre da tonos cálidos hermosos', 5, NOW()),
+(72, 'Prefiero blue hour para paisajes urbanos', 13, NOW()),
+(73, 'Las bandas son muy útiles en viajes', 7, NOW()),
+(73, 'Perfectas para entrenar en casa', 11, NOW()),
+(74, 'No calentar es el peor error', 8, NOW()),
+(74, 'Hacer siempre ego lifting retrasa el progreso', 1, NOW()),
+(75, 'Persepolis es una joya animada', 3, NOW()),
+(75, 'Me encantó “Anomalisa”', 9, NOW()),
+(76, 'Dark tiene un soundtrack increíble', 4, NOW()),
+(76, 'Arcane también destaca por la música', 10, NOW()),
+(77, 'Usar pocas diapositivas y al grano', 12, NOW()),
+(77, 'Las métricas son lo más importante', 14, NOW()),
+(78, 'Notion y Toggl ayudan mucho', 6, NOW()),
+(78, 'La disciplina es más importante que la app', 2, NOW()),
+(79, 'Hacer flashcards funciona excelente', 8, NOW()),
+(79, 'Yo uso la técnica de repetición espaciada', 5, NOW()),
+(80, 'Los libros de Penguin Readers son buenos', 7, NOW()),
+(80, 'También recomiendo leer Harry Potter en inglés', 13, NOW()),
+(81, 'El compostaje reduce mucho la basura', 4, NOW()),
+(81, 'Al principio huele raro, luego mejora', 11, NOW()),
+(82, 'El costo inicial es alto aún', 9, NOW()),
+(82, 'Más viable en zonas con viento constante', 3, NOW()),
+(83, 'Dormir poco afecta el humor', 10, NOW()),
+(83, 'La higiene del sueño es clave', 1, NOW()),
+(84, 'La técnica Pomodoro me ayuda', 6, NOW()),
+(84, 'Bloquear distracciones con apps es útil', 2, NOW()),
+(85, 'La corrupción también debilitó a Roma', 12, NOW()),
+(85, 'El imperio se fragmentó demasiado', 14, NOW()),
+(86, 'La rueda cambió todo', 8, NOW()),
+(86, 'Internet es el invento más influyente', 5, NOW()),
+(87, 'Los agujeros negros generan fascinación', 7, NOW()),
+(87, 'Me interesa la foto de M87', 13, NOW()),
+(88, 'SpaceX lidera la carrera', 9, NOW()),
+(88, 'Blue Origin va más lento pero seguro', 4, NOW()),
+(89, 'La caverna es una metáfora potente', 3, NOW()),
+(89, 'Sigue vigente en redes sociales', 11, NOW()),
+(90, 'La felicidad está en el equilibrio', 1, NOW()),
+(90, 'La virtud es esencial según Aristóteles', 6, NOW()),
+(91, 'Valorant tiene mejor ritmo', 12, NOW()),
+(91, 'CS:GO es el clásico indiscutible', 8, NOW()),
+(92, 'Los móviles ya son consolas portátiles', 14, NOW()),
+(92, 'El futuro es crossplay total', 10, NOW()),
+(93, '“El viejo y el mar” es imperdible', 7, NOW()),
+(93, 'Las novelas de Murakami también son buenas', 5, NOW()),
+(94, 'Cortázar siempre sorprende', 13, NOW()),
+(94, 'Borges es lectura obligada', 1, NOW()),
+(95, 'Armar un plan de estudio ayuda mucho', 9, NOW()),
+(95, 'No dejar todo para el último día', 6, NOW()),
+(96, 'El libro de Abelson & Sussman es muy bueno', 2, NOW()),
+(96, 'También recomiendo Code Complete', 12, NOW()),
+(97, 'Kubernetes tiene más comunidad', 11, NOW()),
+(97, 'Swarm es más simple de usar', 3, NOW()),
+(98, 'Me encanta la nueva sintaxis de patrones', 8, NOW()),
+(98, 'Python 3.12 mejoró el rendimiento', 14, NOW()),
+(99, 'Dark Side of the Moon es un clásico', 10, NOW()),
+(99, 'Abbey Road cambió la música', 4, NOW()),
+(100, 'Los auriculares JBL son buena opción', 9, NOW()),
+(100, 'Los Sony WH-1000XM5 son excelentes', 13, NOW());
