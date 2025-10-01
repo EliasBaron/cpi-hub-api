@@ -81,6 +81,11 @@ type UpdateUserSpacesDTO struct {
 	Action   string
 }
 
+type LoginUser struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
 type SearchUsersParams struct {
 	FullName      string `form:"full_name"`
 	Page          int    `form:"page"`

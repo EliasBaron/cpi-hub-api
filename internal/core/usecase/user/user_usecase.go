@@ -8,6 +8,8 @@ import (
 	"cpi-hub-api/pkg/apperror"
 	"strconv"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUseCase interface {
@@ -15,6 +17,7 @@ type UserUseCase interface {
 	Get(ctx context.Context, id int) (*domain.UserWithSpaces, error)
 	Update(ctx context.Context, dto dto.UpdateUserSpacesDTO) error
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
+	Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error)
 	Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error)
 }
 
@@ -52,6 +55,12 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
+
+	cryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, apperror.NewInvalidData("Failed to hash password", err, "user_usecase.go:Create")
+	}
+	user.Password = string(cryptedPassword)
 
 	err = u.userRepository.Create(ctx, user)
 	if err != nil {
@@ -200,4 +209,31 @@ func (u *useCase) Search(ctx context.Context, params dto.SearchUsersParams) (*dt
 		PageSize: params.PageSize,
 		Total:    total,
 	}, nil
+}
+
+func (u *useCase) Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error) {
+	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "email",
+				Value:    loginUser.Email,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, apperror.NewInvalidData("Invalid email", nil, "user_usecase.go:Login")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginUser.Password))
+	if err != nil {
+		return nil, apperror.NewInvalidData("Invalid password", nil, "user_usecase.go:Login")
+	}
+
+	return user, nil
 }

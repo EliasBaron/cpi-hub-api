@@ -18,7 +18,7 @@ type UserHandler struct {
 	PostUseCase post.PostUseCase
 }
 
-func (h *UserHandler) Create(c *gin.Context) {
+func (h *UserHandler) Register(c *gin.Context) {
 	var createUserDTO dto.CreateUser
 
 	if err := c.ShouldBindJSON(&createUserDTO); err != nil {
@@ -35,7 +35,73 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, dto.ToUserDTO(createdUser))
+	token, err := helpers.CreateToken(createdUser.Email, createdUser.ID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+token)
+
+	registerResponse := dto.AuthResponse{
+		User:  dto.ToUserDTO(createdUser),
+		Token: token,
+	}
+
+	response.CreatedResponse(c.Writer, registerResponse)
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var loginDTO dto.LoginUser
+
+	if err := c.ShouldBindJSON(&loginDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid login data", err, "user_handler.go:Login")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	user, err := h.UseCase.Login(c.Request.Context(), loginDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	token, err := helpers.CreateToken(user.Email, user.ID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+token)
+
+	loginResponse := dto.AuthResponse{
+		User:  dto.ToUserDTO(user),
+		Token: token,
+	}
+
+	response.SuccessResponse(c.Writer, loginResponse)
+}
+
+func (h *UserHandler) GetCurrentUser(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	if token == "" {
+		response.NewError(c.Writer, apperror.NewUnauthorized("Missing authorization token", nil, "user_handler.go:GetCurrentUser"))
+		return
+	}
+
+	userId, err := helpers.GetUserIdFromToken(token)
+	if err != nil {
+		response.NewError(c.Writer, apperror.NewUnauthorized("Invalid token", err, "user_handler.go:GetCurrentUser"))
+		return
+	}
+
+	user, err := h.UseCase.Get(c.Request.Context(), userId)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, dto.ToUserDTOWithSpaces(user))
 }
 
 func (h *UserHandler) Get(c *gin.Context) {
