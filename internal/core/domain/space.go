@@ -12,7 +12,29 @@ type Space struct {
 	UpdatedBy   int
 }
 
-type SpaceWithUser struct {
-	Space *Space
-	User  *User
+type SpaceWithUserAndCounts struct {
+	Space       *Space
+	User        *User
+	SpaceCounts SpaceCounts
+}
+
+type SpaceCounts struct {
+	Users int
+	Posts int
+}
+
+type SpaceSearchCriteria struct {
+	Name          *string
+	CreatedBy     *int
+	OrderBy       string
+	Page          int
+	PageSize      int
+	SortDirection string
+}
+
+type SearchResult struct {
+	Data     []*SpaceWithUserAndCounts
+	Page     int
+	PageSize int
+	Total    int
 }

@@ -2,6 +2,10 @@ package user
 
 import (
 	"context"
+	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/mapper"
+	"cpi-hub-api/pkg/apperror"
 	"database/sql"
 	"fmt"
 )
@@ -14,45 +18,68 @@ func NewUserSpaceRepository(db *sql.DB) *UserSpaceRepository {
 	return &UserSpaceRepository{db: db}
 }
 
-// Devuelve todos los IDs de espacios asociados a un usuario
-func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error) {
-	query := `SELECT space_id FROM user_spaces WHERE user_id = $1`
+func (r *UserSpaceRepository) findIDsByField(ctx context.Context, selectField, whereField string, whereValue int) ([]int, error) {
+	query := fmt.Sprintf(`SELECT %s FROM user_spaces WHERE %s = $1`, selectField, whereField)
 
-	rows, err := r.db.QueryContext(ctx, query, userID)
+	rows, err := r.db.QueryContext(ctx, query, whereValue)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var spaceIDs []int
+	var ids []int
 	for rows.Next() {
 		var id int
 		if err := rows.Scan(&id); err != nil {
 			return nil, err
 		}
-		spaceIDs = append(spaceIDs, id)
+		ids = append(ids, id)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	if spaceIDs == nil {
+	if ids == nil {
 		return []int{}, nil
 	}
 
-	return spaceIDs, nil
-
+	return ids, nil
 }
 
-func (u *UserSpaceRepository) AddUserToSpace(ctx context.Context, userId int, spaceId int) error {
-	_, err := u.db.ExecContext(ctx,
-		"INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)",
-		userId, spaceId,
-	)
+func (r *UserSpaceRepository) FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error) {
+	spaceIDs, err := r.findIDsByField(ctx, "space_id", "user_id", userID)
 	if err != nil {
-		return fmt.Errorf("error al agregar espacio a usuario: %w", err)
+		return nil, err
 	}
+
+	return spaceIDs, nil
+}
+
+func (r *UserSpaceRepository) FindUserIDsBySpaceID(ctx context.Context, spaceID int) ([]int, error) {
+	return r.findIDsByField(ctx, "user_id", "space_id", spaceID)
+}
+
+func (u *UserSpaceRepository) Update(ctx context.Context, userId int, spaceIDs []int, action string) error {
+	switch action {
+	case domain.AddUserToSpace:
+		for _, spaceID := range spaceIDs {
+			_, err := u.db.ExecContext(ctx, "INSERT INTO user_spaces (user_id, space_id) VALUES ($1, $2)", userId, spaceID)
+			if err != nil {
+				return err
+			}
+		}
+	case domain.RemoveUserFromSpace:
+		for _, spaceID := range spaceIDs {
+			_, err := u.db.ExecContext(ctx, "DELETE FROM user_spaces WHERE user_id = $1 AND space_id = $2", userId, spaceID)
+			if err != nil {
+				return err
+			}
+		}
+	default:
+		return apperror.NewInvalidData("invalid action", nil, "user_space_repository.go:Update")
+	}
+
 	return nil
 }
 
@@ -61,7 +88,20 @@ func (u *UserSpaceRepository) Exists(ctx context.Context, userId int, spaceId in
 	query := `SELECT EXISTS(SELECT 1 FROM user_spaces WHERE user_id = $1 AND space_id = $2)`
 	err := u.db.QueryRowContext(ctx, query, userId, spaceId).Scan(&exists)
 	if err != nil {
-		return false, fmt.Errorf("error al verificar existencia de espacio: %w", err)
+		return false, err
 	}
 	return exists, nil
+}
+
+func (p *UserSpaceRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	whereClause, params := mapper.ToPostgreSQLQuery(criteria)
+
+	query := "SELECT COUNT(*) FROM user_spaces"
+	if whereClause != "" {
+		query += whereClause
+	}
+
+	var count int
+	err := p.db.QueryRowContext(ctx, query, params...).Scan(&count)
+	return count, err
 }

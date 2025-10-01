@@ -4,6 +4,7 @@ import (
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/core/usecase/post"
 	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	response "cpi-hub-api/pkg/http"
 	"strconv"
 
@@ -29,7 +30,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Post created successfully", dto.ToPostExtendedDTO(createdPost))
+	response.CreatedResponse(c.Writer, dto.ToPostExtendedDTO(createdPost))
 }
 
 func (h *PostHandler) Get(c *gin.Context) {
@@ -47,7 +48,7 @@ func (h *PostHandler) Get(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c.Writer, "Post retrieved successfully", dto.ToPostExtendedDTO(post))
+	response.SuccessResponse(c.Writer, dto.ToPostExtendedDTO(post))
 }
 
 func (h *PostHandler) AddComment(c *gin.Context) {
@@ -74,33 +75,99 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 		return
 	}
 
-	response.CreatedResponse(c.Writer, "Comment created successfully", dto.ToCommentWithUserAndPostDTO(createdComment))
+	response.CreatedResponse(c.Writer, dto.ToCommentWithUserAndPostDTO(createdComment))
 }
 
-func (h *PostHandler) SearchPosts(context *gin.Context) {
-	pageStr := context.Query("page")
-	page := 1
-	if pageStr != "" {
-		var err error
-		page, err = strconv.Atoi(pageStr)
-		if err != nil || page < 1 {
-			appErr := apperror.NewInvalidData("Invalid page number", err, "post_handler.go:SearchPosts")
+func (h *PostHandler) Search(context *gin.Context) {
+	page, pageSize := helpers.GetPaginationValues(context)
+	orderBy, sortDirection := helpers.GetSortValues(context)
+
+	var spaceID int
+	if spaceIDStr := context.Query("space_id"); spaceIDStr != "" {
+		if id, err := strconv.Atoi(spaceIDStr); err == nil && id > 0 {
+			spaceID = id
+		} else {
+			appErr := apperror.NewInvalidData("Invalid space_id parameter (must be positive integer)", err, "post_handler.go:Search")
+			response.NewError(context.Writer, appErr)
+			return
+		}
+	}
+
+	var userID int
+	if userIDStr := context.Query("user_id"); userIDStr != "" {
+		if id, err := strconv.Atoi(userIDStr); err == nil && id > 0 {
+			userID = id
+		} else {
+			appErr := apperror.NewInvalidData("Invalid user_id parameter (must be positive integer)", err, "post_handler.go:Search")
 			response.NewError(context.Writer, appErr)
 			return
 		}
 	}
 
 	searchParams := dto.SearchPostsParams{
-		Page:    page,
-		SpaceID: context.Query("space_id"),
-		Query:   context.Query("q"),
+		Page:          page,
+		PageSize:      pageSize,
+		OrderBy:       orderBy,
+		SortDirection: sortDirection,
+		SpaceID:       spaceID,
+		UserID:        userID,
+		Query:         context.Query("q"),
 	}
 
-	posts, err := h.PostUseCase.SearchPosts(context.Request.Context(), searchParams)
+	searchResult, err := h.PostUseCase.Search(context.Request.Context(), searchParams)
 	if err != nil {
 		response.NewError(context.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(context.Writer, "Posts retrieved successfully", dto.ToPostExtendedDTOs(posts))
+	data := dto.PaginatedPostsResponse{
+		Data:     dto.ToPostExtendedDTOs(searchResult.Posts),
+		Page:     searchParams.Page,
+		PageSize: searchParams.PageSize,
+		Total:    searchResult.Total,
+	}
+
+	response.SuccessResponse(context.Writer, data)
+}
+
+func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
+	page, pageSize := helpers.GetPaginationValues(context)
+	orderBy, sortDirection := helpers.GetSortValues(context)
+
+	userIDStr := context.Query("user_id")
+	if userIDStr == "" {
+		appErr := apperror.NewInvalidData("user_id parameter is required", nil, "post_handler.go:GetInterestedPosts")
+		response.NewError(context.Writer, appErr)
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil || userID <= 0 {
+		appErr := apperror.NewInvalidData("Invalid user_id parameter (must be positive integer)", err, "post_handler.go:GetInterestedPosts")
+		response.NewError(context.Writer, appErr)
+		return
+	}
+
+	interestedParams := dto.InterestedPostsParams{
+		Page:          page,
+		PageSize:      pageSize,
+		OrderBy:       orderBy,
+		SortDirection: sortDirection,
+		UserID:        userID,
+	}
+
+	searchResult, err := h.PostUseCase.GetInterestedPosts(context.Request.Context(), interestedParams)
+	if err != nil {
+		response.NewError(context.Writer, err)
+		return
+	}
+
+	data := dto.PaginatedPostsResponse{
+		Data:     dto.ToPostExtendedDTOs(searchResult.Posts),
+		Page:     interestedParams.Page,
+		PageSize: interestedParams.PageSize,
+		Total:    searchResult.Total,
+	}
+
+	response.SuccessResponse(context.Writer, data)
 }

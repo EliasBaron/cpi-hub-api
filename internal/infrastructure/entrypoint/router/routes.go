@@ -10,22 +10,32 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1 := app.Group("/v1")
 
 	// users
-	v1.POST("/users", handlers.UserHandler.Create)
+
 	v1.GET("/users/:user_id", handlers.UserHandler.Get)
-	v1.PUT("/users/:user_id/spaces/:space_id", handlers.UserHandler.AddSpaceToUser)
-	v1.GET("/users/:user_id/spaces", handlers.UserHandler.GetSpacesByUserId)
-	v1.GET("/users/:user_id/interested-posts", handlers.UserHandler.GetPostsByUserSpaces)
+	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
+	v1.GET("/users", handlers.UserHandler.Search)
+
+	//auth
+	v1.POST("/auth/register", handlers.UserHandler.Register)
+	v1.POST("/auth/login", handlers.UserHandler.Login)
+
+	// users spaces
+	v1.PUT("/users/:user_id/spaces/:space_id/add", handlers.UserHandler.AddSpaceToUser)
+	v1.PUT("/users/:user_id/spaces/:space_id/remove", handlers.UserHandler.RemoveSpaceFromUser)
+	v1.GET("/users/:user_id/interested-posts", handlers.UserHandler.GetInterestedPosts)
 
 	// spaces
 	v1.POST("/spaces", handlers.SpaceHandler.Create)
 	v1.GET("/spaces/:space_id", handlers.SpaceHandler.Get)
-	v1.GET("/spaces", handlers.SpaceHandler.GetSpacesOrderedBy)
+	v1.GET("/spaces", handlers.SpaceHandler.Search)
+	v1.GET("/spaces/:space_id/users", handlers.SpaceHandler.GetUsersBySpace)
 
 	// posts
 	v1.POST("/posts", handlers.PostHandler.Create)
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
-	v1.GET("/posts/search", handlers.PostHandler.SearchPosts)
-	//comments
+	v1.GET("/posts", handlers.PostHandler.Search)
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 
+	//comments
+	v1.GET("/comments", handlers.CommentHandler.Search)
 }

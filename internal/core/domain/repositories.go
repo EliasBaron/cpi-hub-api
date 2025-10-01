@@ -8,6 +8,8 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	Find(ctx context.Context, criteria *criteria.Criteria) (*User, error)
+	Search(ctx context.Context, criteria *criteria.Criteria) ([]*User, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 
 type SpaceRepository interface {
@@ -16,22 +18,27 @@ type SpaceRepository interface {
 	FindByIDs(ctx context.Context, ids []int) ([]*Space, error)
 	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*Space, error)
 	Update(ctx context.Context, space *Space) error
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 
 type UserSpaceRepository interface {
-	AddUserToSpace(ctx context.Context, userId int, spaceId int) error
+	Update(ctx context.Context, userId int, spaceIDs []int, action string) error
 	FindSpacesIDsByUserID(ctx context.Context, userID int) ([]int, error)
+	FindUserIDsBySpaceID(ctx context.Context, spaceID int) ([]int, error)
 	Exists(ctx context.Context, userId int, spaceId int) (bool, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 
 type PostRepository interface {
 	Create(ctx context.Context, post *Post) error
 	Find(ctx context.Context, criteria *criteria.Criteria) (*Post, error)
-	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*Post, error)
 	Update(ctx context.Context, post *Post) error
+	Search(ctx context.Context, criteria *criteria.Criteria) ([]*Post, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 
 type CommentRepository interface {
 	Create(ctx context.Context, comment *Comment) error
-	FindAll(ctx context.Context, c *criteria.Criteria) ([]*Comment, error)
+	Find(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
+	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }

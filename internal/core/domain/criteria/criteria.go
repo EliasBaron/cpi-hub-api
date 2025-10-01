@@ -63,7 +63,7 @@ func NewCriteriaBuilder() *CriteriaBuilder {
 		filters:         make([]Filter, 0),
 		sort:            Sort{},
 		pagination:      Pagination{},
-		logicalOperator: LogicalOperatorAnd, // Por defecto AND
+		logicalOperator: LogicalOperatorAnd,
 	}
 }
 
