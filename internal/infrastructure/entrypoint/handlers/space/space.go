@@ -64,6 +64,7 @@ func (h *SpaceHandler) Search(context *gin.Context) {
 		Page:          page,
 		PageSize:      pageSize,
 		SortDirection: sortDirection,
+		Query:         context.Query("q"),
 	}
 
 	searchResult, err := h.SpaceUseCase.Search(context.Request.Context(), searchCriteria)
