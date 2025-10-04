@@ -30,6 +30,7 @@ type SpaceSearchCriteria struct {
 	Page          int
 	PageSize      int
 	SortDirection string
+	Query         string
 }
 
 type SearchResult struct {

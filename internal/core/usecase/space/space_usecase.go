@@ -7,6 +7,7 @@ import (
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -178,6 +179,14 @@ func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUse
 
 func (s *spaceUseCase) Search(ctx context.Context, searchCriteria *domain.SpaceSearchCriteria) (*domain.SearchResult, error) {
 	var direction criteria.Direction
+	var searchQuery string
+
+	if len(searchCriteria.Query) > 2 {
+		searchQuery = "%" + strings.TrimSpace(searchCriteria.Query) + "%"
+	} else {
+		searchQuery = ""
+	}
+
 	if searchCriteria.SortDirection == "asc" {
 		direction = criteria.OrderDirectionAsc
 	} else {
@@ -186,7 +195,9 @@ func (s *spaceUseCase) Search(ctx context.Context, searchCriteria *domain.SpaceS
 
 	criteriaBuilder := criteria.NewCriteriaBuilder().
 		WithSort(searchCriteria.OrderBy, direction).
-		WithPagination(searchCriteria.Page, searchCriteria.PageSize)
+		WithPagination(searchCriteria.Page, searchCriteria.PageSize).
+		WithFilterAndCondition("name", searchQuery, criteria.OperatorILike, len(searchCriteria.Query) > 0).
+		WithFilterAndCondition("description", searchQuery, criteria.OperatorILike, len(searchCriteria.Query) > 0)
 
 	if searchCriteria.Name != nil {
 		criteriaBuilder.WithFilter("name", "%"+*searchCriteria.Name+"%", criteria.OperatorILike)
