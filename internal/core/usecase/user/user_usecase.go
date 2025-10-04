@@ -56,6 +56,10 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
+	if user.Image == "" {
+		user.Image = "https://i.pinimg.com/736x/fb/6c/1f/fb6c1f3561169051c01cfb74d73d93b7.jpg"
+	}
+
 	cryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, apperror.NewInvalidData("Failed to hash password", err, "user_usecase.go:Create")
