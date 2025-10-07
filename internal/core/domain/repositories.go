@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 )
 
+//go:generate mockgen -package=mock -source=./repositories.go -destination=./mock/repositories_mock.go
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	Find(ctx context.Context, criteria *criteria.Criteria) (*User, error)

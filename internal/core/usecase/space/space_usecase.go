@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination=mock/space_usecase_mock.go -package=mocks . SpaceUseCase
 type SpaceUseCase interface {
 	Create(ctx context.Context, space *domain.Space) (*domain.SpaceWithUserAndCounts, error)
 	Get(ctx context.Context, id string) (*domain.SpaceWithUserAndCounts, error)
