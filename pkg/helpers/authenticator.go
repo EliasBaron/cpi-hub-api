@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"os"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = []byte("2ad4aef027b4a6c17f3d0fca8f90931226e58a82edba9102d587e10533e25b8a51c3ca7e")
+var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 func CreateToken(email string, userId int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
