@@ -8,7 +8,6 @@ import (
 	"cpi-hub-api/pkg/helpers"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -99,7 +98,7 @@ func (u *EventsUsecase) Broadcast(dto dto.EventsBroadcastParams) (*domain.ChatMe
 		UserID:    dto.UserID,
 		Username:  dto.Username,
 		SpaceID:   dto.SpaceID,
-		Timestamp: time.Now(),
+		Timestamp: helpers.NowBuenosAires(),
 	}
 
 	if err := u.repository.SaveMessage(chatMsg); err != nil {
@@ -123,7 +122,7 @@ func (u *EventsUsecase) BroadcastToSpace(dto dto.EventsBroadcastParams) (*domain
 		UserID:    dto.UserID,
 		Username:  dto.Username,
 		SpaceID:   dto.SpaceID,
-		Timestamp: time.Now(),
+		Timestamp: helpers.NowBuenosAires(),
 	}
 
 	if err := u.repository.SaveMessage(chatMsg); err != nil {

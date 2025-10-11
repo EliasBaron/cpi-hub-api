@@ -5,9 +5,9 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
-	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"cpi-hub-api/pkg/helpers"
 	"strings"
-	"time"
 )
 
 type SearchResult struct {
@@ -87,7 +87,7 @@ func (p *postUseCase) buildExtendedPosts(
 	for _, post := range posts {
 		space := spaceCache[post.SpaceID]
 		if space == nil {
-			space, err = helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
+			space, err = pghelpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
 			if err != nil {
 				return nil, err
 			}
@@ -96,7 +96,7 @@ func (p *postUseCase) buildExtendedPosts(
 
 		user := userCache[post.CreatedBy]
 		if user == nil {
-			user, err = helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
+			user, err = pghelpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
 			if err != nil {
 				return nil, err
 			}
@@ -114,23 +114,23 @@ func (p *postUseCase) buildExtendedPosts(
 }
 
 func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error) {
-	existingUser, err := helpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
+	existingUser, err := pghelpers.FindEntity(ctx, p.userRepository, "id", post.CreatedBy, "User not found")
 	if err != nil {
 		return nil, err
 	}
-	existingSpace, err := helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
+	existingSpace, err := pghelpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
 	if err != nil {
 		return nil, err
 	}
 
-	post.CreatedAt, post.UpdatedAt = time.Now(), time.Now()
+	post.CreatedAt, post.UpdatedAt = helpers.NowBuenosAires(), helpers.NowBuenosAires()
 	post.UpdatedBy = post.CreatedBy
 
 	if err := p.postRepository.Create(ctx, post); err != nil {
 		return nil, err
 	}
 
-	existingSpace.UpdatedAt = time.Now()
+	existingSpace.UpdatedAt = helpers.NowBuenosAires()
 	existingSpace.UpdatedBy = post.CreatedBy
 	if err := p.spaceRepository.Update(ctx, existingSpace); err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 }
 
 func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, error) {
-	post, err := helpers.FindEntity(ctx, p.postRepository, "id", id, "Post not found")
+	post, err := pghelpers.FindEntity(ctx, p.postRepository, "id", id, "Post not found")
 	if err != nil {
 		return nil, err
 	}
@@ -157,33 +157,33 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, er
 }
 
 func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error) {
-	user, err := helpers.FindEntity(ctx, p.userRepository, "id", comment.CreatedBy, "User not found")
+	user, err := pghelpers.FindEntity(ctx, p.userRepository, "id", comment.CreatedBy, "User not found")
 	if err != nil {
 		return nil, err
 	}
 
-	comment.CreatedAt, comment.UpdatedAt = time.Now(), time.Now()
+	comment.CreatedAt, comment.UpdatedAt = helpers.NowBuenosAires(), helpers.NowBuenosAires()
 	comment.UpdatedBy = comment.CreatedBy
 
 	if err := p.commentRepository.Create(ctx, comment); err != nil {
 		return nil, err
 	}
 
-	post, err := helpers.FindEntity(ctx, p.postRepository, "id", comment.PostID, "Post not found")
+	post, err := pghelpers.FindEntity(ctx, p.postRepository, "id", comment.PostID, "Post not found")
 	if err != nil {
 		return nil, err
 	}
-	post.UpdatedAt = time.Now()
+	post.UpdatedAt = helpers.NowBuenosAires()
 	post.UpdatedBy = comment.CreatedBy
 	if err := p.postRepository.Update(ctx, post); err != nil {
 		return nil, err
 	}
 
-	space, err := helpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
+	space, err := pghelpers.FindEntity(ctx, p.spaceRepository, "id", post.SpaceID, "Space not found")
 	if err != nil {
 		return nil, err
 	}
-	space.UpdatedAt = time.Now()
+	space.UpdatedAt = helpers.NowBuenosAires()
 	space.UpdatedBy = comment.CreatedBy
 	if err := p.spaceRepository.Update(ctx, space); err != nil {
 		return nil, err

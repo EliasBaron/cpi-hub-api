@@ -2,9 +2,9 @@ package events
 
 import (
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/pkg/helpers"
 	"encoding/json"
 	"log"
-	"time"
 )
 
 // HubManager maneja las operaciones del hub
@@ -42,7 +42,7 @@ func (hm *HubManager) Run() {
 			welcomeMsg := domain.EventMessage{
 				Type:      domain.MessageTypeJoin,
 				Data:      domain.JoinMessage{SpaceID: client.SpaceID, UserID: client.UserID},
-				Timestamp: time.Now(),
+				Timestamp: helpers.NowBuenosAires(),
 				UserID:    client.UserID,
 				SpaceID:   client.SpaceID,
 				Username:  client.Username,
@@ -59,7 +59,7 @@ func (hm *HubManager) Run() {
 				leaveMsg := domain.EventMessage{
 					Type:      domain.MessageTypeLeave,
 					Data:      domain.LeaveMessage{SpaceID: client.SpaceID, UserID: client.UserID},
-					Timestamp: time.Now(),
+					Timestamp: helpers.NowBuenosAires(),
 					UserID:    client.UserID,
 					SpaceID:   client.SpaceID,
 				}
@@ -116,7 +116,7 @@ func (hm *HubManager) BroadcastChatMessage(chatMsg *domain.ChatMessage) {
 	wsMsg := domain.EventMessage{
 		Type:      domain.MessageTypeChat,
 		Data:      chatMsg,
-		Timestamp: time.Now(),
+		Timestamp: helpers.NowBuenosAires(),
 		UserID:    chatMsg.UserID,
 		SpaceID:   chatMsg.SpaceID,
 	}

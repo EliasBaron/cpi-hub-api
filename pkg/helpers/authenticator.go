@@ -14,8 +14,8 @@ func CreateToken(email string, userId int) (string, error) {
 		jwt.MapClaims{
 			"email":   email,
 			"user_id": userId,
-			"exp":     time.Now().Add(time.Hour * 24).Unix(),
-			"iat":     time.Now().Unix(),
+			"exp":     NowBuenosAires().Add(time.Hour * 24).Unix(),
+			"iat":     NowBuenosAires().Unix(),
 		})
 
 	tokenString, err := token.SignedString(secretKey)
@@ -78,7 +78,7 @@ func IsTokenExpired(tokenString string) bool {
 		if !ok {
 			return true
 		}
-		return float64(time.Now().Unix()) > exp
+		return float64(NowBuenosAires().Unix()) > exp
 	}
 
 	return true
