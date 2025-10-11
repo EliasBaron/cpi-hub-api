@@ -6,6 +6,7 @@ import (
 	websocketAdapter "cpi-hub-api/internal/infrastructure/adapters/websocket"
 	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -69,7 +70,7 @@ func (u *EventsUsecase) HandleConnection(params dto.EventsConnectionParams) erro
 }
 
 // CreateClient crea un cliente para el hub (usado por la capa de infraestructura)
-func (u *EventsUsecase) CreateClient(userID, spaceID string, conn domain.EventConnection) *domain.Client {
+func (u *EventsUsecase) CreateClient(userID, spaceID int, conn domain.EventConnection) *domain.Client {
 	return &domain.Client{
 		ID:      u.generateClientID(userID, spaceID),
 		UserID:  userID,
@@ -109,6 +110,30 @@ func (u *EventsUsecase) Broadcast(dto dto.EventsBroadcastParams) (*domain.ChatMe
 	return chatMsg, nil
 }
 
+// BroadcastToSpace envía un mensaje a todos los clientes de un espacio específico
+func (u *EventsUsecase) BroadcastToSpace(dto dto.EventsBroadcastParams) (*domain.ChatMessage, error) {
+	if err := u.validateMessageContent(dto.Message); err != nil {
+		return nil, err
+	}
+
+	chatMsg := &domain.ChatMessage{
+		ID:        helpers.NewULID(),
+		Content:   dto.Message,
+		UserID:    dto.UserID,
+		Username:  dto.Username,
+		SpaceID:   dto.SpaceID,
+		Timestamp: time.Now(),
+	}
+
+	if err := u.repository.SaveMessage(chatMsg); err != nil {
+		return nil, err
+	}
+
+	u.hubManager.BroadcastChatMessage(chatMsg)
+
+	return chatMsg, nil
+}
+
 func (u *EventsUsecase) validateMessageContent(content string) error {
 	if content == "" {
 		return domain.ErrEmptyMessage
@@ -121,6 +146,6 @@ func (u *EventsUsecase) validateMessageContent(content string) error {
 	return nil
 }
 
-func (u *EventsUsecase) generateClientID(userID, spaceID string) string {
-	return userID + "-" + spaceID + "-" + helpers.NewULID()
+func (u *EventsUsecase) generateClientID(userID, spaceID int) string {
+	return fmt.Sprintf("%d-%d-%s", userID, spaceID, helpers.NewULID())
 }

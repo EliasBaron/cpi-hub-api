@@ -20,7 +20,7 @@ func NewHubManager() *HubManager {
 			Register:       make(chan *domain.Client),
 			Unregister:     make(chan *domain.Client),
 			Broadcast:      make(chan []byte),
-			SpaceBroadcast: make(chan domain.SpaceMessage),
+			SpaceBroadcast: make(chan domain.SpaceMessage, 100), // buffer de 100
 		},
 	}
 }
@@ -36,7 +36,7 @@ func (hm *HubManager) Run() {
 		select {
 		case client := <-hm.hub.Register:
 			hm.hub.Clients[client] = true
-			log.Printf("Cliente %s conectado al espacio %s", client.UserID, client.SpaceID)
+			log.Printf("Cliente %s (ID %d) conectado al espacio %d", client.Username, client.UserID, client.SpaceID)
 
 			// Enviar mensaje de bienvenida
 			welcomeMsg := domain.EventMessage{
@@ -45,6 +45,7 @@ func (hm *HubManager) Run() {
 				Timestamp: time.Now(),
 				UserID:    client.UserID,
 				SpaceID:   client.SpaceID,
+				Username:  client.Username,
 			}
 			hm.broadcastToSpace(client.SpaceID, welcomeMsg)
 
@@ -52,7 +53,7 @@ func (hm *HubManager) Run() {
 			if _, ok := hm.hub.Clients[client]; ok {
 				delete(hm.hub.Clients, client)
 				close(client.Send)
-				log.Printf("Cliente %s desconectado del espacio %s", client.UserID, client.SpaceID)
+				log.Printf("Cliente %d desconectado del espacio %d", client.UserID, client.SpaceID)
 
 				// Enviar mensaje de despedida
 				leaveMsg := domain.EventMessage{
@@ -91,7 +92,7 @@ func (hm *HubManager) Run() {
 }
 
 // broadcastToSpace envía un mensaje a todos los clientes de un espacio específico
-func (hm *HubManager) broadcastToSpace(spaceID string, message domain.EventMessage) {
+func (hm *HubManager) broadcastToSpace(spaceID int, message domain.EventMessage) {
 	messageBytes, err := json.Marshal(message)
 	if err != nil {
 		log.Printf("Error marshaling message: %v", err)

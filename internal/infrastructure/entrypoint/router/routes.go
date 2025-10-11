@@ -41,4 +41,5 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	// events
 	v1.GET("/ws/spaces/:space_id", handlers.EventsHandler.Connect)
 	v1.POST("/ws/spaces/:space_id/broadcast", handlers.EventsHandler.Broadcast)
+	v1.POST("/ws/spaces/:space_id/chat", handlers.EventsHandler.ChatMessage)
 }

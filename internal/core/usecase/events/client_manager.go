@@ -226,7 +226,7 @@ func (cm *ClientManager) broadcastChatMessage(chatMsg *domain.ChatMessage) {
 		log.Printf("Mensaje de chat difundido: usuario %s en espacio %s: %s",
 			chatMsg.UserID, chatMsg.SpaceID, chatMsg.Content)
 	default:
-		log.Printf("No se pudo difundir mensaje al espacio %s", chatMsg.SpaceID)
+		log.Printf("No se pudo difundir mensaje al espacio %d", chatMsg.SpaceID)
 	}
 }
 

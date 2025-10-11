@@ -23,30 +23,30 @@ type EventMessage struct {
 	Type      MessageType `json:"type"`
 	Data      interface{} `json:"data"`
 	Timestamp time.Time   `json:"timestamp"`
-	UserID    string      `json:"user_id,omitempty"`
-	SpaceID   string      `json:"space_id,omitempty"`
+	UserID    int         `json:"user_id,omitempty"`
+	SpaceID   int         `json:"space_id,omitempty"`
 }
 
 // ChatMessage representa un mensaje de chat específico
 type ChatMessage struct {
 	ID        string    `json:"id"`
 	Content   string    `json:"content"`
-	UserID    string    `json:"user_id"`
+	UserID    int       `json:"user_id"`
 	Username  string    `json:"username"`
-	SpaceID   string    `json:"space_id"`
+	SpaceID   int       `json:"space_id"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
 // JoinMessage representa un mensaje de unión a un espacio
 type JoinMessage struct {
-	SpaceID string `json:"space_id"`
-	UserID  string `json:"user_id"`
+	SpaceID int `json:"space_id"`
+	UserID  int `json:"user_id"`
 }
 
 // LeaveMessage representa un mensaje de salida de un espacio
 type LeaveMessage struct {
-	SpaceID string `json:"space_id"`
-	UserID  string `json:"user_id"`
+	SpaceID int `json:"space_id"`
+	UserID  int `json:"user_id"`
 }
 
 // ErrorMessage representa un mensaje de error
@@ -58,8 +58,8 @@ type ErrorMessage struct {
 // Client representa un cliente conectado a eventos en tiempo real
 type Client struct {
 	ID      string
-	UserID  string
-	SpaceID string
+	UserID  int
+	SpaceID int
 	Send    chan []byte
 	Hub     *Hub
 	Conn    EventConnection
@@ -85,7 +85,7 @@ type Hub struct {
 
 // SpaceMessage representa un mensaje dirigido a un espacio específico
 type SpaceMessage struct {
-	SpaceID string
+	SpaceID int
 	Message []byte
 }
 
