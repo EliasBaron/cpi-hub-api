@@ -3,10 +3,11 @@ package dto
 import "net/http"
 
 type EventsConnectionParams struct {
-	UserID  int
-	SpaceID int
-	Writer  http.ResponseWriter
-	Request *http.Request
+	UserID   int
+	SpaceID  int
+	Writer   http.ResponseWriter
+	Request  *http.Request
+	Username string
 }
 
 type EventsBroadcastParams struct {

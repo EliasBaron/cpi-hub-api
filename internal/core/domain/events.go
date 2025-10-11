@@ -25,6 +25,7 @@ type EventMessage struct {
 	Timestamp time.Time   `json:"timestamp"`
 	UserID    int         `json:"user_id,omitempty"`
 	SpaceID   int         `json:"space_id,omitempty"`
+	Username  string      `json:"username,omitempty"`
 }
 
 // ChatMessage representa un mensaje de chat específico
@@ -39,14 +40,16 @@ type ChatMessage struct {
 
 // JoinMessage representa un mensaje de unión a un espacio
 type JoinMessage struct {
-	SpaceID int `json:"space_id"`
-	UserID  int `json:"user_id"`
+	SpaceID  int    `json:"space_id"`
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
 }
 
 // LeaveMessage representa un mensaje de salida de un espacio
 type LeaveMessage struct {
-	SpaceID int `json:"space_id"`
-	UserID  int `json:"user_id"`
+	SpaceID  int    `json:"space_id"`
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
 }
 
 // ErrorMessage representa un mensaje de error
@@ -57,12 +60,13 @@ type ErrorMessage struct {
 
 // Client representa un cliente conectado a eventos en tiempo real
 type Client struct {
-	ID      string
-	UserID  int
-	SpaceID int
-	Send    chan []byte
-	Hub     *Hub
-	Conn    EventConnection
+	ID       string
+	UserID   int
+	SpaceID  int
+	Send     chan []byte
+	Hub      *Hub
+	Conn     EventConnection
+	Username string
 }
 
 // Hub mantiene el conjunto de clientes activos y los mensajes de difusión

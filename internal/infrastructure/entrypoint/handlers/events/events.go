@@ -38,6 +38,13 @@ func (h *EventsHandler) Connect(c *gin.Context) {
 		return
 	}
 
+	userName := c.Query("username")
+	if userName == "" {
+		appErr := apperror.NewInvalidData("username es requerido", nil, "events_handler.go:Connect")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
 	spaceIDInt, err := strconv.Atoi(spaceID)
 	if err != nil {
 		appErr := apperror.NewInvalidData("space_id debe ser un número", err, "events_handler.go:Connect")
@@ -53,10 +60,11 @@ func (h *EventsHandler) Connect(c *gin.Context) {
 	}
 
 	connectionParams := dto.EventsConnectionParams{
-		UserID:  userIDInt,
-		SpaceID: spaceIDInt,
-		Writer:  c.Writer,
-		Request: c.Request,
+		UserID:   userIDInt,
+		SpaceID:  spaceIDInt,
+		Writer:   c.Writer,
+		Request:  c.Request,
+		Username: userName,
 	}
 
 	err = h.eventsUsecase.HandleConnection(connectionParams)

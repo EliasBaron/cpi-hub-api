@@ -56,7 +56,7 @@ func (u *EventsUsecase) HandleConnection(params dto.EventsConnectionParams) erro
 	wsConn := websocketAdapter.NewWebSocketWrapper(conn)
 
 	// Crear cliente
-	client := u.CreateClient(params.UserID, params.SpaceID, wsConn)
+	client := u.CreateClient(params.UserID, params.SpaceID, params.Username, wsConn)
 
 	// Registrar cliente en el hub
 	u.RegisterClient(client)
@@ -70,14 +70,15 @@ func (u *EventsUsecase) HandleConnection(params dto.EventsConnectionParams) erro
 }
 
 // CreateClient crea un cliente para el hub (usado por la capa de infraestructura)
-func (u *EventsUsecase) CreateClient(userID, spaceID int, conn domain.EventConnection) *domain.Client {
+func (u *EventsUsecase) CreateClient(userID, spaceID int, username string, conn domain.EventConnection) *domain.Client {
 	return &domain.Client{
-		ID:      u.generateClientID(userID, spaceID),
-		UserID:  userID,
-		SpaceID: spaceID,
-		Send:    make(chan []byte, 256),
-		Hub:     u.hubManager.GetHub(),
-		Conn:    conn,
+		ID:       u.generateClientID(userID, spaceID),
+		UserID:   userID,
+		SpaceID:  spaceID,
+		Username: username,
+		Send:     make(chan []byte, 256),
+		Hub:      u.hubManager.GetHub(),
+		Conn:     conn,
 	}
 }
 
