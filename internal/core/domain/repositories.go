@@ -43,3 +43,8 @@ type CommentRepository interface {
 	Find(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
+
+type EventsRepository interface {
+	SaveMessage(message *ChatMessage) error
+	GetMessagesBySpace(spaceID string, limit int) ([]*ChatMessage, error)
+}
