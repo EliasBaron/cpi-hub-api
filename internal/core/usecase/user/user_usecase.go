@@ -53,8 +53,8 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 		return nil, apperror.NewInvalidData("User with this email already exists", nil, "user_usecase.go:Create")
 	}
 
-	user.CreatedAt = helpers.NowBuenosAires()
-	user.UpdatedAt = helpers.NowBuenosAires()
+	user.CreatedAt = helpers.GetTime()
+	user.UpdatedAt = helpers.GetTime()
 
 	cryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {

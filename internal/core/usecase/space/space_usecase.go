@@ -120,7 +120,7 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 		return nil, apperror.NewInvalidData("Space with this name already exists", nil, "space_usecase.go:Create")
 	}
 
-	space.CreatedAt, space.UpdatedAt = helpers.NowBuenosAires(), helpers.NowBuenosAires()
+	space.CreatedAt, space.UpdatedAt = helpers.GetTime(), helpers.GetTime()
 	space.UpdatedBy, space.CreatedBy = existingUser.ID, existingUser.ID
 
 	err = s.spaceRepository.Create(ctx, space)

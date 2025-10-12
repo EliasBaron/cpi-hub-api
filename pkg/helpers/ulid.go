@@ -7,7 +7,7 @@ import (
 )
 
 func NewULID() string {
-	now := NowBuenosAires()
+	now := GetTime()
 	entropy := rand.New(rand.NewSource(now.UnixNano()))
 	ms := ulid.Timestamp(now)
 	result, _ := ulid.New(ms, entropy)

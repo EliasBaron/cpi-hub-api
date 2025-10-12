@@ -42,7 +42,7 @@ func (hm *HubManager) Run() {
 			welcomeMsg := domain.EventMessage{
 				Type:      domain.MessageTypeJoin,
 				Data:      domain.JoinMessage{SpaceID: client.SpaceID, UserID: client.UserID},
-				Timestamp: helpers.NowBuenosAires(),
+				Timestamp: helpers.GetTime(),
 				UserID:    client.UserID,
 				SpaceID:   client.SpaceID,
 				Username:  client.Username,
@@ -59,7 +59,7 @@ func (hm *HubManager) Run() {
 				leaveMsg := domain.EventMessage{
 					Type:      domain.MessageTypeLeave,
 					Data:      domain.LeaveMessage{SpaceID: client.SpaceID, UserID: client.UserID},
-					Timestamp: helpers.NowBuenosAires(),
+					Timestamp: helpers.GetTime(),
 					UserID:    client.UserID,
 					SpaceID:   client.SpaceID,
 				}
@@ -116,7 +116,7 @@ func (hm *HubManager) BroadcastChatMessage(chatMsg *domain.ChatMessage) {
 	wsMsg := domain.EventMessage{
 		Type:      domain.MessageTypeChat,
 		Data:      chatMsg,
-		Timestamp: helpers.NowBuenosAires(),
+		Timestamp: helpers.GetTime(),
 		UserID:    chatMsg.UserID,
 		SpaceID:   chatMsg.SpaceID,
 	}

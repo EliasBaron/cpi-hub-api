@@ -123,14 +123,14 @@ func (p *postUseCase) Create(ctx context.Context, post *domain.Post) (*domain.Ex
 		return nil, err
 	}
 
-	post.CreatedAt, post.UpdatedAt = helpers.NowBuenosAires(), helpers.NowBuenosAires()
+	post.CreatedAt, post.UpdatedAt = helpers.GetTime(), helpers.GetTime()
 	post.UpdatedBy = post.CreatedBy
 
 	if err := p.postRepository.Create(ctx, post); err != nil {
 		return nil, err
 	}
 
-	existingSpace.UpdatedAt = helpers.NowBuenosAires()
+	existingSpace.UpdatedAt = helpers.GetTime()
 	existingSpace.UpdatedBy = post.CreatedBy
 	if err := p.spaceRepository.Update(ctx, existingSpace); err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 		return nil, err
 	}
 
-	comment.CreatedAt, comment.UpdatedAt = helpers.NowBuenosAires(), helpers.NowBuenosAires()
+	comment.CreatedAt, comment.UpdatedAt = helpers.GetTime(), helpers.GetTime()
 	comment.UpdatedBy = comment.CreatedBy
 
 	if err := p.commentRepository.Create(ctx, comment); err != nil {
@@ -173,7 +173,7 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	if err != nil {
 		return nil, err
 	}
-	post.UpdatedAt = helpers.NowBuenosAires()
+	post.UpdatedAt = helpers.GetTime()
 	post.UpdatedBy = comment.CreatedBy
 	if err := p.postRepository.Update(ctx, post); err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	if err != nil {
 		return nil, err
 	}
-	space.UpdatedAt = helpers.NowBuenosAires()
+	space.UpdatedAt = helpers.GetTime()
 	space.UpdatedBy = comment.CreatedBy
 	if err := p.spaceRepository.Update(ctx, space); err != nil {
 		return nil, err

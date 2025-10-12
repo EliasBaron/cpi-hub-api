@@ -98,7 +98,7 @@ func (u *EventsUsecase) Broadcast(dto dto.EventsBroadcastParams) (*domain.ChatMe
 		UserID:    dto.UserID,
 		Username:  dto.Username,
 		SpaceID:   dto.SpaceID,
-		Timestamp: helpers.NowBuenosAires(),
+		Timestamp: helpers.GetTime(),
 	}
 
 	if err := u.repository.SaveMessage(chatMsg); err != nil {
@@ -122,7 +122,7 @@ func (u *EventsUsecase) BroadcastToSpace(dto dto.EventsBroadcastParams) (*domain
 		UserID:    dto.UserID,
 		Username:  dto.Username,
 		SpaceID:   dto.SpaceID,
-		Timestamp: helpers.NowBuenosAires(),
+		Timestamp: helpers.GetTime(),
 	}
 
 	if err := u.repository.SaveMessage(chatMsg); err != nil {

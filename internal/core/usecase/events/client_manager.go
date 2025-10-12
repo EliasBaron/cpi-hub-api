@@ -44,9 +44,9 @@ func (cm *ClientManager) ReadPump() {
 	}()
 
 	cm.client.Conn.SetReadLimit(maxMessageSize)
-	cm.client.Conn.SetReadDeadline(helpers.NowBuenosAires().Add(pongWait))
+	cm.client.Conn.SetReadDeadline(helpers.GetTime().Add(pongWait))
 	cm.client.Conn.SetPongHandler(func(string) error {
-		cm.client.Conn.SetReadDeadline(helpers.NowBuenosAires().Add(pongWait))
+		cm.client.Conn.SetReadDeadline(helpers.GetTime().Add(pongWait))
 		return nil
 	})
 
@@ -75,7 +75,7 @@ func (cm *ClientManager) WritePump() {
 	for {
 		select {
 		case message, ok := <-cm.client.Send:
-			cm.client.Conn.SetWriteDeadline(helpers.NowBuenosAires().Add(writeWait))
+			cm.client.Conn.SetWriteDeadline(helpers.GetTime().Add(writeWait))
 			if !ok {
 				// El hub cerró el canal
 				cm.client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -100,7 +100,7 @@ func (cm *ClientManager) WritePump() {
 			}
 
 		case <-ticker.C:
-			cm.client.Conn.SetWriteDeadline(helpers.NowBuenosAires().Add(writeWait))
+			cm.client.Conn.SetWriteDeadline(helpers.GetTime().Add(writeWait))
 			if err := cm.client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
@@ -120,7 +120,7 @@ func (cm *ClientManager) handleMessage(messageBytes []byte) {
 	// Establecer información del cliente en el mensaje
 	wsMsg.UserID = cm.client.UserID
 	wsMsg.SpaceID = cm.client.SpaceID
-	wsMsg.Timestamp = helpers.NowBuenosAires()
+	wsMsg.Timestamp = helpers.GetTime()
 
 	switch wsMsg.Type {
 	case domain.MessageTypeChat:
@@ -164,7 +164,7 @@ func (cm *ClientManager) handleChatMessage(wsMsg domain.EventMessage) {
 	// Establecer información del cliente
 	chatMsg.UserID = cm.client.UserID
 	chatMsg.SpaceID = cm.client.SpaceID
-	chatMsg.Timestamp = helpers.NowBuenosAires()
+	chatMsg.Timestamp = helpers.GetTime()
 
 	// Generar ID único para el mensaje usando ULID
 	chatMsg.ID = helpers.NewULID()
@@ -178,7 +178,7 @@ func (cm *ClientManager) handlePing(wsMsg domain.EventMessage) {
 	pongMsg := domain.EventMessage{
 		Type:      domain.MessageTypePong,
 		Data:      map[string]string{"message": "pong"},
-		Timestamp: helpers.NowBuenosAires(),
+		Timestamp: helpers.GetTime(),
 		UserID:    cm.client.UserID,
 		SpaceID:   cm.client.SpaceID,
 	}
@@ -191,7 +191,7 @@ func (cm *ClientManager) sendError(code, message string) {
 	errorMsg := domain.EventMessage{
 		Type:      domain.MessageTypeError,
 		Data:      domain.ErrorMessage{Code: code, Message: message},
-		Timestamp: helpers.NowBuenosAires(),
+		Timestamp: helpers.GetTime(),
 		UserID:    cm.client.UserID,
 		SpaceID:   cm.client.SpaceID,
 	}
@@ -204,7 +204,7 @@ func (cm *ClientManager) broadcastChatMessage(chatMsg *domain.ChatMessage) {
 	wsMsg := domain.EventMessage{
 		Type:      domain.MessageTypeChat,
 		Data:      chatMsg,
-		Timestamp: helpers.NowBuenosAires(),
+		Timestamp: helpers.GetTime(),
 		UserID:    chatMsg.UserID,
 		SpaceID:   chatMsg.SpaceID,
 	}
