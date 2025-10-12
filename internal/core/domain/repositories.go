@@ -46,5 +46,16 @@ type CommentRepository interface {
 
 type EventsRepository interface {
 	SaveMessage(message *ChatMessage) error
-	GetMessagesBySpace(spaceID string, limit int) ([]*ChatMessage, error)
+}
+
+type SearchMessagesFilter struct {
+	SpaceID       int
+	Page          int
+	PageSize      int
+	OrderBy       string
+	SortDirection string
+}
+
+type MessageRepository interface {
+	SearchMessages(ctx context.Context, filters SearchMessagesFilter) ([]*ChatMessage, int, error)
 }

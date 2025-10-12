@@ -36,6 +36,7 @@ type ChatMessage struct {
 	Username  string    `json:"username"`
 	SpaceID   int       `json:"space_id"`
 	Timestamp time.Time `json:"timestamp"`
+	Image     string    `json:"image"`
 }
 
 // JoinMessage representa un mensaje de unión a un espacio

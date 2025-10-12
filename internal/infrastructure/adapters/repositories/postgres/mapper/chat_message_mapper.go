@@ -26,3 +26,15 @@ func ToDomainChatMessage(chatEntity *entity.ChatMessageEntity) *domain.ChatMessa
 		Timestamp: chatEntity.Timestamp,
 	}
 }
+
+func ToDomainChatMessageWithUser(chatEntity *entity.ChatMessageEntityWithUser) *domain.ChatMessage {
+	return &domain.ChatMessage{
+		ID:        chatEntity.ID,
+		Content:   chatEntity.Content,
+		UserID:    chatEntity.UserID,
+		Username:  chatEntity.Username,
+		SpaceID:   chatEntity.SpaceID,
+		Timestamp: chatEntity.Timestamp,
+		Image:     chatEntity.Image,
+	}
+}

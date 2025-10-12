@@ -10,3 +10,8 @@ type ChatMessageEntity struct {
 	SpaceID   int       `db:"space_id"`
 	Timestamp time.Time `db:"timestamp"`
 }
+
+type ChatMessageEntityWithUser struct {
+	ChatMessageEntity
+	Image string `db:"image"`
+}
