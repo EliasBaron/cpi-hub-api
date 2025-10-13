@@ -119,6 +119,7 @@ func (hm *HubManager) BroadcastChatMessage(chatMsg *domain.ChatMessage) {
 		Timestamp: helpers.GetTime(),
 		UserID:    chatMsg.UserID,
 		SpaceID:   chatMsg.SpaceID,
+		Image:     chatMsg.Image,
 	}
 
 	hm.broadcastToSpace(chatMsg.SpaceID, wsMsg)

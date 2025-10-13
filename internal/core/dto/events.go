@@ -15,4 +15,5 @@ type EventsBroadcastParams struct {
 	UserID   int    `json:"user_id" binding:"required"`
 	Message  string `json:"message" binding:"required"`
 	Username string `json:"username" binding:"required"`
+	Image    string `json:"image"`
 }

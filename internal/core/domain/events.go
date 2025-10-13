@@ -26,6 +26,7 @@ type EventMessage struct {
 	UserID    int         `json:"user_id,omitempty"`
 	SpaceID   int         `json:"space_id,omitempty"`
 	Username  string      `json:"username,omitempty"`
+	Image     string      `json:"image,omitempty"`
 }
 
 // ChatMessage representa un mensaje de chat específico
