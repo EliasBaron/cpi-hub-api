@@ -4,11 +4,11 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
-	"cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //go:generate mockgen -destination=mock/space_usecase_mock.go -package=mocks . SpaceUseCase
@@ -39,7 +39,7 @@ func (s *spaceUseCase) makeSpacesWithUsers(ctx context.Context, spaces []*domain
 	var spacesWithUsers []*domain.SpaceWithUserAndCounts
 
 	for _, space := range spaces {
-		user, err := helpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
+		user, err := pghelpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +120,7 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 		return nil, apperror.NewInvalidData("Space with this name already exists", nil, "space_usecase.go:Create")
 	}
 
-	space.CreatedAt, space.UpdatedAt = time.Now(), time.Now()
+	space.CreatedAt, space.UpdatedAt = helpers.GetTime(), helpers.GetTime()
 	space.UpdatedBy, space.CreatedBy = existingUser.ID, existingUser.ID
 
 	err = s.spaceRepository.Create(ctx, space)
@@ -144,12 +144,12 @@ func (s *spaceUseCase) Create(ctx context.Context, space *domain.Space) (*domain
 }
 
 func (s *spaceUseCase) Get(ctx context.Context, id string) (*domain.SpaceWithUserAndCounts, error) {
-	space, err := helpers.FindEntity(ctx, s.spaceRepository, "id", id, "Space not found")
+	space, err := pghelpers.FindEntity(ctx, s.spaceRepository, "id", id, "Space not found")
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := helpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
+	user, err := pghelpers.FindEntity(ctx, s.userRepository, "id", space.CreatedBy, "User not found")
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (s *spaceUseCase) GetUsersBySpace(ctx context.Context, spaceID string) ([]*
 		return nil, apperror.NewInvalidData("Invalid space ID format", err, "space_usecase.go:GetUsersBySpace")
 	}
 
-	_, err = helpers.FindEntity(ctx, s.spaceRepository, "id", spaceID, "Space not found")
+	_, err = pghelpers.FindEntity(ctx, s.spaceRepository, "id", spaceID, "Space not found")
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func (s *spaceUseCase) GetUsersBySpace(ctx context.Context, spaceID string) ([]*
 
 	var users []*domain.User
 	for _, userID := range userIDs {
-		user, err := helpers.FindEntity(ctx, s.userRepository, "id", strconv.Itoa(userID), "User not found")
+		user, err := pghelpers.FindEntity(ctx, s.userRepository, "id", strconv.Itoa(userID), "User not found")
 		if err != nil {
 			return nil, err
 		}

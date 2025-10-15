@@ -48,6 +48,14 @@ func EnsureSchema(db *sql.DB) error {
     		created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     		created_at TIMESTAMP NOT NULL DEFAULT now()
 		)`,
+		`CREATE TABLE IF NOT EXISTS chat_messages (
+    id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
+    timestamp TIMESTAMP NOT NULL DEFAULT now()
+)`,
 	}
 
 	for _, stmt := range stmts {

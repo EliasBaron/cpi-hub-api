@@ -10,7 +10,6 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1 := app.Group("/v1")
 
 	// users
-
 	v1.GET("/users/:user_id", handlers.UserHandler.Get)
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
 	v1.GET("/users", handlers.UserHandler.Search)
@@ -19,7 +18,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.POST("/auth/register", handlers.UserHandler.Register)
 	v1.POST("/auth/login", handlers.UserHandler.Login)
 
-	// users spaces
+	// user spaces
 	v1.PUT("/users/:user_id/spaces/:space_id/add", handlers.UserHandler.AddSpaceToUser)
 	v1.PUT("/users/:user_id/spaces/:space_id/remove", handlers.UserHandler.RemoveSpaceFromUser)
 	v1.GET("/users/:user_id/interested-posts", handlers.UserHandler.GetInterestedPosts)
@@ -38,4 +37,12 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	//comments
 	v1.GET("/comments", handlers.CommentHandler.Search)
+
+	// events
+	v1.GET("/ws/spaces/:space_id", handlers.EventsHandler.Connect)
+	v1.POST("/ws/spaces/:space_id/broadcast", handlers.EventsHandler.Broadcast)
+	v1.POST("/ws/spaces/:space_id/chat", handlers.EventsHandler.ChatMessage)
+
+	// messages
+	v1.GET("/messages", handlers.MessageHandler.Search)
 }

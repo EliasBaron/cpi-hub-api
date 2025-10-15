@@ -43,3 +43,19 @@ type CommentRepository interface {
 	Find(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
+
+type EventsRepository interface {
+	SaveMessage(message *ChatMessage) error
+}
+
+type SearchMessagesFilter struct {
+	SpaceID       int
+	Page          int
+	PageSize      int
+	OrderBy       string
+	SortDirection string
+}
+
+type MessageRepository interface {
+	SearchMessages(ctx context.Context, filters SearchMessagesFilter) ([]*ChatMessage, int, error)
+}

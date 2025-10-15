@@ -2,14 +2,14 @@ package helpers
 
 import (
 	"math/rand"
-	"time"
 
 	"github.com/oklog/ulid/v2"
 )
 
 func NewULID() string {
-	entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
-	ms := ulid.Timestamp(time.Now())
+	now := GetTime()
+	entropy := rand.New(rand.NewSource(now.UnixNano()))
+	ms := ulid.Timestamp(now)
 	result, _ := ulid.New(ms, entropy)
 	return result.String()
 }
