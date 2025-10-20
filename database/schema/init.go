@@ -42,12 +42,13 @@ func EnsureSchema(db *sql.DB) error {
             space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE
         )`,
 		`CREATE TABLE IF NOT EXISTS comments (
-			id SERIAL PRIMARY KEY,
-			post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-			content TEXT NOT NULL,
-    		created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    		created_at TIMESTAMP NOT NULL DEFAULT now()
-		)`,
+            id SERIAL PRIMARY KEY,
+            post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+            content TEXT NOT NULL,
+        	created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        	created_at TIMESTAMP NOT NULL DEFAULT now(),
+            parent_comment_id INT DEFAULT NULL REFERENCES comments(id) ON DELETE CASCADE
+        )`,
 		`CREATE TABLE IF NOT EXISTS chat_messages (
     id TEXT PRIMARY KEY,
     content TEXT NOT NULL,

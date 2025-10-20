@@ -21,8 +21,8 @@ func (c *CommentRepository) Create(ctx context.Context, comment *domain.Comment)
 	var commentEntity = *mapper.ToPostgreComment(comment)
 
 	if err := c.db.QueryRowContext(ctx,
-		"INSERT INTO comments (post_id, content, created_by, created_at) VALUES ($1, $2, $3, $4) RETURNING id",
-		commentEntity.PostID, commentEntity.Content, commentEntity.CreatedBy, commentEntity.CreatedAt,
+		"INSERT INTO comments (post_id, content, created_by, created_at, parent_comment_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		commentEntity.PostID, commentEntity.Content, commentEntity.CreatedBy, commentEntity.CreatedAt, commentEntity.ParentID,
 	).Scan(&commentEntity.ID); err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (c *CommentRepository) findWithSpaceByField(ctx context.Context, whereClaus
 	var commentsWithInfo []*domain.CommentWithInfo
 	query := `
 		SELECT 
-			c.id, c.post_id, c.content, c.created_by, c.created_at,
+			c.id, c.post_id, c.content, c.created_by, c.created_at, c.parent_comment_id,
 			u.id, u.name, u.last_name, u.email, u.image, u.created_at,
 			s.id, s.name, s.description, s.created_at
 		FROM comments c
@@ -105,6 +105,7 @@ func (c *CommentRepository) findWithSpaceByField(ctx context.Context, whereClaus
 			&commentEntity.Content,
 			&commentEntity.CreatedBy,
 			&commentEntity.CreatedAt,
+			&commentEntity.ParentID,
 			&userEntity.ID,
 			&userEntity.Name,
 			&userEntity.LastName,
@@ -141,7 +142,7 @@ func (c *CommentRepository) findWithInfoByField(ctx context.Context, whereClause
 	var commentsWithInfo []*domain.CommentWithInfo
 	query := `
 		SELECT 
-			c.id, c.post_id, c.content, c.created_by, c.created_at,
+			c.id, c.post_id, c.content, c.created_by, c.created_at, c.parent_comment_id,
 			u.id, u.name, u.last_name, u.email, u.image, u.created_at,
 			s.id, s.name, s.description, s.created_at
 		FROM comments c
@@ -167,6 +168,7 @@ func (c *CommentRepository) findWithInfoByField(ctx context.Context, whereClause
 			&commentEntity.Content,
 			&commentEntity.CreatedBy,
 			&commentEntity.CreatedAt,
+			&commentEntity.ParentID,
 			&userEntity.ID,
 			&userEntity.Name,
 			&userEntity.LastName,

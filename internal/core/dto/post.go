@@ -59,11 +59,8 @@ func (c *CreatePost) ToDomain() *domain.Post {
 }
 
 func ToPostExtendedDTO(post *domain.ExtendedPost) PostExtendedDTO {
-	commentsDTO := make([]CommentWithUserDTO, 0, len(post.Comments))
-
-	for _, c := range post.Comments {
-		commentsDTO = append(commentsDTO, ToCommentWithUserAndPostDTO(c))
-	}
+	// Build nested tree of comments with replies
+	commentsDTO := ToCommentWithUserTreeDTOs(post.Comments)
 
 	return PostExtendedDTO{
 		ID:        post.Post.ID,

@@ -29,6 +29,8 @@ type Comment struct {
 	UpdatedAt time.Time
 	CreatedBy int
 	UpdatedBy int
+	ParentID  *int
+	Replies   []*Comment
 }
 
 type CommentWithInfo struct {

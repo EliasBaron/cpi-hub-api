@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
 	"strings"
 )
@@ -164,6 +165,18 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 
 	comment.CreatedAt, comment.UpdatedAt = helpers.GetTime(), helpers.GetTime()
 	comment.UpdatedBy = comment.CreatedBy
+
+	if comment.ParentID != nil && *comment.ParentID > 0 {
+		parentComments, err := p.commentRepository.Find(ctx, criteria.NewCriteriaBuilder().
+			WithFilter("id", *comment.ParentID, criteria.OperatorEqual).
+			Build())
+		if err != nil {
+			return nil, err
+		}
+		if len(parentComments) == 0 {
+			return nil, apperror.NewNotFound("Parent comment not found", nil, "post_usecase.go:AddComment")
+		}
+	}
 
 	if err := p.commentRepository.Create(ctx, comment); err != nil {
 		return nil, err
