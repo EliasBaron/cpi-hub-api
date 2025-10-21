@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
+	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
 	"strings"
 )
@@ -48,7 +49,7 @@ func NewPostUsecase(
 }
 
 func (p *postUseCase) getCommentsWithUsers(ctx context.Context, postIDs []int) (map[int][]*domain.CommentWithInfo, error) {
-	comments, err := p.commentRepository.Find(ctx, criteria.NewCriteriaBuilder().
+	comments, err := p.commentRepository.FindAll(ctx, criteria.NewCriteriaBuilder().
 		WithFilter("post_id", postIDs, criteria.OperatorIn).
 		WithSort("created_at", criteria.OrderDirectionAsc).
 		Build())
@@ -164,6 +165,16 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 
 	comment.CreatedAt, comment.UpdatedAt = helpers.GetTime(), helpers.GetTime()
 	comment.UpdatedBy = comment.CreatedBy
+
+	if comment.ParentID != nil && *comment.ParentID > 0 {
+		parentComment, err := pghelpers.FindEntity(ctx, p.commentRepository, "id", *comment.ParentID, "Parent comment not found")
+		if err != nil {
+			return nil, err
+		}
+		if parentComment.Comment.ParentID != nil {
+			return nil, apperror.NewInvalidData("You can only reply to root comments (comments without a parent)", nil, "post_usecase.go:AddComment")
+		}
+	}
 
 	if err := p.commentRepository.Create(ctx, comment); err != nil {
 		return nil, err
