@@ -57,7 +57,10 @@ func Build() *Handlers {
 	hubManager := eventsUsecase.NewHubManager()
 	go hubManager.Run()
 
-	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, eventsRepo, userRepository, spaceRepository)
+	// Crear manager de conexiones de usuarios
+	userConnManager := eventsUsecase.NewUserConnectionManager()
+
+	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, userConnManager, eventsRepo, userRepository, spaceRepository)
 
 	return &Handlers{
 		UserHandler: &user.UserHandler{

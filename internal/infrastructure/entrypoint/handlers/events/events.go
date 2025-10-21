@@ -129,3 +129,31 @@ func (h *EventsHandler) ChatMessage(c *gin.Context) {
 		"chat_message": chatMsg,
 	})
 }
+
+func (h *EventsHandler) HandleUserConnection(c *gin.Context) {
+	userID := c.Query("user_id")
+	if userID == "" {
+		appErr := apperror.NewInvalidData("user_id is required", nil, "events_handler.go:HandleUserConnection")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		appErr := apperror.NewInvalidData("user_id must be a number", err, "events_handler.go:HandleUserConnection")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	params := dto.HandleUserConnectionParams{
+		UserID:  userIDInt,
+		Writer:  c.Writer,
+		Request: c.Request,
+	}
+
+	err = h.eventsUsecase.HandleUserConnection(params)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+}

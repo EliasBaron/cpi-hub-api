@@ -10,29 +10,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const (
-	// Tiempo de espera para escribir un mensaje al cliente
-	writeWait = 10 * time.Second
-
-	// Tiempo de espera para leer el siguiente pong del cliente
-	pongWait = 60 * time.Second
-
-	// Enviar pings al cliente con este período. Debe ser menor que pongWait
-	pingPeriod = (pongWait * 9) / 10
-
-	// Tamaño máximo de mensaje permitido del cliente
-	maxMessageSize = 512
-)
-
 // ClientManager maneja las operaciones del cliente
 type ClientManager struct {
 	client *domain.Client
+	config *WebSocketConfig
 }
 
 // NewClientManager crea una nueva instancia del ClientManager
 func NewClientManager(client *domain.Client) *ClientManager {
 	return &ClientManager{
 		client: client,
+		config: DefaultWebSocketConfig(),
 	}
 }
 
@@ -43,10 +31,10 @@ func (cm *ClientManager) ReadPump() {
 		cm.client.Conn.Close()
 	}()
 
-	cm.client.Conn.SetReadLimit(maxMessageSize)
-	cm.client.Conn.SetReadDeadline(helpers.GetTime().Add(pongWait))
+	cm.client.Conn.SetReadLimit(cm.config.MaxMessageSize)
+	cm.client.Conn.SetReadDeadline(helpers.GetTime().Add(cm.config.PongWait))
 	cm.client.Conn.SetPongHandler(func(string) error {
-		cm.client.Conn.SetReadDeadline(helpers.GetTime().Add(pongWait))
+		cm.client.Conn.SetReadDeadline(helpers.GetTime().Add(cm.config.PongWait))
 		return nil
 	})
 
@@ -66,7 +54,7 @@ func (cm *ClientManager) ReadPump() {
 
 // writePump bombea mensajes desde el hub a la conexión WebSocket
 func (cm *ClientManager) WritePump() {
-	ticker := time.NewTicker(pingPeriod)
+	ticker := time.NewTicker(cm.config.GetPingPeriod())
 	defer func() {
 		ticker.Stop()
 		cm.client.Conn.Close()
@@ -75,7 +63,7 @@ func (cm *ClientManager) WritePump() {
 	for {
 		select {
 		case message, ok := <-cm.client.Send:
-			cm.client.Conn.SetWriteDeadline(helpers.GetTime().Add(writeWait))
+			cm.client.Conn.SetWriteDeadline(helpers.GetTime().Add(cm.config.WriteWait))
 			if !ok {
 				// El hub cerró el canal
 				cm.client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -100,7 +88,7 @@ func (cm *ClientManager) WritePump() {
 			}
 
 		case <-ticker.C:
-			cm.client.Conn.SetWriteDeadline(helpers.GetTime().Add(writeWait))
+			cm.client.Conn.SetWriteDeadline(helpers.GetTime().Add(cm.config.WriteWait))
 			if err := cm.client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
@@ -113,7 +101,7 @@ func (cm *ClientManager) handleMessage(messageBytes []byte) {
 	var wsMsg domain.EventMessage
 	if err := json.Unmarshal(messageBytes, &wsMsg); err != nil {
 		log.Printf("Error unmarshaling message: %v", err)
-		cm.sendError("invalid_message_format", "Formato de mensaje inválido")
+		cm.sendError("invalid_message_format", "Invalid message format")
 		return
 	}
 
@@ -122,14 +110,15 @@ func (cm *ClientManager) handleMessage(messageBytes []byte) {
 	wsMsg.SpaceID = cm.client.SpaceID
 	wsMsg.Timestamp = helpers.GetTime()
 
+	// Procesar según el tipo de mensaje
 	switch wsMsg.Type {
 	case domain.MessageTypeChat:
 		cm.handleChatMessage(wsMsg)
 	case domain.MessageTypePing:
 		cm.handlePing(wsMsg)
 	default:
-		log.Printf("Tipo de mensaje no reconocido: %s", wsMsg.Type)
-		cm.sendError("unknown_message_type", "Tipo de mensaje no reconocido")
+		log.Printf("Unknown message type: %s", wsMsg.Type)
+		cm.sendError("unknown_message_type", "Unknown message type")
 	}
 }
 
@@ -139,25 +128,20 @@ func (cm *ClientManager) handleChatMessage(wsMsg domain.EventMessage) {
 	dataBytes, err := json.Marshal(wsMsg.Data)
 	if err != nil {
 		log.Printf("Error marshaling chat data: %v", err)
-		cm.sendError("invalid_chat_data", "Datos de chat inválidos")
+		cm.sendError("invalid_chat_data", "Invalid chat data")
 		return
 	}
 
 	var chatMsg domain.ChatMessage
 	if err := json.Unmarshal(dataBytes, &chatMsg); err != nil {
 		log.Printf("Error unmarshaling chat message: %v", err)
-		cm.sendError("invalid_chat_message", "Mensaje de chat inválido")
+		cm.sendError("invalid_chat_message", "Invalid chat message")
 		return
 	}
 
 	// Validar el mensaje
-	if chatMsg.Content == "" {
-		cm.sendError("empty_message", "El mensaje no puede estar vacío")
-		return
-	}
-
-	if len(chatMsg.Content) > 1000 {
-		cm.sendError("message_too_long", "El mensaje es demasiado largo")
+	if err := cm.validateChatMessage(&chatMsg); err != nil {
+		cm.sendError("validation_error", err.Error())
 		return
 	}
 
@@ -165,12 +149,21 @@ func (cm *ClientManager) handleChatMessage(wsMsg domain.EventMessage) {
 	chatMsg.UserID = cm.client.UserID
 	chatMsg.SpaceID = cm.client.SpaceID
 	chatMsg.Timestamp = helpers.GetTime()
-
-	// Generar ID único para el mensaje usando ULID
 	chatMsg.ID = helpers.NewULID()
 
 	// Difundir el mensaje al espacio
 	cm.broadcastChatMessage(&chatMsg)
+}
+
+// validateChatMessage valida un mensaje de chat
+func (cm *ClientManager) validateChatMessage(chatMsg *domain.ChatMessage) error {
+	if chatMsg.Content == "" {
+		return domain.ErrEmptyMessage
+	}
+	if len(chatMsg.Content) > 1000 {
+		return domain.ErrMessageTooLong
+	}
+	return nil
 }
 
 // handlePing procesa mensajes ping
@@ -223,10 +216,10 @@ func (cm *ClientManager) broadcastChatMessage(chatMsg *domain.ChatMessage) {
 
 	select {
 	case cm.client.Hub.SpaceBroadcast <- spaceMsg:
-		log.Printf("Mensaje de chat difundido: usuario %s en espacio %s: %s",
+		log.Printf("Chat message broadcasted: user %d in space %d: %s",
 			chatMsg.UserID, chatMsg.SpaceID, chatMsg.Content)
 	default:
-		log.Printf("No se pudo difundir mensaje al espacio %d", chatMsg.SpaceID)
+		log.Printf("Could not broadcast message to space %d", chatMsg.SpaceID)
 	}
 }
 
