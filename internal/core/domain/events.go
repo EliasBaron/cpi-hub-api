@@ -137,7 +137,6 @@ type HandleUserConnectionParams struct {
 	Request *http.Request
 }
 
-// UserConnectionManager define la interfaz para manejar conexiones de usuarios
 type UserConnectionManager interface {
 	HandleConnection(params HandleUserConnectionParams) error
 }
