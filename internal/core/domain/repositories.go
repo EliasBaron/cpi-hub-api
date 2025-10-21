@@ -40,7 +40,8 @@ type PostRepository interface {
 
 type CommentRepository interface {
 	Create(ctx context.Context, comment *Comment) error
-	Find(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
+	Find(ctx context.Context, criteria *criteria.Criteria) (*CommentWithInfo, error)
+	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 }
 

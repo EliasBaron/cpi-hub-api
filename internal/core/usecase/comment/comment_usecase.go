@@ -47,7 +47,7 @@ func (c *commentUseCase) Search(ctx context.Context, params dto.SearchCommentsPa
 		return nil, err
 	}
 
-	commentsWithSpace, err := c.commentRepository.Find(ctx, builder.
+	commentsWithSpace, err := c.commentRepository.FindAll(ctx, builder.
 		WithPagination(params.Page, params.PageSize).
 		WithSort(params.OrderBy, sortDirection).
 		Build())

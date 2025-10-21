@@ -31,48 +31,28 @@ func (c *CommentRepository) Create(ctx context.Context, comment *domain.Comment)
 	return nil
 }
 
-func (c *CommentRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Comment, error) {
-	query, params := mapper.ToPostgreSQLQuery(criteria)
-	return c.findAllByField(ctx, query, params)
+func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteria) (*domain.CommentWithInfo, error) {
+	query, params := c.buildQueryWithAliases(criteria)
+	query += " LIMIT 1"
+
+	comments, err := c.findWithInfoByField(ctx, query, params)
+	if err != nil {
+		return nil, err
+	}
+	if len(comments) == 0 {
+		return nil, nil
+	}
+	return comments[0], nil
+}
+
+func (c *CommentRepository) FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
+	query, params := c.buildQueryWithAliases(criteria)
+	return c.findWithInfoByField(ctx, query, params)
 }
 
 func (c *CommentRepository) FindWithSpace(ctx context.Context, criteria *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
 	query, params := mapper.ToPostgreSQLQuery(criteria)
 	return c.findWithSpaceByField(ctx, query, params)
-}
-
-func (c *CommentRepository) findAllByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.Comment, error) {
-	var comments []*domain.Comment
-	query := `
-		SELECT id, post_id, content, created_by, created_at
-		FROM comments
-	` + " " + whereClause
-
-	rows, err := c.db.QueryContext(ctx, query, params...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var commentEntity entity.CommentEntity
-		if err := rows.Scan(
-			&commentEntity.ID,
-			&commentEntity.PostID,
-			&commentEntity.Content,
-			&commentEntity.CreatedBy,
-			&commentEntity.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		comments = append(comments, mapper.ToDomainComment(&commentEntity))
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return comments, nil
 }
 
 func (c *CommentRepository) findWithSpaceByField(ctx context.Context, whereClause string, params []interface{}) ([]*domain.CommentWithInfo, error) {
@@ -203,11 +183,6 @@ func (c *CommentRepository) findWithInfoByField(ctx context.Context, whereClause
 
 func (c *CommentRepository) buildQueryWithAliases(criteria *criteria.Criteria) (string, []interface{}) {
 	return mapper.ToPostgreSQLQueryWithAlias(criteria, "c")
-}
-
-func (c *CommentRepository) Find(ctx context.Context, criteria *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
-	query, params := c.buildQueryWithAliases(criteria)
-	return c.findWithInfoByField(ctx, query, params)
 }
 
 func (c *CommentRepository) Count(ctx context.Context, criteria *criteria.Criteria) (int, error) {
