@@ -171,3 +171,20 @@ func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
 
 	response.SuccessResponse(context.Writer, data)
 }
+
+func (h *PostHandler) Update(c *gin.Context) {
+	var updatePostDTO dto.UpdatePost
+
+	if err := c.ShouldBindJSON(&updatePostDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid post data", err, "post_handler.go:Update")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	updatedPost, err := h.PostUseCase.Update(c.Request.Context(), &updatePostDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+	response.SuccessResponse(c.Writer, dto.ToPostExtendedDTO(updatedPost))
+}
