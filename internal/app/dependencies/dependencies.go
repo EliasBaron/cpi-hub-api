@@ -53,11 +53,12 @@ func Build() *Handlers {
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
 
-	// Crear hub de eventos
 	hubManager := eventsUsecase.NewHubManager()
 	go hubManager.Run()
 
-	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, eventsRepo, userRepository, spaceRepository)
+	userConnManager := eventsUsecase.NewUserConnectionManager()
+
+	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, userConnManager, eventsRepo, userRepository, spaceRepository)
 
 	return &Handlers{
 		UserHandler: &user.UserHandler{

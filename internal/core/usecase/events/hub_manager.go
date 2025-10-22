@@ -36,7 +36,7 @@ func (hm *HubManager) Run() {
 		select {
 		case client := <-hm.hub.Register:
 			hm.hub.Clients[client] = true
-			log.Printf("Cliente %s (ID %d) conectado al espacio %d", client.Username, client.UserID, client.SpaceID)
+			log.Printf("Client %s (ID %d) connected to space %d", client.Username, client.UserID, client.SpaceID)
 
 			// Enviar mensaje de bienvenida
 			welcomeMsg := domain.EventMessage{
@@ -53,7 +53,7 @@ func (hm *HubManager) Run() {
 			if _, ok := hm.hub.Clients[client]; ok {
 				delete(hm.hub.Clients, client)
 				close(client.Send)
-				log.Printf("Cliente %d desconectado del espacio %d", client.UserID, client.SpaceID)
+				log.Printf("Client %d disconnected from space %d", client.UserID, client.SpaceID)
 
 				// Enviar mensaje de despedida
 				leaveMsg := domain.EventMessage{
@@ -107,7 +107,7 @@ func (hm *HubManager) broadcastToSpace(spaceID int, message domain.EventMessage)
 	select {
 	case hm.hub.SpaceBroadcast <- spaceMsg:
 	default:
-		log.Printf("No se pudo enviar mensaje al espacio %s", spaceID)
+		log.Printf("Could not send message to space %d", spaceID)
 	}
 }
 

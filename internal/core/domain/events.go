@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"io"
+	"net/http"
 	"time"
 )
 
@@ -114,3 +115,28 @@ var (
 	ErrMessageTooLong = errors.New("el mensaje es demasiado largo")
 	ErrUnauthorized   = errors.New("no autorizado para realizar esta acción")
 )
+
+type UserStatus string
+
+const (
+	UserStatusOnline  UserStatus = "online"
+	UserStatusOffline UserStatus = "offline"
+)
+
+type UserConnectionMessage struct {
+	Type      string     `json:"type"`
+	UserID    int        `json:"user_id"`
+	Status    UserStatus `json:"status"`
+	Username  string     `json:"username"`
+	Timestamp string     `json:"timestamp"`
+}
+
+type HandleUserConnectionParams struct {
+	UserID  int
+	Writer  http.ResponseWriter
+	Request *http.Request
+}
+
+type UserConnectionManager interface {
+	HandleConnection(params HandleUserConnectionParams) error
+}
