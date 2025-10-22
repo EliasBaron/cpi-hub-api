@@ -19,6 +19,7 @@ type UserUseCase interface {
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
 	Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error)
 	Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error)
+	UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) (*domain.User, error)
 }
 
 type useCase struct {
@@ -233,6 +234,43 @@ func (u *useCase) Login(ctx context.Context, loginUser dto.LoginUser) (*domain.U
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginUser.Password))
 	if err != nil {
 		return nil, apperror.NewInvalidData("Invalid password", nil, "user_usecase.go:Login")
+	}
+
+	return user, nil
+}
+
+func (u *useCase) UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) (*domain.User, error) {
+	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "id",
+				Value:    dto.ID,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:UpdateUser")
+	}
+
+	if dto.Name != nil {
+		user.Name = *dto.Name
+	}
+	if dto.LastName != nil {
+		user.LastName = *dto.LastName
+	}
+	if dto.Image != nil {
+		user.Image = *dto.Image
+	}
+	user.UpdatedAt = helpers.GetTime()
+
+	err = u.userRepository.Update(ctx, user)
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil
