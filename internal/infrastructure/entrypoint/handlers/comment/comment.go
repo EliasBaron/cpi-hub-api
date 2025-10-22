@@ -53,3 +53,19 @@ func (h *CommentHandler) Search(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, data)
 }
+
+func (h *CommentHandler) Update(c *gin.Context) {
+	var updateDTO dto.UpdateCommentDTO
+	if err := c.ShouldBindJSON(&updateDTO); err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	updatedComment, err := h.CommentUseCase.Update(c.Request.Context(), updateDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, dto.ToCommentWithSpaceDTO(updatedComment))
+}

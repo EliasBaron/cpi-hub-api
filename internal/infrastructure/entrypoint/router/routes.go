@@ -39,6 +39,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	//comments
 	v1.GET("/comments", handlers.CommentHandler.Search)
+	v1.PUT("/comments/:comment_id", handlers.CommentHandler.Update)
 
 	// events
 	v1.GET("/ws/spaces/:space_id", handlers.EventsHandler.Connect)

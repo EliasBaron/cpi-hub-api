@@ -10,6 +10,12 @@ type CreateComment struct {
 	CreatedBy int    `json:"created_by" binding:"required"`
 }
 
+type UpdateCommentDTO struct {
+	CommentID int    `json:"comment_id" binding:"required"`
+	UserID    int    `json:"user_id" binding:"required"`
+	Content   string `json:"content" binding:"required"`
+}
+
 type CommentDTO struct {
 	ID              int       `json:"id"`
 	PostID          int       `json:"post_id"`
