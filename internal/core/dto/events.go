@@ -17,3 +17,9 @@ type EventsBroadcastParams struct {
 	Username string `json:"username" binding:"required"`
 	Image    string `json:"image"`
 }
+
+type HandleUserConnectionParams struct {
+	UserID  int
+	Writer  http.ResponseWriter
+	Request *http.Request
+}
