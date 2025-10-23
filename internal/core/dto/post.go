@@ -13,8 +13,7 @@ type CreatePost struct {
 }
 
 type UpdatePost struct {
-	PostID  int    `json:"post_id"      binding:"required"`
-	UserID  int    `json:"user_id" binding:"required"`
+	PostID  int
 	Title   string `json:"title"  `
 	Content string `json:"content"`
 }

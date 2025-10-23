@@ -11,8 +11,7 @@ type CreateComment struct {
 }
 
 type UpdateCommentDTO struct {
-	CommentID int    `json:"comment_id" binding:"required"`
-	UserID    int    `json:"user_id" binding:"required"`
+	CommentID int
 	Content   string `json:"content" binding:"required"`
 }
 

@@ -269,11 +269,21 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	updatedUser, err := h.UseCase.UpdateUser(c.Request.Context(), updateUserDTO)
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:UpdateUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	updateUserDTO.UserID = userId
+
+	err = h.UseCase.UpdateUser(c.Request.Context(), updateUserDTO)
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(c.Writer, dto.ToUserDTO(updatedUser))
+	response.SuccessResponse(c.Writer, nil)
 }

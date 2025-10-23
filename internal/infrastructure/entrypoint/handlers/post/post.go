@@ -181,10 +181,21 @@ func (h *PostHandler) Update(c *gin.Context) {
 		return
 	}
 
-	updatedPost, err := h.PostUseCase.Update(c.Request.Context(), &updatePostDTO)
+	postIDStr := c.Param("post_id")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid post_id parameter (must be positive integer)", err, "post_handler.go:Update")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	updatePostDTO.PostID = postID
+
+	err = h.PostUseCase.Update(c.Request.Context(), &updatePostDTO)
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
-	response.SuccessResponse(c.Writer, dto.ToPostExtendedDTO(updatedPost))
+
+	response.SuccessResponse(c.Writer, gin.H{"message": "Post updated successfully"})
 }

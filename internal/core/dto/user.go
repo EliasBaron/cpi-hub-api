@@ -102,7 +102,7 @@ type PaginatedUsersResponse struct {
 }
 
 type UpdateUserDTO struct {
-	ID       int     `json:"id"`
+	UserID   int
 	Name     *string `json:"name"`
 	LastName *string `json:"last_name"`
 	Image    *string `json:"image"`

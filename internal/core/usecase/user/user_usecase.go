@@ -19,7 +19,7 @@ type UserUseCase interface {
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
 	Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error)
 	Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error)
-	UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) (*domain.User, error)
+	UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) error
 }
 
 type useCase struct {
@@ -239,22 +239,22 @@ func (u *useCase) Login(ctx context.Context, loginUser dto.LoginUser) (*domain.U
 	return user, nil
 }
 
-func (u *useCase) UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) (*domain.User, error) {
+func (u *useCase) UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) error {
 	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
 		Filters: []criteria.Filter{
 			{
 				Field:    "id",
-				Value:    dto.ID,
+				Value:    dto.UserID,
 				Operator: criteria.OperatorEqual,
 			},
 		},
 	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if user == nil {
-		return nil, apperror.NewNotFound("User not found", nil, "user_usecase.go:UpdateUser")
+		return apperror.NewNotFound("User not found", nil, "user_usecase.go:UpdateUser")
 	}
 
 	if dto.Name != nil {
@@ -270,8 +270,8 @@ func (u *useCase) UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) (*domai
 
 	err = u.userRepository.Update(ctx, user)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return user, nil
+	return nil
 }

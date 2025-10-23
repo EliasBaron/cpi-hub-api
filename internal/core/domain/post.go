@@ -28,7 +28,6 @@ type Comment struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	CreatedBy int
-	UpdatedBy int
 	ParentID  *int
 	Replies   []*Comment
 }

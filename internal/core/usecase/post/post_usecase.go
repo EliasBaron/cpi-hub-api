@@ -22,7 +22,7 @@ type PostUseCase interface {
 	Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error)
 	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error)
-	Update(ctx context.Context, updatePostDTO *dto.UpdatePost) (*domain.ExtendedPost, error)
+	Update(ctx context.Context, updatePostDTO *dto.UpdatePost) error
 }
 
 type postUseCase struct {
@@ -165,7 +165,6 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	}
 
 	comment.CreatedAt, comment.UpdatedAt = helpers.GetTime(), helpers.GetTime()
-	comment.UpdatedBy = comment.CreatedBy
 
 	if comment.ParentID != nil && *comment.ParentID > 0 {
 		parentComment, err := pghelpers.FindEntity(ctx, p.commentRepository, "id", *comment.ParentID, "Parent comment not found")
@@ -319,14 +318,10 @@ func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.Interes
 	}, nil
 }
 
-func (p *postUseCase) Update(ctx context.Context, updatePostDTO *dto.UpdatePost) (*domain.ExtendedPost, error) {
+func (p *postUseCase) Update(ctx context.Context, updatePostDTO *dto.UpdatePost) error {
 	existingPost, err := pghelpers.FindEntity(ctx, p.postRepository, "id", updatePostDTO.PostID, "Post not found")
 	if err != nil {
-		return nil, err
-	}
-
-	if existingPost.CreatedBy != updatePostDTO.UserID {
-		return nil, apperror.NewUnauthorized("You are not authorized to update this post", nil, "post_usecase.go:Update")
+		return err
 	}
 
 	if updatePostDTO.Title != "" {
@@ -338,13 +333,8 @@ func (p *postUseCase) Update(ctx context.Context, updatePostDTO *dto.UpdatePost)
 	existingPost.UpdatedAt = helpers.GetTime()
 
 	if err := p.postRepository.Update(ctx, existingPost); err != nil {
-		return nil, err
+		return err
 	}
 
-	existingPosts, err := p.buildExtendedPosts(ctx, []*domain.Post{existingPost})
-	if err != nil {
-		return nil, err
-	}
-
-	return existingPosts[0], nil
+	return nil
 }

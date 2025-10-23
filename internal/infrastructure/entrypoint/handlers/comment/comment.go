@@ -3,6 +3,7 @@ package comment
 import (
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/core/usecase/comment"
+	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
 	response "cpi-hub-api/pkg/http"
 	"strconv"
@@ -61,11 +62,21 @@ func (h *CommentHandler) Update(c *gin.Context) {
 		return
 	}
 
-	updatedComment, err := h.CommentUseCase.Update(c.Request.Context(), updateDTO)
+	commentIDStr := c.Param("comment_id")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid comment_id (must be integer)", err, "comment_handler.go:Update")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	updateDTO.CommentID = commentID
+
+	err = h.CommentUseCase.Update(c.Request.Context(), updateDTO)
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(c.Writer, dto.ToCommentWithSpaceDTO(updatedComment))
+	response.SuccessResponse(c.Writer, gin.H{"message": "Comment updated successfully"})
 }

@@ -13,7 +13,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.GET("/users/:user_id", handlers.UserHandler.Get)
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
 	v1.GET("/users", handlers.UserHandler.Search)
-	v1.PUT("/users", handlers.UserHandler.UpdateUser)
+	v1.PUT("/users/:user_id", handlers.UserHandler.UpdateUser)
 
 	//auth
 	v1.POST("/auth/register", handlers.UserHandler.Register)
