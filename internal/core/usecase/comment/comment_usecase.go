@@ -17,6 +17,7 @@ type SearchResult struct {
 type CommentUseCase interface {
 	Search(ctx context.Context, params dto.SearchCommentsParams) (*SearchResult, error)
 	Update(ctx context.Context, params dto.UpdateCommentDTO) error
+	Delete(ctx context.Context, commentID int) error
 }
 
 type commentUseCase struct {
@@ -84,6 +85,26 @@ func (c *commentUseCase) Update(ctx context.Context, params dto.UpdateCommentDTO
 	existingComment.Comment.UpdatedAt = helpers.GetTime()
 
 	if err := c.commentRepository.Update(ctx, existingComment.Comment); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *commentUseCase) Delete(ctx context.Context, commentID int) error {
+	searchCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("id", commentID, criteria.OperatorEqual).
+		Build()
+
+	existingComment, err := c.commentRepository.Find(ctx, searchCriteria)
+	if err != nil {
+		return err
+	}
+	if existingComment == nil {
+		return apperror.NewNotFound("comment not found", nil, "comment_usecase.go:Delete")
+	}
+
+	if err := c.commentRepository.Delete(ctx, commentID); err != nil {
 		return err
 	}
 

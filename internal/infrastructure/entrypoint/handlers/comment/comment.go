@@ -80,3 +80,21 @@ func (h *CommentHandler) Update(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, gin.H{"message": "Comment updated successfully"})
 }
+
+func (h *CommentHandler) Delete(c *gin.Context) {
+	commentIDStr := c.Param("comment_id")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid comment_id (must be integer)", err, "comment_handler.go:Delete")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	err = h.CommentUseCase.Delete(c.Request.Context(), commentID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, gin.H{"message": "Comment deleted successfully"})
+}

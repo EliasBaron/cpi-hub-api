@@ -37,6 +37,7 @@ type PostRepository interface {
 	Update(ctx context.Context, post *Post) error
 	Search(ctx context.Context, criteria *criteria.Criteria) ([]*Post, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	Delete(ctx context.Context, postID int) error
 }
 
 type CommentRepository interface {
@@ -45,6 +46,7 @@ type CommentRepository interface {
 	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 	Update(ctx context.Context, comment *Comment) error
+	Delete(ctx context.Context, commentID int) error
 }
 
 type EventsRepository interface {

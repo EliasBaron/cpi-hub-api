@@ -213,3 +213,12 @@ func (c *CommentRepository) Update(ctx context.Context, comment *domain.Comment)
 	_, err := c.db.ExecContext(ctx, query, commentEntity.Content, commentEntity.UpdatedAt, commentEntity.ID)
 	return err
 }
+
+func (c *CommentRepository) Delete(ctx context.Context, commentID int) error {
+	query := `
+		DELETE FROM comments
+		WHERE id = $1
+	`
+	_, err := c.db.ExecContext(ctx, query, commentID)
+	return err
+}

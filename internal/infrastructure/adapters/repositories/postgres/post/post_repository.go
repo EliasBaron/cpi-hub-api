@@ -164,3 +164,11 @@ func (p *PostRepository) Count(ctx context.Context, criteria *criteria.Criteria)
 	err := p.db.QueryRowContext(ctx, query, params...).Scan(&count)
 	return count, err
 }
+
+func (p *PostRepository) Delete(ctx context.Context, postID int) error {
+	query := `
+		DELETE FROM posts WHERE id = $1
+	`
+	_, err := p.db.ExecContext(ctx, query, postID)
+	return err
+}

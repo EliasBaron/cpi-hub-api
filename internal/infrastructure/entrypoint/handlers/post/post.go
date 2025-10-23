@@ -199,3 +199,21 @@ func (h *PostHandler) Update(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, gin.H{"message": "Post updated successfully"})
 }
+
+func (h *PostHandler) Delete(c *gin.Context) {
+	postIDStr := c.Param("post_id")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil || postID <= 0 {
+		appErr := apperror.NewInvalidData("Invalid post_id parameter (must be positive integer)", err, "post_handler.go:Delete")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	err = h.PostUseCase.Delete(c.Request.Context(), postID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, gin.H{"message": "Post deleted successfully"})
+}
