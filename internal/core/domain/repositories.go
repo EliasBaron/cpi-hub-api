@@ -47,8 +47,6 @@ type CommentRepository interface {
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
 	Update(ctx context.Context, comment *Comment) error
 	Delete(ctx context.Context, commentID int) error
-	DeleteChildren(ctx context.Context, parentCommentID int) error
-	DeleteFromPost(ctx context.Context, postID int) error
 }
 
 type EventsRepository interface {

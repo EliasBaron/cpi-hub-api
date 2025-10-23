@@ -214,22 +214,6 @@ func (c *CommentRepository) Update(ctx context.Context, comment *domain.Comment)
 	return err
 }
 
-func (c *CommentRepository) DeleteChildren(ctx context.Context, parentCommentID int) error {
-	query := `
-		DELETE FROM comments WHERE parent_comment_id = $1
-	`
-	_, err := c.db.ExecContext(ctx, query, parentCommentID)
-	return err
-}
-
-func (c *CommentRepository) DeleteFromPost(ctx context.Context, postID int) error {
-	query := `
-		DELETE FROM comments WHERE post_id = $1
-	`
-	_, err := c.db.ExecContext(ctx, query, postID)
-	return err
-}
-
 func (c *CommentRepository) Delete(ctx context.Context, commentID int) error {
 	query := `
 		DELETE FROM comments

@@ -354,9 +354,6 @@ func (p *postUseCase) Delete(ctx context.Context, postID int) error {
 	}
 	existingPost = extendedPosts[0].Post
 
-	if err := p.commentRepository.DeleteFromPost(ctx, existingPost.ID); err != nil {
-		return err
-	}
 	if err := p.postRepository.Delete(ctx, existingPost.ID); err != nil {
 		return err
 	}

@@ -104,10 +104,6 @@ func (c *commentUseCase) Delete(ctx context.Context, commentID int) error {
 		return apperror.NewNotFound("comment not found", nil, "comment_usecase.go:Delete")
 	}
 
-	if err := c.commentRepository.DeleteChildren(ctx, commentID); err != nil {
-		return err
-	}
-
 	if err := c.commentRepository.Delete(ctx, commentID); err != nil {
 		return err
 	}
