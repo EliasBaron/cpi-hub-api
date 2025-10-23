@@ -23,6 +23,7 @@ type PostUseCase interface {
 	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error)
 	Update(ctx context.Context, updatePostDTO *dto.UpdatePost) error
+	Delete(ctx context.Context, postID int) error
 }
 
 type postUseCase struct {
@@ -333,6 +334,30 @@ func (p *postUseCase) Update(ctx context.Context, updatePostDTO *dto.UpdatePost)
 	existingPost.UpdatedAt = helpers.GetTime()
 
 	if err := p.postRepository.Update(ctx, existingPost); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *postUseCase) Delete(ctx context.Context, postID int) error {
+	existingPost, err := pghelpers.FindEntity(ctx, p.postRepository, "id", postID, "Post not found")
+	if err != nil {
+		return err
+	}
+	if existingPost == nil {
+		return apperror.NewNotFound("post not found", nil, "post_usecase.go:Delete")
+	}
+	extendedPosts, err := p.buildExtendedPosts(ctx, []*domain.Post{existingPost})
+	if err != nil {
+		return err
+	}
+	existingPost = extendedPosts[0].Post
+
+	if err := p.commentRepository.DeleteFromPost(ctx, existingPost.ID); err != nil {
+		return err
+	}
+	if err := p.postRepository.Delete(ctx, existingPost.ID); err != nil {
 		return err
 	}
 
