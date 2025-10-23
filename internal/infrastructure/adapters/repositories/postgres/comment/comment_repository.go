@@ -21,8 +21,8 @@ func (c *CommentRepository) Create(ctx context.Context, comment *domain.Comment)
 	var commentEntity = *mapper.ToPostgreComment(comment)
 
 	if err := c.db.QueryRowContext(ctx,
-		"INSERT INTO comments (post_id, content, created_by, created_at, parent_comment_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		commentEntity.PostID, commentEntity.Content, commentEntity.CreatedBy, commentEntity.CreatedAt, commentEntity.ParentID,
+		"INSERT INTO comments (post_id, content, created_by, created_at, updated_at, parent_comment_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+		commentEntity.PostID, commentEntity.Content, commentEntity.CreatedBy, commentEntity.CreatedAt, commentEntity.UpdatedAt, commentEntity.ParentID,
 	).Scan(&commentEntity.ID); err != nil {
 		return err
 	}
@@ -200,4 +200,16 @@ func (c *CommentRepository) Count(ctx context.Context, criteria *criteria.Criter
 	}
 
 	return count, nil
+}
+
+func (c *CommentRepository) Update(ctx context.Context, comment *domain.Comment) error {
+	var commentEntity = *mapper.ToPostgreComment(comment)
+
+	query := `
+		UPDATE comments
+		SET content = $1, updated_at = $2
+		WHERE id = $3
+	`
+	_, err := c.db.ExecContext(ctx, query, commentEntity.Content, commentEntity.UpdatedAt, commentEntity.ID)
+	return err
 }

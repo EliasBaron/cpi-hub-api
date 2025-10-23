@@ -22,6 +22,7 @@ type PostUseCase interface {
 	Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error)
 	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
 	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error)
+	Update(ctx context.Context, updatePostDTO *dto.UpdatePost) error
 }
 
 type postUseCase struct {
@@ -164,7 +165,6 @@ func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (
 	}
 
 	comment.CreatedAt, comment.UpdatedAt = helpers.GetTime(), helpers.GetTime()
-	comment.UpdatedBy = comment.CreatedBy
 
 	if comment.ParentID != nil && *comment.ParentID > 0 {
 		parentComment, err := pghelpers.FindEntity(ctx, p.commentRepository, "id", *comment.ParentID, "Parent comment not found")
@@ -316,4 +316,25 @@ func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.Interes
 		Posts: extendedPosts,
 		Total: total,
 	}, nil
+}
+
+func (p *postUseCase) Update(ctx context.Context, updatePostDTO *dto.UpdatePost) error {
+	existingPost, err := pghelpers.FindEntity(ctx, p.postRepository, "id", updatePostDTO.PostID, "Post not found")
+	if err != nil {
+		return err
+	}
+
+	if updatePostDTO.Title != "" {
+		existingPost.Title = updatePostDTO.Title
+	}
+	if updatePostDTO.Content != "" {
+		existingPost.Content = updatePostDTO.Content
+	}
+	existingPost.UpdatedAt = helpers.GetTime()
+
+	if err := p.postRepository.Update(ctx, existingPost); err != nil {
+		return err
+	}
+
+	return nil
 }

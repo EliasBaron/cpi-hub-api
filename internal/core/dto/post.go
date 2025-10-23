@@ -12,6 +12,12 @@ type CreatePost struct {
 	SpaceID   int    `json:"space_id" binding:"required"`
 }
 
+type UpdatePost struct {
+	PostID  int
+	Title   string `json:"title"  `
+	Content string `json:"content"`
+}
+
 type SearchPostsParams struct {
 	Page          int
 	PageSize      int

@@ -13,6 +13,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.GET("/users/:user_id", handlers.UserHandler.Get)
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
 	v1.GET("/users", handlers.UserHandler.Search)
+	v1.PUT("/users/:user_id", handlers.UserHandler.UpdateUser)
 
 	//auth
 	v1.POST("/auth/register", handlers.UserHandler.Register)
@@ -32,11 +33,13 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	// posts
 	v1.POST("/posts", handlers.PostHandler.Create)
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
+	v1.PUT("/posts/:post_id", handlers.PostHandler.Update)
 	v1.GET("/posts", handlers.PostHandler.Search)
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 
 	//comments
 	v1.GET("/comments", handlers.CommentHandler.Search)
+	v1.PUT("/comments/:comment_id", handlers.CommentHandler.Update)
 
 	// events
 	v1.GET("/ws/spaces/:space_id", handlers.EventsHandler.Connect)

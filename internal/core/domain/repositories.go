@@ -11,6 +11,7 @@ type UserRepository interface {
 	Find(ctx context.Context, criteria *criteria.Criteria) (*User, error)
 	Search(ctx context.Context, criteria *criteria.Criteria) ([]*User, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	Update(ctx context.Context, user *User) error
 }
 
 type SpaceRepository interface {
@@ -43,6 +44,7 @@ type CommentRepository interface {
 	Find(ctx context.Context, criteria *criteria.Criteria) (*CommentWithInfo, error)
 	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	Update(ctx context.Context, comment *Comment) error
 }
 
 type EventsRepository interface {

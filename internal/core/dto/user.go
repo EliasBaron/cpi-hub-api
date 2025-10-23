@@ -100,3 +100,10 @@ type PaginatedUsersResponse struct {
 	PageSize int       `json:"page_size"`
 	Total    int       `json:"total"`
 }
+
+type UpdateUserDTO struct {
+	UserID   int
+	Name     *string `json:"name"`
+	LastName *string `json:"last_name"`
+	Image    *string `json:"image"`
+}

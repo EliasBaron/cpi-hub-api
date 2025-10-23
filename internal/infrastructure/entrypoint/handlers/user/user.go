@@ -259,3 +259,31 @@ func (h *UserHandler) Search(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, result)
 }
+
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	var updateUserDTO dto.UpdateUserDTO
+
+	if err := c.ShouldBindJSON(&updateUserDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid user data", err, "user_handler.go:UpdateUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user_id (must be integer)", err, "user_handler.go:UpdateUser")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	updateUserDTO.UserID = userId
+
+	err = h.UseCase.UpdateUser(c.Request.Context(), updateUserDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, nil)
+}

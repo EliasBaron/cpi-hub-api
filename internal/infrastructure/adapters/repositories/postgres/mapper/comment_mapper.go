@@ -12,6 +12,7 @@ func ToPostgreComment(comment *domain.Comment) *entity.CommentEntity {
 		Content:   comment.Content,
 		CreatedBy: comment.CreatedBy,
 		CreatedAt: comment.CreatedAt,
+		UpdatedAt: comment.UpdatedAt,
 		ParentID:  comment.ParentID,
 	}
 }
@@ -23,6 +24,7 @@ func ToDomainComment(commentEntity *entity.CommentEntity) *domain.Comment {
 		Content:   commentEntity.Content,
 		CreatedBy: commentEntity.CreatedBy,
 		CreatedAt: commentEntity.CreatedAt,
+		UpdatedAt: commentEntity.UpdatedAt,
 		ParentID:  commentEntity.ParentID,
 	}
 }
