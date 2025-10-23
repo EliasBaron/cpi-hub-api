@@ -1,14 +1,10 @@
 package dependencies
 
 import (
-	"context"
 	"cpi-hub-api/database/schema"
 	"fmt"
 	"log"
 	"time"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"database/sql"
 
@@ -30,55 +26,13 @@ type PostgreSQLConfig struct {
 	SSLMode  string
 }
 
-func newMongoDBClient() (*mongo.Client, error) {
-	config := MongoDBConfig{
-		URI:      "mongodb://localhost:27017",
-		Database: "cpihub",
-		Timeout:  10 * time.Second,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), config.Timeout)
-	defer cancel()
-
-	clientOptions := options.Client().ApplyURI(config.URI)
-
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		return nil, fmt.Errorf("error connecting to MongoDB: %w", err)
-	}
-
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error verifying connection to MongoDB: %w", err)
-	}
-
-	log.Printf("Successfully connected to MongoDB at %s", config.URI)
-	return client, nil
-}
-
-func GetMongoDatabase() (*mongo.Database, error) {
-	client, err := newMongoDBClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return client.Database("cpihub"), nil
-}
-
-func CloseMongoConnection(client *mongo.Client) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return client.Disconnect(ctx)
-}
-
 func NewPostgreSQLClient() (*sql.DB, error) {
 	config := PostgreSQLConfig{
 		Host:     "localhost",
 		Port:     5432,
 		User:     "postgres",
 		Password: "rootroot",
-		Database: "cpihub",
+		Database: "cpihub-beta",
 		SSLMode:  "disable",
 	}
 
