@@ -21,8 +21,8 @@ func (c *CommentRepository) Create(ctx context.Context, comment *domain.Comment)
 	var commentEntity = *mapper.ToPostgreComment(comment)
 
 	if err := c.db.QueryRowContext(ctx,
-		"INSERT INTO comments (post_id, content, created_by, created_at, updated_at, parent_comment_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-		commentEntity.PostID, commentEntity.Content, commentEntity.CreatedBy, commentEntity.CreatedAt, commentEntity.UpdatedAt, commentEntity.ParentID,
+		"INSERT INTO comments (post_id, content, image, created_by, created_at, updated_at, parent_comment_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		commentEntity.PostID, commentEntity.Content, commentEntity.Image, commentEntity.CreatedBy, commentEntity.CreatedAt, commentEntity.UpdatedAt, commentEntity.ParentID,
 	).Scan(&commentEntity.ID); err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (c *CommentRepository) findWithSpaceByField(ctx context.Context, whereClaus
 	var commentsWithInfo []*domain.CommentWithInfo
 	query := `
 		SELECT 
-			c.id, c.post_id, c.content, c.created_by, c.created_at, c.parent_comment_id,
+			c.id, c.post_id, c.content, c.image, c.created_by, c.created_at, c.parent_comment_id,
 			u.id, u.name, u.last_name, u.email, u.image, u.created_at,
 			s.id, s.name, s.description, s.created_at
 		FROM comments c
@@ -83,6 +83,7 @@ func (c *CommentRepository) findWithSpaceByField(ctx context.Context, whereClaus
 			&commentEntity.ID,
 			&commentEntity.PostID,
 			&commentEntity.Content,
+			&commentEntity.Image,
 			&commentEntity.CreatedBy,
 			&commentEntity.CreatedAt,
 			&commentEntity.ParentID,
@@ -122,7 +123,7 @@ func (c *CommentRepository) findWithInfoByField(ctx context.Context, whereClause
 	var commentsWithInfo []*domain.CommentWithInfo
 	query := `
 		SELECT 
-			c.id, c.post_id, c.content, c.created_by, c.created_at, c.parent_comment_id,
+			c.id, c.post_id, c.content, c.image, c.created_by, c.created_at, c.parent_comment_id,
 			u.id, u.name, u.last_name, u.email, u.image, u.created_at,
 			s.id, s.name, s.description, s.created_at
 		FROM comments c
@@ -146,6 +147,7 @@ func (c *CommentRepository) findWithInfoByField(ctx context.Context, whereClause
 			&commentEntity.ID,
 			&commentEntity.PostID,
 			&commentEntity.Content,
+			&commentEntity.Image,
 			&commentEntity.CreatedBy,
 			&commentEntity.CreatedAt,
 			&commentEntity.ParentID,
@@ -207,10 +209,10 @@ func (c *CommentRepository) Update(ctx context.Context, comment *domain.Comment)
 
 	query := `
 		UPDATE comments
-		SET content = $1, updated_at = $2
-		WHERE id = $3
+		SET content = $1, image = $2, updated_at = $3
+		WHERE id = $4
 	`
-	_, err := c.db.ExecContext(ctx, query, commentEntity.Content, commentEntity.UpdatedAt, commentEntity.ID)
+	_, err := c.db.ExecContext(ctx, query, commentEntity.Content, commentEntity.Image, commentEntity.UpdatedAt, commentEntity.ID)
 	return err
 }
 

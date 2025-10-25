@@ -32,7 +32,7 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 		Port:     5432,
 		User:     "postgres",
 		Password: "rootroot",
-		Database: "cpihub",
+		Database: "cpihub-beta",
 		SSLMode:  "disable",
 	}
 

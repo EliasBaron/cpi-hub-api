@@ -6,8 +6,11 @@ import (
 )
 
 type CreateComment struct {
-	Content   string `json:"content" binding:"required"`
-	CreatedBy int    `json:"created_by" binding:"required"`
+	PostID          int     `json:"post_id"`
+	Content         string  `json:"content" binding:"required"`
+	Image           *string `json:"image"`
+	CreatedBy       int     `json:"created_by" binding:"required"`
+	ParentCommentID *int    `json:"parent_comment_id,omitempty"`
 }
 
 type UpdateCommentDTO struct {
@@ -28,16 +31,18 @@ type CommentWithUserDTO struct {
 	ID              int                   `json:"id"`
 	PostID          int                   `json:"post_id"`
 	Content         string                `json:"content"`
+	Image           *string               `json:"image"`
 	CreatedBy       UserDTO               `json:"created_by"`
 	CreatedAt       time.Time             `json:"created_at"`
 	ParentCommentID *int                  `json:"parent_comment_id,omitempty"`
 	Replies         []*CommentWithUserDTO `json:"replies,omitempty"`
 }
 
-func (c *CommentDTO) ToDomain() *domain.Comment {
+func (c *CreateComment) ToDomain() *domain.Comment {
 	return &domain.Comment{
 		PostID:    c.PostID,
 		Content:   c.Content,
+		Image:     c.Image,
 		CreatedBy: c.CreatedBy,
 		ParentID:  c.ParentCommentID,
 	}
@@ -73,6 +78,7 @@ func ToCommentWithUserAndPostDTO(comment *domain.CommentWithInfo) CommentWithUse
 		ID:              comment.Comment.ID,
 		PostID:          comment.Comment.PostID,
 		Content:         comment.Comment.Content,
+		Image:           comment.Comment.Image,
 		CreatedBy:       ToUserDTO(comment.User),
 		CreatedAt:       comment.Comment.CreatedAt,
 		ParentCommentID: comment.Comment.ParentID,
@@ -114,6 +120,7 @@ func ToCommentWithUserTreeDTOs(comments []*domain.CommentWithInfo) []CommentWith
 			ID:              cwi.Comment.ID,
 			PostID:          cwi.Comment.PostID,
 			Content:         cwi.Comment.Content,
+			Image:           cwi.Comment.Image,
 			CreatedBy:       ToUserDTO(cwi.User),
 			CreatedAt:       cwi.Comment.CreatedAt,
 			ParentCommentID: cwi.Comment.ParentID,

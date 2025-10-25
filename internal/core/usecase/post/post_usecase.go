@@ -21,7 +21,7 @@ type PostUseCase interface {
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
 	Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error)
 	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
-	AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error)
+	AddComment(ctx context.Context, commentDTO dto.CreateComment) (*domain.CommentWithInfo, error)
 	Update(ctx context.Context, updatePostDTO *dto.UpdatePost) error
 	Delete(ctx context.Context, postID int) error
 }
@@ -159,7 +159,9 @@ func (p *postUseCase) Get(ctx context.Context, id int) (*domain.ExtendedPost, er
 	return extendedPosts[0], nil
 }
 
-func (p *postUseCase) AddComment(ctx context.Context, comment *domain.Comment) (*domain.CommentWithInfo, error) {
+func (p *postUseCase) AddComment(ctx context.Context, commentDTO dto.CreateComment) (*domain.CommentWithInfo, error) {
+	comment := commentDTO.ToDomain()
+
 	user, err := pghelpers.FindEntity(ctx, p.userRepository, "id", comment.CreatedBy, "User not found")
 	if err != nil {
 		return nil, err
