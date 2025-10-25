@@ -6,6 +6,7 @@ type Post struct {
 	ID        int
 	Title     string
 	Content   string
+	Image     *string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	CreatedBy int
@@ -25,6 +26,7 @@ type Comment struct {
 	ID        int
 	PostID    int
 	Content   string
+	Image     *string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	CreatedBy int

@@ -32,8 +32,8 @@ func (p *PostRepository) Create(ctx context.Context, post *domain.Post) error {
 	var postEntity = *mapper.ToPostgresPost(post)
 
 	if err := p.db.QueryRowContext(ctx,
-		"INSERT INTO posts (title, content, created_at, updated_at, created_by, updated_by, space_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-		postEntity.Title, postEntity.Content, postEntity.CreatedAt, postEntity.UpdatedAt, postEntity.CreatedBy, postEntity.UpdatedBy, postEntity.SpaceID).Scan(&postEntity.ID); err != nil {
+		"INSERT INTO posts (title, content, image, created_at, updated_at, created_by, updated_by, space_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+		postEntity.Title, postEntity.Content, postEntity.Image, postEntity.CreatedAt, postEntity.UpdatedAt, postEntity.CreatedBy, postEntity.UpdatedBy, postEntity.SpaceID).Scan(&postEntity.ID); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (p *PostRepository) FindAll(ctx context.Context, criteria *criteria.Criteri
 func (p *PostRepository) executeQuery(ctx context.Context, params QueryParams) ([]*domain.Post, error) {
 	var posts []*domain.Post
 
-	query := "SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id FROM posts"
+	query := "SELECT id, title, content, image, created_by, created_at, updated_by, updated_at, space_id FROM posts"
 
 	if params.WhereClause != "" {
 		query += params.WhereClause
@@ -105,6 +105,7 @@ func (p *PostRepository) scanPostEntity(scanner interface{ Scan(...interface{}) 
 		&postEntity.ID,
 		&postEntity.Title,
 		&postEntity.Content,
+		&postEntity.Image,
 		&postEntity.CreatedBy,
 		&postEntity.CreatedAt,
 		&postEntity.UpdatedBy,
@@ -117,8 +118,8 @@ func (p *PostRepository) Update(ctx context.Context, post *domain.Post) error {
 	var postEntity = *mapper.ToPostgresPost(post)
 
 	_, err := p.db.ExecContext(ctx,
-		"UPDATE posts SET title=$1, content=$2, updated_at=$3, updated_by=$4, space_id=$5 WHERE id=$6",
-		postEntity.Title, postEntity.Content, postEntity.UpdatedAt, postEntity.UpdatedBy, postEntity.SpaceID, postEntity.ID)
+		"UPDATE posts SET title=$1, content=$2, image=$3, updated_at=$4, updated_by=$5, space_id=$6 WHERE id=$7",
+		postEntity.Title, postEntity.Content, postEntity.Image, postEntity.UpdatedAt, postEntity.UpdatedBy, postEntity.SpaceID, postEntity.ID)
 	return err
 }
 
@@ -133,7 +134,7 @@ func (p *PostRepository) Search(ctx context.Context, criteria *criteria.Criteria
 		whereClause = strings.Replace(whereClause, oldPattern, newPattern, 1)
 	}
 
-	query := "SELECT id, title, content, created_by, created_at, updated_by, updated_at, space_id FROM posts" + whereClause
+	query := "SELECT id, title, content, image, created_by, created_at, updated_by, updated_at, space_id FROM posts" + whereClause
 
 	rows, err := p.db.QueryContext(ctx, query, params...)
 	if err != nil {

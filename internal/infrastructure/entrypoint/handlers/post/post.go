@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
 	response "cpi-hub-api/pkg/http"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,8 @@ func (h *PostHandler) Create(c *gin.Context) {
 		response.NewError(c.Writer, appErr)
 		return
 	}
+
+	fmt.Println("postDTO", postDTO)
 
 	createdPost, err := h.PostUseCase.Create(c.Request.Context(), postDTO.ToDomain())
 	if err != nil {
@@ -59,16 +62,17 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 		response.NewError(c.Writer, appErr)
 		return
 	}
-	var commentDTO dto.CommentDTO
+	var commentDTO dto.CreateComment
 
 	if err := c.ShouldBindJSON(&commentDTO); err != nil {
 		appErr := apperror.NewInvalidData("Invalid comment data", err, "comment_handler.go:Create")
 		response.NewError(c.Writer, appErr)
 		return
 	}
+
 	commentDTO.PostID = postID
 
-	createdComment, err := h.PostUseCase.AddComment(c.Request.Context(), commentDTO.ToDomain())
+	createdComment, err := h.PostUseCase.AddComment(c.Request.Context(), commentDTO)
 
 	if err != nil {
 		response.NewError(c.Writer, err)
