@@ -22,8 +22,7 @@ func (h *ReactionHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
-	domainReaction := reactionDTO.ToDomain()
-	reaction, err := h.ReactionUseCase.AddReaction(c.Request.Context(), &domainReaction)
+	reaction, err := h.ReactionUseCase.AddReaction(c.Request.Context(), reactionDTO.ToDomain())
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return

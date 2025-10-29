@@ -7,8 +7,8 @@ import (
 type Reaction struct {
 	ID         string
 	UserID     int
-	EntityID   string
 	EntityType string
+	EntityID   int
 	Liked      bool
 	Disliked   bool
 	Timestamp  time.Time

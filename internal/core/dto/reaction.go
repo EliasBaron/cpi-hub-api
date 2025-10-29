@@ -7,7 +7,7 @@ import (
 type NewReaction struct {
 	UserID     int    `json:"user_id" binding:"required"`
 	EntityType string `json:"entity_type" binding:"required"`
-	EntityID   string `json:"entity_id" binding:"required"`
+	EntityID   int    `json:"entity_id" binding:"required"`
 	Liked      bool   `json:"liked"`
 	Disliked   bool   `json:"disliked"`
 }
@@ -16,7 +16,7 @@ type ReactionDTO struct {
 	ID         string `json:"id"`
 	UserID     int    `json:"user_id"`
 	EntityType string `json:"entity_type"`
-	EntityID   string `json:"entity_id"`
+	EntityID   int    `json:"entity_id"`
 	Liked      bool   `json:"liked"`
 	Disliked   bool   `json:"disliked"`
 }
@@ -43,8 +43,8 @@ func (r *ReactionDTO) ToDomain() domain.Reaction {
 	}
 }
 
-func (n *NewReaction) ToDomain() domain.Reaction {
-	return domain.Reaction{
+func (n *NewReaction) ToDomain() *domain.Reaction {
+	return &domain.Reaction{
 		UserID:     n.UserID,
 		EntityType: n.EntityType,
 		EntityID:   n.EntityID,

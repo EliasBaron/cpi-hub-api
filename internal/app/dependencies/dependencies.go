@@ -62,7 +62,7 @@ func Build() *Handlers {
 	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
-	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo)
+	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository)
 
 	hubManager := eventsUsecase.NewHubManager()
 	go hubManager.Run()
