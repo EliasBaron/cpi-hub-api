@@ -64,3 +64,10 @@ type SearchMessagesFilter struct {
 type MessageRepository interface {
 	SearchMessages(ctx context.Context, filters SearchMessagesFilter) ([]*ChatMessage, int, error)
 }
+
+type ReactionRepository interface {
+	AddReaction(ctx context.Context, reaction *Reaction) error
+	// RemoveReaction(ctx context.Context, reaction *Reaction) error
+	// CountReactions(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*Reaction, error)
+}
