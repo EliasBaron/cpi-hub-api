@@ -67,6 +67,9 @@ type MessageRepository interface {
 
 type ReactionRepository interface {
 	AddReaction(ctx context.Context, reaction *Reaction) error
+	FindReaction(ctx context.Context, criteria *criteria.Criteria) (*Reaction, error)
+	DeleteReaction(ctx context.Context, reactionID string) error
+	UpdateReaction(ctx context.Context, reaction *Reaction) error
 	// RemoveReaction(ctx context.Context, reaction *Reaction) error
 	// CountReactions(ctx context.Context, criteria *criteria.Criteria) (int, error)
 	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*Reaction, error)

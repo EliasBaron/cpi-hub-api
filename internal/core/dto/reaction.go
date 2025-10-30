@@ -25,7 +25,7 @@ func ToReactionDTO(reaction domain.Reaction) ReactionDTO {
 	return ReactionDTO{
 		ID:         reaction.ID,
 		UserID:     reaction.UserID,
-		EntityType: reaction.EntityType,
+		EntityType: string(reaction.EntityType),
 		EntityID:   reaction.EntityID,
 		Liked:      reaction.Liked,
 		Disliked:   reaction.Disliked,
@@ -36,7 +36,7 @@ func (r *ReactionDTO) ToDomain() domain.Reaction {
 	return domain.Reaction{
 		ID:         r.ID,
 		UserID:     r.UserID,
-		EntityType: r.EntityType,
+		EntityType: domain.EntityType(r.EntityType),
 		EntityID:   r.EntityID,
 		Liked:      r.Liked,
 		Disliked:   r.Disliked,
@@ -46,7 +46,7 @@ func (r *ReactionDTO) ToDomain() domain.Reaction {
 func (n *NewReaction) ToDomain() *domain.Reaction {
 	return &domain.Reaction{
 		UserID:     n.UserID,
-		EntityType: n.EntityType,
+		EntityType: domain.EntityType(n.EntityType),
 		EntityID:   n.EntityID,
 		Liked:      n.Liked,
 		Disliked:   n.Disliked,

@@ -3,9 +3,9 @@ package reaction
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
-	"cpi-hub-api/pkg/helpers"
 )
 
 type ReactionUseCase interface {
@@ -38,12 +38,12 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 	}
 
 	switch reaction.EntityType {
-	case "post":
+	case domain.EntityTypePost:
 		_, err = pghelpers.FindEntity(ctx, u.postRepo, "id", reaction.EntityID, "Post not found")
 		if err != nil {
 			return nil, err
 		}
-	case "comment":
+	case domain.EntityTypeComment:
 		_, err = pghelpers.FindEntity(ctx, u.commentRepo, "id", reaction.EntityID, "Comment not found")
 		if err != nil {
 			return nil, err
@@ -52,11 +52,30 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 		return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
 	}
 
-	reaction.ID = helpers.NewULID()
+	criteria := &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{Field: "user_id", Operator: criteria.OperatorEqual, Value: reaction.UserID},
+			{Field: "entity_type", Operator: criteria.OperatorEqual, Value: string(reaction.EntityType)},
+			{Field: "entity_id", Operator: criteria.OperatorEqual, Value: reaction.EntityID},
+		},
+	}
+	existingReaction, err := u.reactionRepo.FindReaction(ctx, criteria)
 
-	err = u.reactionRepo.AddReaction(ctx, reaction)
 	if err != nil {
 		return nil, err
+	}
+
+	if existingReaction != nil {
+		reaction.ID = existingReaction.ID
+		err = u.reactionRepo.UpdateReaction(ctx, reaction)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = u.reactionRepo.AddReaction(ctx, reaction)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return reaction, nil
