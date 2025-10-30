@@ -32,6 +32,14 @@ func NewReactionUsecase(reactionRepo domain.ReactionRepository, userRepo domain.
 
 func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reaction) (*domain.Reaction, error) {
 
+	if !domain.IsValidEntityType(string(reaction.EntityType)) {
+		return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
+	}
+
+	if reaction.Liked == reaction.Disliked {
+		return nil, apperror.NewError(apperror.InvalidData, "Reaction must be either liked or disliked (exclusive)", nil, "")
+	}
+
 	_, err := pghelpers.FindEntity(ctx, u.userRepo, "id", reaction.UserID, "User not found")
 	if err != nil {
 		return nil, err
