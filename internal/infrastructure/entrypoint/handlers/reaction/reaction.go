@@ -47,3 +47,20 @@ func (h *ReactionHandler) RemoveReaction(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, gin.H{"message": "Reaction removed successfully"})
 }
+
+func (h *ReactionHandler) GetLikesCount(c *gin.Context) {
+	var getLikesCountDTO dto.GetLikesCountDTO
+	if err := c.ShouldBindJSON(&getLikesCountDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid request body", err, "reaction_handler.go:GetLikesCount")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	likesCount, err := h.ReactionUseCase.GetLikesCount(c.Request.Context(), getLikesCountDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, gin.H{"likes_count": likesCount})
+}

@@ -21,6 +21,14 @@ type ReactionDTO struct {
 	Disliked   bool   `json:"disliked"`
 }
 
+type GetLikesCountDTO struct {
+	EntityType *string `json:"entity_type"`
+	EntityID   *int    `json:"entity_id"`
+	UserID     *int    `json:"user_id"`
+	Liked      *bool   `json:"liked"`
+	Disliked   *bool   `json:"disliked"`
+}
+
 func ToReactionDTO(reaction domain.Reaction) ReactionDTO {
 	return ReactionDTO{
 		ID:         reaction.ID,

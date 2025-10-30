@@ -92,3 +92,14 @@ func (r *ReactionRepository) UpdateReaction(ctx context.Context, reaction *domai
 
 	return nil
 }
+
+func (r *ReactionRepository) CountReactions(ctx context.Context, criteria *criteria.Criteria) (int, error) {
+	mongoQuery := mapper.ToMongoDBQuery(criteria)
+
+	count, err := r.db.Collection("reactions").CountDocuments(ctx, mongoQuery)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count reactions: %w", err)
+	}
+
+	return int(count), nil
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/core/dto"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
 )
@@ -11,7 +12,7 @@ import (
 type ReactionUseCase interface {
 	AddReaction(ctx context.Context, reaction *domain.Reaction) (*domain.Reaction, error)
 	RemoveReaction(ctx context.Context, reactionID string) error
-	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Reaction, error)
+	GetLikesCount(ctx context.Context, getLikesCountDTO dto.GetLikesCountDTO) (int, error)
 }
 
 type reactionUsecase struct {
@@ -95,4 +96,22 @@ func (u *reactionUsecase) RemoveReaction(ctx context.Context, reactionID string)
 		return err
 	}
 	return nil
+}
+
+func (u *reactionUsecase) GetLikesCount(ctx context.Context, getLikesCountDTO dto.GetLikesCountDTO) (int, error) {
+
+	crit := criteria.NewCriteriaBuilder()
+	crit.WithFilterAndCondition("entity_type", getLikesCountDTO.EntityType, criteria.OperatorEqual, getLikesCountDTO.EntityType != nil).
+		WithFilterAndCondition("entity_id", getLikesCountDTO.EntityID, criteria.OperatorEqual, getLikesCountDTO.EntityID != nil).
+		WithFilterAndCondition("user_id", getLikesCountDTO.UserID, criteria.OperatorEqual, getLikesCountDTO.UserID != nil).
+		WithFilterAndCondition("liked", getLikesCountDTO.Liked, criteria.OperatorEqual, getLikesCountDTO.Liked != nil).
+		WithFilterAndCondition("disliked", getLikesCountDTO.Disliked, criteria.OperatorEqual, getLikesCountDTO.Disliked != nil)
+
+	builtCriteria := crit.Build()
+
+	likesCount, err := u.reactionRepo.CountReactions(ctx, builtCriteria)
+	if err != nil {
+		return 0, err
+	}
+	return likesCount, nil
 }
