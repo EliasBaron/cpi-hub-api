@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/entity"
 	"cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/mapper"
+	"cpi-hub-api/pkg/apperror"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -62,9 +63,13 @@ func (r *ReactionRepository) DeleteReaction(ctx context.Context, reactionID stri
 		return fmt.Errorf("invalid reaction ID: %w", err)
 	}
 
-	_, err = r.db.Collection("reactions").DeleteOne(ctx, bson.M{"_id": oid})
+	res, err := r.db.Collection("reactions").DeleteOne(ctx, bson.M{"_id": oid})
 	if err != nil {
 		return fmt.Errorf("failed to delete reaction: %w", err)
+	}
+
+	if res.DeletedCount == 0 {
+		return apperror.NewNotFound("Reaction not found", nil, "reaction_repository.go:DeleteReaction")
 	}
 
 	return nil

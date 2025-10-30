@@ -10,7 +10,7 @@ import (
 
 type ReactionUseCase interface {
 	AddReaction(ctx context.Context, reaction *domain.Reaction) (*domain.Reaction, error)
-	// RemoveReaction(ctx context.Context, reaction *domain.Reaction) error
+	RemoveReaction(ctx context.Context, reactionID string) error
 	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Reaction, error)
 }
 
@@ -87,4 +87,12 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 	}
 
 	return reaction, nil
+}
+
+func (u *reactionUsecase) RemoveReaction(ctx context.Context, reactionID string) error {
+	err := u.reactionRepo.DeleteReaction(ctx, reactionID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

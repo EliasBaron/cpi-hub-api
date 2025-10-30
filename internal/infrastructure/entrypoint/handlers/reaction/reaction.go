@@ -30,3 +30,20 @@ func (h *ReactionHandler) AddReaction(c *gin.Context) {
 
 	response.CreatedResponse(c.Writer, dto.ToReactionDTO(*reaction))
 }
+
+func (h *ReactionHandler) RemoveReaction(c *gin.Context) {
+	reactionID := c.Param("reaction_id")
+	if reactionID == "" {
+		appErr := apperror.NewInvalidData("Reaction ID is required", nil, "reaction_handler.go:RemoveReaction")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	err := h.ReactionUseCase.RemoveReaction(c.Request.Context(), reactionID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, gin.H{"message": "Reaction removed successfully"})
+}
