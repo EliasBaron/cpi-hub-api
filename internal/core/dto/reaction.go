@@ -35,6 +35,22 @@ type LikesCountDTO struct {
 	DislikesCount int     `json:"dislikes_count"`
 }
 
+type EntityDataDTO struct {
+	EntityType string `json:"entity_type"`
+	EntityID   int    `json:"entity_id"`
+}
+
+type EntitiesDataDTO struct {
+	Entities []EntityDataDTO `json:"entities" binding:"required"`
+}
+
+type UserLikeDTO struct {
+	EntityType string `json:"entity_type"`
+	EntityID   int    `json:"entity_id"`
+	Liked      bool   `json:"liked"`
+	Disliked   bool   `json:"disliked"`
+}
+
 func ToReactionDTO(reaction domain.Reaction) ReactionDTO {
 	return ReactionDTO{
 		ID:         reaction.ID,
