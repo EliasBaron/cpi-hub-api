@@ -56,11 +56,11 @@ func (h *ReactionHandler) GetLikesCount(c *gin.Context) {
 		return
 	}
 
-	likesCount, err := h.ReactionUseCase.GetLikesCount(c.Request.Context(), getLikesCountDTO)
+	likesCountDTO, err := h.ReactionUseCase.GetLikesCount(c.Request.Context(), getLikesCountDTO)
 	if err != nil {
 		response.NewError(c.Writer, err)
 		return
 	}
 
-	response.SuccessResponse(c.Writer, gin.H{"likes_count": likesCount})
+	response.SuccessResponse(c.Writer, likesCountDTO)
 }
