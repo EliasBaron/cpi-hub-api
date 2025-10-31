@@ -4,6 +4,7 @@ import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
+	"cpi-hub-api/internal/core/dto"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
 )
@@ -11,7 +12,8 @@ import (
 type ReactionUseCase interface {
 	AddReaction(ctx context.Context, reaction *domain.Reaction) (*domain.Reaction, error)
 	RemoveReaction(ctx context.Context, reactionID string) error
-	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*domain.Reaction, error)
+	GetLikesCount(ctx context.Context, getLikesCountDTO dto.GetLikesCountDTO) (*dto.LikesCountDTO, error)
+	GetUserLikes(ctx context.Context, userID int, entitiesData dto.EntitiesDataDTO) ([]dto.UserLikeDTO, error)
 }
 
 type reactionUsecase struct {
@@ -95,4 +97,74 @@ func (u *reactionUsecase) RemoveReaction(ctx context.Context, reactionID string)
 		return err
 	}
 	return nil
+}
+
+func (u *reactionUsecase) GetLikesCount(ctx context.Context, getLikesCountDTO dto.GetLikesCountDTO) (*dto.LikesCountDTO, error) {
+
+	buildBaseCriteria := func() *criteria.CriteriaBuilder {
+		builder := criteria.NewCriteriaBuilder()
+		builder.WithFilterAndCondition("entity_type", getLikesCountDTO.EntityType, criteria.OperatorEqual, getLikesCountDTO.EntityType != nil).
+			WithFilterAndCondition("entity_id", getLikesCountDTO.EntityID, criteria.OperatorEqual, getLikesCountDTO.EntityID != nil).
+			WithFilterAndCondition("user_id", getLikesCountDTO.UserID, criteria.OperatorEqual, getLikesCountDTO.UserID != nil)
+		return builder
+	}
+
+	critLikes := buildBaseCriteria().WithFilter("liked", true, criteria.OperatorEqual).Build()
+	likesCount, err := u.reactionRepo.CountReactions(ctx, critLikes)
+	if err != nil {
+		return nil, err
+	}
+
+	critDislikes := buildBaseCriteria().WithFilter("disliked", true, criteria.OperatorEqual).Build()
+	dislikesCount, err := u.reactionRepo.CountReactions(ctx, critDislikes)
+	if err != nil {
+		return nil, err
+	}
+
+	var likesCountDTO dto.LikesCountDTO
+
+	if getLikesCountDTO.UserID != nil {
+		likesCountDTO.UserID = getLikesCountDTO.UserID
+	}
+	if getLikesCountDTO.EntityType != nil && getLikesCountDTO.EntityID != nil {
+		likesCountDTO.EntityID = getLikesCountDTO.EntityID
+		likesCountDTO.EntityType = getLikesCountDTO.EntityType
+	}
+	likesCountDTO.LikesCount = likesCount
+	likesCountDTO.DislikesCount = dislikesCount
+
+	return &likesCountDTO, nil
+}
+
+func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entitiesData dto.EntitiesDataDTO) ([]dto.UserLikeDTO, error) {
+	result := make([]dto.UserLikeDTO, 0, len(entitiesData.Entities))
+
+	for _, entity := range entitiesData.Entities {
+		criteria := criteria.NewCriteriaBuilder().
+			WithFilter("user_id", userID, criteria.OperatorEqual).
+			WithFilter("entity_type", entity.EntityType, criteria.OperatorEqual).
+			WithFilter("entity_id", entity.EntityID, criteria.OperatorEqual).
+			Build()
+
+		reaction, err := u.reactionRepo.FindReaction(ctx, criteria)
+		if err != nil {
+			return nil, err
+		}
+
+		userLike := dto.UserLikeDTO{
+			EntityType: entity.EntityType,
+			EntityID:   entity.EntityID,
+			Liked:      false,
+			Disliked:   false,
+		}
+
+		if reaction != nil {
+			userLike.Liked = reaction.Liked
+			userLike.Disliked = reaction.Disliked
+		}
+
+		result = append(result, userLike)
+	}
+
+	return result, nil
 }

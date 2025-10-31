@@ -14,6 +14,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
 	v1.GET("/users", handlers.UserHandler.Search)
 	v1.PUT("/users/:user_id", handlers.UserHandler.UpdateUser)
+	v1.GET("/users/:user_id/likes", handlers.ReactionHandler.GetUserLikes)
 
 	//auth
 	v1.POST("/auth/register", handlers.UserHandler.Register)
@@ -55,5 +56,5 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	// reactions
 	v1.POST("/reactions", handlers.ReactionHandler.AddReaction)
 	v1.DELETE("/reactions/:reaction_id", handlers.ReactionHandler.RemoveReaction)
-	// v1.GET("/reactions", handlers.ReactionHandler.GetReactions)
+	v1.GET("/reactions/count", handlers.ReactionHandler.GetLikesCount)
 }

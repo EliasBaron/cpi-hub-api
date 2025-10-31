@@ -4,6 +4,7 @@ import (
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/internal/core/usecase/reaction"
 	"cpi-hub-api/pkg/apperror"
+	"strconv"
 
 	response "cpi-hub-api/pkg/http"
 
@@ -46,4 +47,52 @@ func (h *ReactionHandler) RemoveReaction(c *gin.Context) {
 	}
 
 	response.SuccessResponse(c.Writer, gin.H{"message": "Reaction removed successfully"})
+}
+
+func (h *ReactionHandler) GetLikesCount(c *gin.Context) {
+	var getLikesCountDTO dto.GetLikesCountDTO
+	if err := c.ShouldBindJSON(&getLikesCountDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid request body", err, "reaction_handler.go:GetLikesCount")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	likesCountDTO, err := h.ReactionUseCase.GetLikesCount(c.Request.Context(), getLikesCountDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, likesCountDTO)
+}
+
+func (h *ReactionHandler) GetUserLikes(c *gin.Context) {
+	userIDParam := c.Param("user_id")
+	if userIDParam == "" {
+		appErr := apperror.NewInvalidData("User ID is required", nil, "reaction_handler.go:GetUserLikes")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid user ID format", err, "reaction_handler.go:GetUserLikes")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	var entitiesDataDTO dto.EntitiesDataDTO
+	if err := c.ShouldBindJSON(&entitiesDataDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid request body", err, "reaction_handler.go:GetUserLikes")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	likes, err := h.ReactionUseCase.GetUserLikes(c.Request.Context(), userID, entitiesDataDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, likes)
 }
