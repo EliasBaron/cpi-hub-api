@@ -51,4 +51,9 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	// messages
 	v1.GET("/messages", handlers.MessageHandler.Search)
+
+	// reactions
+	v1.POST("/reactions", handlers.ReactionHandler.AddReaction)
+	v1.DELETE("/reactions/:reaction_id", handlers.ReactionHandler.RemoveReaction)
+	// v1.GET("/reactions", handlers.ReactionHandler.GetReactions)
 }

@@ -5,8 +5,10 @@ import (
 	eventsUsecase "cpi-hub-api/internal/core/usecase/events"
 	messageUsecase "cpi-hub-api/internal/core/usecase/message"
 	postUsecase "cpi-hub-api/internal/core/usecase/post"
+	reactionUsecase "cpi-hub-api/internal/core/usecase/reaction"
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
+	reactionRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/reaction"
 	commentRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/comment"
 	eventsRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/events"
 	messageRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/message"
@@ -18,18 +20,20 @@ import (
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/events"
 	messageHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/message"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/post"
+	reactionHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/reaction"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/user"
 	"log"
 )
 
 type Handlers struct {
-	UserHandler    *user.UserHandler
-	SpaceHandler   *space.SpaceHandler
-	PostHandler    *post.PostHandler
-	CommentHandler *comment.CommentHandler
-	EventsHandler  *events.EventsHandler
-	MessageHandler *messageHandler.MessageHandler
+	UserHandler     *user.UserHandler
+	SpaceHandler    *space.SpaceHandler
+	PostHandler     *post.PostHandler
+	CommentHandler  *comment.CommentHandler
+	EventsHandler   *events.EventsHandler
+	MessageHandler  *messageHandler.MessageHandler
+	ReactionHandler *reactionHandler.ReactionHandler
 }
 
 func Build() *Handlers {
@@ -39,6 +43,11 @@ func Build() *Handlers {
 		log.Fatalf("Error connecting to PostgreSQL: %v", err)
 	}
 
+	mongodb, err := GetMongoDatabase()
+	if err != nil {
+		log.Fatalf("Error connecting to MongoDB: %v", err)
+	}
+
 	userRepository := userRepository.NewUserRepository(sqldb)
 	spaceRepository := spaceRepository.NewSpaceRepository(sqldb)
 	userSpaceRepository := userSpaceRepository.NewUserSpaceRepository(sqldb)
@@ -46,12 +55,14 @@ func Build() *Handlers {
 	commentRepository := commentRepository.NewCommentRepository(sqldb)
 	eventsRepo := eventsRepository.NewEventsRepository(sqldb)
 	messageRepo := messageRepository.NewMessageRepository(sqldb)
+	reactionRepo := reactionRepository.NewReactionRepository(mongodb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
 	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
+	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository)
 
 	hubManager := eventsUsecase.NewHubManager()
 	go hubManager.Run()
@@ -77,6 +88,9 @@ func Build() *Handlers {
 		EventsHandler: events.NewEventsHandler(eventsUsecase),
 		MessageHandler: &messageHandler.MessageHandler{
 			MessageUseCase: messageUsecase,
+		},
+		ReactionHandler: &reactionHandler.ReactionHandler{
+			ReactionUseCase: reactionUsecase,
 		},
 	}
 }
