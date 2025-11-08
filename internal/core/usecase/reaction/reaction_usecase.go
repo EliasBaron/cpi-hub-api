@@ -37,6 +37,9 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 	if !domain.IsValidEntityType(string(reaction.EntityType)) {
 		return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
 	}
+	if !domain.IsValidActionType(string(reaction.Action)) {
+		return nil, apperror.NewError(apperror.InvalidData, "Invalid action type", nil, "")
+	}
 
 	_, err := pghelpers.FindEntity(ctx, u.userRepo, "id", reaction.UserID, "User not found")
 	if err != nil {
