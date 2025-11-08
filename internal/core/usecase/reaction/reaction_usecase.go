@@ -38,10 +38,6 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 		return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
 	}
 
-	if reaction.Liked == reaction.Disliked {
-		return nil, apperror.NewError(apperror.InvalidData, "Reaction must be either liked or disliked (exclusive)", nil, "")
-	}
-
 	_, err := pghelpers.FindEntity(ctx, u.userRepo, "id", reaction.UserID, "User not found")
 	if err != nil {
 		return nil, err
@@ -109,13 +105,13 @@ func (u *reactionUsecase) GetLikesCount(ctx context.Context, getLikesCountDTO dt
 		return builder
 	}
 
-	critLikes := buildBaseCriteria().WithFilter("liked", true, criteria.OperatorEqual).Build()
+	critLikes := buildBaseCriteria().WithFilter("action", string(domain.ActionTypeLike), criteria.OperatorEqual).Build()
 	likesCount, err := u.reactionRepo.CountReactions(ctx, critLikes)
 	if err != nil {
 		return nil, err
 	}
 
-	critDislikes := buildBaseCriteria().WithFilter("disliked", true, criteria.OperatorEqual).Build()
+	critDislikes := buildBaseCriteria().WithFilter("action", string(domain.ActionTypeDislike), criteria.OperatorEqual).Build()
 	dislikesCount, err := u.reactionRepo.CountReactions(ctx, critDislikes)
 	if err != nil {
 		return nil, err
@@ -159,8 +155,12 @@ func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entities
 		}
 
 		if reaction != nil {
-			userLike.Liked = reaction.Liked
-			userLike.Disliked = reaction.Disliked
+			switch reaction.Action {
+			case domain.ActionTypeLike:
+				userLike.Liked = true
+			case domain.ActionTypeDislike:
+				userLike.Disliked = true
+			}
 		}
 
 		result = append(result, userLike)

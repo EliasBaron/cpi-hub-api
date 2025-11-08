@@ -8,8 +8,7 @@ type NewReaction struct {
 	UserID     int    `json:"user_id" binding:"required"`
 	EntityType string `json:"entity_type" binding:"required"`
 	EntityID   int    `json:"entity_id" binding:"required"`
-	Liked      bool   `json:"liked"`
-	Disliked   bool   `json:"disliked"`
+	Action     string `json:"action" binding:"required"`
 }
 
 type ReactionDTO struct {
@@ -17,8 +16,7 @@ type ReactionDTO struct {
 	UserID     int    `json:"user_id"`
 	EntityType string `json:"entity_type"`
 	EntityID   int    `json:"entity_id"`
-	Liked      bool   `json:"liked"`
-	Disliked   bool   `json:"disliked"`
+	Action     string `json:"action"`
 }
 
 type GetLikesCountDTO struct {
@@ -57,8 +55,7 @@ func ToReactionDTO(reaction domain.Reaction) ReactionDTO {
 		UserID:     reaction.UserID,
 		EntityType: string(reaction.EntityType),
 		EntityID:   reaction.EntityID,
-		Liked:      reaction.Liked,
-		Disliked:   reaction.Disliked,
+		Action:     string(reaction.Action),
 	}
 }
 
@@ -68,8 +65,7 @@ func (r *ReactionDTO) ToDomain() domain.Reaction {
 		UserID:     r.UserID,
 		EntityType: domain.EntityType(r.EntityType),
 		EntityID:   r.EntityID,
-		Liked:      r.Liked,
-		Disliked:   r.Disliked,
+		Action:     domain.ActionType(r.Action),
 	}
 }
 
@@ -78,7 +74,6 @@ func (n *NewReaction) ToDomain() *domain.Reaction {
 		UserID:     n.UserID,
 		EntityType: domain.EntityType(n.EntityType),
 		EntityID:   n.EntityID,
-		Liked:      n.Liked,
-		Disliked:   n.Disliked,
+		Action:     domain.ActionType(n.Action),
 	}
 }
