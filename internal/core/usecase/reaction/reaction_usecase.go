@@ -139,6 +139,27 @@ func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entities
 	result := make([]dto.UserLikeDTO, 0, len(entitiesData.Entities))
 
 	for _, entity := range entitiesData.Entities {
+
+		_, err := pghelpers.FindEntity(ctx, u.userRepo, "id", userID, "User not found")
+		if err != nil {
+			return nil, err
+		}
+
+		switch entity.EntityType {
+		case domain.EntityTypePost:
+			_, err = pghelpers.FindEntity(ctx, u.postRepo, "id", entity.EntityID, "Post not found")
+			if err != nil {
+				return nil, err
+			}
+		case domain.EntityTypeComment:
+			_, err = pghelpers.FindEntity(ctx, u.commentRepo, "id", entity.EntityID, "Comment not found")
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
+		}
+
 		criteria := criteria.NewCriteriaBuilder().
 			WithFilter("user_id", userID, criteria.OperatorEqual).
 			WithFilter("entity_type", entity.EntityType, criteria.OperatorEqual).
@@ -151,7 +172,7 @@ func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entities
 		}
 
 		userLike := dto.UserLikeDTO{
-			EntityType: entity.EntityType,
+			EntityType: string(entity.EntityType),
 			EntityID:   entity.EntityID,
 			Liked:      false,
 			Disliked:   false,

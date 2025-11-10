@@ -34,8 +34,8 @@ type LikesCountDTO struct {
 }
 
 type EntityDataDTO struct {
-	EntityType string `json:"entity_type"`
-	EntityID   int    `json:"entity_id"`
+	EntityType domain.EntityType `json:"entity_type"`
+	EntityID   int               `json:"entity_id"`
 }
 
 type EntitiesDataDTO struct {
