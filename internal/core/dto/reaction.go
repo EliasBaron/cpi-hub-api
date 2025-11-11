@@ -47,6 +47,7 @@ type UserLikeDTO struct {
 	EntityID   int    `json:"entity_id"`
 	Liked      bool   `json:"liked"`
 	Disliked   bool   `json:"disliked"`
+	ReactionID string `json:"reaction_id,omitempty"`
 }
 
 func ToReactionDTO(reaction domain.Reaction) ReactionDTO {

@@ -179,6 +179,7 @@ func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entities
 		}
 
 		if reaction != nil {
+			userLike.ReactionID = reaction.ID
 			switch reaction.Action {
 			case domain.ActionTypeLike:
 				userLike.Liked = true
