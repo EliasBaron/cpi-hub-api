@@ -37,9 +37,8 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 	if !domain.IsValidEntityType(string(reaction.EntityType)) {
 		return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
 	}
-
-	if reaction.Liked == reaction.Disliked {
-		return nil, apperror.NewError(apperror.InvalidData, "Reaction must be either liked or disliked (exclusive)", nil, "")
+	if !domain.IsValidActionType(string(reaction.Action)) {
+		return nil, apperror.NewError(apperror.InvalidData, "Invalid action type", nil, "")
 	}
 
 	_, err := pghelpers.FindEntity(ctx, u.userRepo, "id", reaction.UserID, "User not found")
@@ -109,13 +108,13 @@ func (u *reactionUsecase) GetLikesCount(ctx context.Context, getLikesCountDTO dt
 		return builder
 	}
 
-	critLikes := buildBaseCriteria().WithFilter("liked", true, criteria.OperatorEqual).Build()
+	critLikes := buildBaseCriteria().WithFilter("action", string(domain.ActionTypeLike), criteria.OperatorEqual).Build()
 	likesCount, err := u.reactionRepo.CountReactions(ctx, critLikes)
 	if err != nil {
 		return nil, err
 	}
 
-	critDislikes := buildBaseCriteria().WithFilter("disliked", true, criteria.OperatorEqual).Build()
+	critDislikes := buildBaseCriteria().WithFilter("action", string(domain.ActionTypeDislike), criteria.OperatorEqual).Build()
 	dislikesCount, err := u.reactionRepo.CountReactions(ctx, critDislikes)
 	if err != nil {
 		return nil, err
@@ -140,6 +139,27 @@ func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entities
 	result := make([]dto.UserLikeDTO, 0, len(entitiesData.Entities))
 
 	for _, entity := range entitiesData.Entities {
+
+		_, err := pghelpers.FindEntity(ctx, u.userRepo, "id", userID, "User not found")
+		if err != nil {
+			return nil, err
+		}
+
+		switch entity.EntityType {
+		case domain.EntityTypePost:
+			_, err = pghelpers.FindEntity(ctx, u.postRepo, "id", entity.EntityID, "Post not found")
+			if err != nil {
+				return nil, err
+			}
+		case domain.EntityTypeComment:
+			_, err = pghelpers.FindEntity(ctx, u.commentRepo, "id", entity.EntityID, "Comment not found")
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, apperror.NewError(apperror.InvalidData, "Invalid entity type", nil, "")
+		}
+
 		criteria := criteria.NewCriteriaBuilder().
 			WithFilter("user_id", userID, criteria.OperatorEqual).
 			WithFilter("entity_type", entity.EntityType, criteria.OperatorEqual).
@@ -152,15 +172,20 @@ func (u *reactionUsecase) GetUserLikes(ctx context.Context, userID int, entities
 		}
 
 		userLike := dto.UserLikeDTO{
-			EntityType: entity.EntityType,
+			EntityType: string(entity.EntityType),
 			EntityID:   entity.EntityID,
 			Liked:      false,
 			Disliked:   false,
 		}
 
 		if reaction != nil {
-			userLike.Liked = reaction.Liked
-			userLike.Disliked = reaction.Disliked
+			userLike.ReactionID = reaction.ID
+			switch reaction.Action {
+			case domain.ActionTypeLike:
+				userLike.Liked = true
+			case domain.ActionTypeDislike:
+				userLike.Disliked = true
+			}
 		}
 
 		result = append(result, userLike)

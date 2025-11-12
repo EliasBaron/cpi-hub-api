@@ -19,8 +19,7 @@ func ToMongoReaction(reaction *domain.Reaction) *entity.Reaction {
 		UserID:     reaction.UserID,
 		EntityType: string(reaction.EntityType),
 		EntityID:   reaction.EntityID,
-		Liked:      reaction.Liked,
-		Disliked:   reaction.Disliked,
+		Action:     string(reaction.Action),
 	}
 }
 
@@ -34,7 +33,6 @@ func ToDomainReaction(reactionEntity *entity.Reaction) *domain.Reaction {
 		UserID:     reactionEntity.UserID,
 		EntityType: domain.EntityType(reactionEntity.EntityType),
 		EntityID:   reactionEntity.EntityID,
-		Liked:      reactionEntity.Liked,
-		Disliked:   reactionEntity.Disliked,
+		Action:     domain.ActionType(reactionEntity.Action),
 	}
 }

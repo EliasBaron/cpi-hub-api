@@ -7,6 +7,5 @@ type Reaction struct {
 	UserID     int                `bson:"user_id"`
 	EntityType string             `bson:"entity_type"`
 	EntityID   int                `bson:"entity_id"`
-	Liked      bool               `bson:"liked"`
-	Disliked   bool               `bson:"disliked"`
+	Action     string             `bson:"action"`
 }

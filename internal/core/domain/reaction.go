@@ -9,8 +9,7 @@ type Reaction struct {
 	UserID     int
 	EntityType EntityType
 	EntityID   int
-	Liked      bool
-	Disliked   bool
+	Action     ActionType
 	Timestamp  time.Time
 }
 
@@ -24,6 +23,21 @@ const (
 func IsValidEntityType(entityType string) bool {
 	switch EntityType(entityType) {
 	case EntityTypePost, EntityTypeComment:
+		return true
+	}
+	return false
+}
+
+type ActionType string
+
+const (
+	ActionTypeLike    ActionType = "like"
+	ActionTypeDislike ActionType = "dislike"
+)
+
+func IsValidActionType(actionType string) bool {
+	switch ActionType(actionType) {
+	case ActionTypeLike, ActionTypeDislike:
 		return true
 	}
 	return false
