@@ -101,6 +101,7 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 	}
 
 	var ownerUserID int
+	var postID *int
 	switch reaction.EntityType {
 	case domain.EntityTypePost:
 		post, err := pghelpers.FindEntity(ctx, u.postRepo, "id", reaction.EntityID, "Post not found")
@@ -108,12 +109,14 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 			return nil, err
 		}
 		ownerUserID = post.CreatedBy
+		postID = &reaction.EntityID
 	case domain.EntityTypeComment:
 		commentWithInfo, err := pghelpers.FindEntity(ctx, u.commentRepo, "id", reaction.EntityID, "Comment not found")
 		if err != nil {
 			return nil, err
 		}
 		ownerUserID = commentWithInfo.Comment.CreatedBy
+		postID = &commentWithInfo.Comment.PostID
 	}
 
 	if ownerUserID != reaction.UserID && u.notificationUsecase != nil {
@@ -121,6 +124,7 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 			NotificationType: domain.NotificationTypeReaction,
 			EntityType:       reaction.EntityType,
 			EntityID:         reaction.EntityID,
+			PostID:           postID,
 			OwnerUserID:      ownerUserID,
 		}
 		err = u.notificationUsecase.CreateNotification(ctx, params)

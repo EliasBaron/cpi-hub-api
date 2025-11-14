@@ -7,6 +7,7 @@ type Notification struct {
 	Type       string             `bson:"type"`
 	EntityType string             `bson:"entity_type"`
 	EntityID   int                `bson:"entity_id"`
+	PostID     *int               `bson:"post_id,omitempty"`
 	UserID     int                `bson:"user_id"`
 	Read       bool               `bson:"read"`
 	CreatedAt  primitive.DateTime `bson:"created_at"`

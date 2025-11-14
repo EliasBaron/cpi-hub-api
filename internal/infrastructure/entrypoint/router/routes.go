@@ -10,20 +10,28 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1 := app.Group("/v1")
 
 	// users
-	v1.GET("/users/:user_id", handlers.UserHandler.Get)
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
 	v1.GET("/users", handlers.UserHandler.Search)
-	v1.PUT("/users/:user_id", handlers.UserHandler.UpdateUser)
-	v1.POST("/users/:user_id/likes", handlers.ReactionHandler.GetUserLikes)
 
-	//auth
-	v1.POST("/auth/register", handlers.UserHandler.Register)
-	v1.POST("/auth/login", handlers.UserHandler.Login)
+	// notifications
+	v1.GET("/users/:user_id/notifications", handlers.NotificationHandler.GetNotifications)
+	v1.GET("/users/:user_id/notifications/unread-count", handlers.NotificationHandler.GetUnreadCount)
+	v1.PUT("/users/:user_id/notifications/:notification_id/read", handlers.NotificationHandler.MarkAsRead)
+	v1.PUT("/users/:user_id/notifications/read-all", handlers.NotificationHandler.MarkAllAsRead)
 
 	// user spaces
 	v1.PUT("/users/:user_id/spaces/:space_id/add", handlers.UserHandler.AddSpaceToUser)
 	v1.PUT("/users/:user_id/spaces/:space_id/remove", handlers.UserHandler.RemoveSpaceFromUser)
 	v1.GET("/users/:user_id/interested-posts", handlers.UserHandler.GetInterestedPosts)
+	v1.POST("/users/:user_id/likes", handlers.ReactionHandler.GetUserLikes)
+
+	// users
+	v1.GET("/users/:user_id", handlers.UserHandler.Get)
+	v1.PUT("/users/:user_id", handlers.UserHandler.UpdateUser)
+
+	//auth
+	v1.POST("/auth/register", handlers.UserHandler.Register)
+	v1.POST("/auth/login", handlers.UserHandler.Login)
 
 	// spaces
 	v1.POST("/spaces", handlers.SpaceHandler.Create)

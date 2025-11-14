@@ -181,7 +181,12 @@ func (h *EventsHandler) ConnectNotifications(c *gin.Context) {
 
 	err = h.eventsUsecase.HandleNotificationConnection(params)
 	if err != nil {
-		response.NewError(c.Writer, err)
+		// Si el error ocurre después del upgrade, no podemos escribir una respuesta HTTP
+		// El WebSocket ya está establecido, así que solo logueamos el error
+		// La conexión se cerrará automáticamente si hay un error en el upgrade
+		if !c.Writer.Written() {
+			response.NewError(c.Writer, err)
+		}
 		return
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/pkg/apperror"
 	"encoding/json"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -35,15 +36,22 @@ func NewNotificationManager() domain.NotificationManager {
 }
 
 func (nm *NotificationManager) HandleConnection(params domain.HandleNotificationConnectionParams) error {
-	if len(nm.connections) >= nm.config.MaxConnections {
+	nm.mutex.RLock()
+	currentConnections := len(nm.connections)
+	nm.mutex.RUnlock()
+
+	if currentConnections >= nm.config.MaxConnections {
+		log.Printf("NotificationManager: Maximum connections reached (%d)", nm.config.MaxConnections)
 		return apperror.NewInternalServer("maximum connections reached", nil, "notification_manager.go:HandleConnection")
 	}
 
 	conn, err := nm.upgrader.Upgrade(params.Writer, params.Request, nil)
 	if err != nil {
+		log.Printf("NotificationManager: Error upgrading connection for user %d: %v", params.UserID, err)
 		return apperror.NewInternalServer("error upgrading connection", err, "notification_manager.go:HandleConnection")
 	}
 
+	// Cerrar conexión existente si existe
 	nm.mutex.Lock()
 	if existingConn, exists := nm.connections[params.UserID]; exists {
 		existingConn.Close()

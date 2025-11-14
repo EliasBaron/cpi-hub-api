@@ -13,6 +13,7 @@ type Notification struct {
 	Type       NotificationType
 	EntityType EntityType
 	EntityID   int
+	PostID     *int
 	UserID     int
 	Read       bool
 	CreatedAt  time.Time

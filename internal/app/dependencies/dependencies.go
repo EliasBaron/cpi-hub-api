@@ -21,6 +21,7 @@ import (
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/comment"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/events"
 	messageHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/message"
+	notificationHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/notification"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/post"
 	reactionHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/reaction"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/space"
@@ -29,13 +30,14 @@ import (
 )
 
 type Handlers struct {
-	UserHandler     *user.UserHandler
-	SpaceHandler    *space.SpaceHandler
-	PostHandler     *post.PostHandler
-	CommentHandler  *comment.CommentHandler
-	EventsHandler   *events.EventsHandler
-	MessageHandler  *messageHandler.MessageHandler
-	ReactionHandler *reactionHandler.ReactionHandler
+	UserHandler         *user.UserHandler
+	SpaceHandler        *space.SpaceHandler
+	PostHandler         *post.PostHandler
+	CommentHandler      *comment.CommentHandler
+	EventsHandler       *events.EventsHandler
+	MessageHandler      *messageHandler.MessageHandler
+	ReactionHandler     *reactionHandler.ReactionHandler
+	NotificationHandler *notificationHandler.NotificationHandler
 }
 
 func Build() *Handlers {
@@ -98,5 +100,6 @@ func Build() *Handlers {
 		ReactionHandler: &reactionHandler.ReactionHandler{
 			ReactionUseCase: reactionUsecase,
 		},
+		NotificationHandler: notificationHandler.NewNotificationHandler(notificationUsecase),
 	}
 }

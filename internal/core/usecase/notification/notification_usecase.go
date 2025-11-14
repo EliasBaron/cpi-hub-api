@@ -36,6 +36,7 @@ func (u *notificationUsecase) CreateNotification(ctx context.Context, params dto
 		Type:       params.NotificationType,
 		EntityType: params.EntityType,
 		EntityID:   params.EntityID,
+		PostID:     params.PostID,
 		UserID:     params.OwnerUserID,
 		Read:       false,
 		CreatedAt:  helpers.GetTime(),
