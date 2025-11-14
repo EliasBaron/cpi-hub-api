@@ -1,6 +1,10 @@
 package dto
 
-import "net/http"
+import (
+	"cpi-hub-api/internal/core/domain"
+	"net/http"
+	"time"
+)
 
 type EventsConnectionParams struct {
 	UserID   int
@@ -22,4 +26,18 @@ type HandleUserConnectionParams struct {
 	UserID  int
 	Writer  http.ResponseWriter
 	Request *http.Request
+}
+
+type NotificationMessageDTO struct {
+	Type      string          `json:"type"`
+	Data      NotificationDTO `json:"data"`
+	Timestamp time.Time       `json:"timestamp"`
+}
+
+func ToNotificationMessageDTO(notification *domain.Notification) NotificationMessageDTO {
+	return NotificationMessageDTO{
+		Type:      "notification",
+		Data:      ToNotificationDTO(notification),
+		Timestamp: notification.CreatedAt,
+	}
 }

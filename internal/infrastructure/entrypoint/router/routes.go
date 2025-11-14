@@ -49,6 +49,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.POST("/ws/spaces/:space_id/broadcast", handlers.EventsHandler.Broadcast)
 	v1.POST("/ws/spaces/:space_id/chat", handlers.EventsHandler.ChatMessage)
 	v1.GET("/ws/user-connection", handlers.EventsHandler.HandleUserConnection)
+	v1.GET("/ws/notifications", handlers.EventsHandler.ConnectNotifications)
 
 	// messages
 	v1.GET("/messages", handlers.MessageHandler.Search)

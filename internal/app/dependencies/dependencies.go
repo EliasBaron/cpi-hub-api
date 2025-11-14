@@ -4,10 +4,12 @@ import (
 	commentUsecase "cpi-hub-api/internal/core/usecase/comment"
 	eventsUsecase "cpi-hub-api/internal/core/usecase/events"
 	messageUsecase "cpi-hub-api/internal/core/usecase/message"
+	notificationUsecase "cpi-hub-api/internal/core/usecase/notification"
 	postUsecase "cpi-hub-api/internal/core/usecase/post"
 	reactionUsecase "cpi-hub-api/internal/core/usecase/reaction"
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
+	notificationRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/notification"
 	reactionRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/reaction"
 	commentRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/comment"
 	eventsRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/events"
@@ -56,20 +58,24 @@ func Build() *Handlers {
 	eventsRepo := eventsRepository.NewEventsRepository(sqldb)
 	messageRepo := messageRepository.NewMessageRepository(sqldb)
 	reactionRepo := reactionRepository.NewReactionRepository(mongodb)
+	notificationRepo := notificationRepository.NewNotificationRepository(mongodb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
 	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
-	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository)
 
 	hubManager := eventsUsecase.NewHubManager()
 	go hubManager.Run()
 
 	userConnManager := eventsUsecase.NewUserConnectionManager()
+	notificationManager := eventsUsecase.NewNotificationManager()
 
-	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, userConnManager, eventsRepo, userRepository, spaceRepository)
+	notificationUsecase := notificationUsecase.NewNotificationUsecase(notificationRepo, notificationManager)
+	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository, notificationUsecase)
+
+	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, userConnManager, notificationManager, eventsRepo, userRepository, spaceRepository)
 
 	return &Handlers{
 		UserHandler: &user.UserHandler{
