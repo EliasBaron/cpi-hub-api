@@ -73,3 +73,11 @@ type ReactionRepository interface {
 	CountReactions(ctx context.Context, criteria *criteria.Criteria) (int, error)
 	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*Reaction, error)
 }
+
+type NotificationRepository interface {
+	SaveNotification(ctx context.Context, notification *Notification) error
+	GetUserNotifications(ctx context.Context, userID int, limit, offset int) ([]*Notification, error)
+	MarkAsRead(ctx context.Context, notificationID string) error
+	MarkAllAsRead(ctx context.Context, userID int) error
+	GetUnreadCount(ctx context.Context, userID int) (int, error)
+}

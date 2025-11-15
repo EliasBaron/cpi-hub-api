@@ -13,28 +13,31 @@ import (
 )
 
 type EventsUsecase struct {
-	hubManager      *HubManager
-	userConnManager domain.UserConnectionManager
-	repository      domain.EventsRepository
-	userRepository  domain.UserRepository
-	spaceRepository domain.SpaceRepository
-	config          *WebSocketConfig
+	hubManager          *HubManager
+	userConnManager     domain.UserConnectionManager
+	notificationManager domain.NotificationManager
+	repository          domain.EventsRepository
+	userRepository      domain.UserRepository
+	spaceRepository     domain.SpaceRepository
+	config              *WebSocketConfig
 }
 
 func NewEventsUsecase(
 	hubManager *HubManager,
 	userConnManager domain.UserConnectionManager,
+	notificationManager domain.NotificationManager,
 	repository domain.EventsRepository,
 	userRepository domain.UserRepository,
 	spaceRepository domain.SpaceRepository,
 ) *EventsUsecase {
 	return &EventsUsecase{
-		hubManager:      hubManager,
-		userConnManager: userConnManager,
-		repository:      repository,
-		userRepository:  userRepository,
-		spaceRepository: spaceRepository,
-		config:          DefaultWebSocketConfig(),
+		hubManager:          hubManager,
+		userConnManager:     userConnManager,
+		notificationManager: notificationManager,
+		repository:          repository,
+		userRepository:      userRepository,
+		spaceRepository:     spaceRepository,
+		config:              DefaultWebSocketConfig(),
 	}
 }
 
@@ -137,4 +140,14 @@ func (u *EventsUsecase) HandleUserConnection(params dto.HandleUserConnectionPara
 	}
 
 	return u.userConnManager.HandleConnection(handleUserConnectionParams)
+}
+
+func (u *EventsUsecase) HandleNotificationConnection(params dto.HandleNotificationConnectionParams) error {
+	handleNotificationConnectionParams := domain.HandleNotificationConnectionParams{
+		UserID:  params.UserID,
+		Writer:  params.Writer,
+		Request: params.Request,
+	}
+
+	return u.notificationManager.HandleConnection(handleNotificationConnectionParams)
 }

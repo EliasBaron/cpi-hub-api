@@ -7,6 +7,7 @@ import (
 	"cpi-hub-api/internal/core/dto"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
+	"log"
 )
 
 type ReactionUseCase interface {
@@ -17,18 +18,30 @@ type ReactionUseCase interface {
 }
 
 type reactionUsecase struct {
-	reactionRepo domain.ReactionRepository
-	userRepo     domain.UserRepository
-	postRepo     domain.PostRepository
-	commentRepo  domain.CommentRepository
+	reactionRepo        domain.ReactionRepository
+	userRepo            domain.UserRepository
+	postRepo            domain.PostRepository
+	commentRepo         domain.CommentRepository
+	notificationUsecase NotificationUsecase
 }
 
-func NewReactionUsecase(reactionRepo domain.ReactionRepository, userRepo domain.UserRepository, postRepo domain.PostRepository, commentRepo domain.CommentRepository) ReactionUseCase {
+type NotificationUsecase interface {
+	CreateNotification(ctx context.Context, params dto.CreateNotificationParams) error
+}
+
+func NewReactionUsecase(
+	reactionRepo domain.ReactionRepository,
+	userRepo domain.UserRepository,
+	postRepo domain.PostRepository,
+	commentRepo domain.CommentRepository,
+	notificationUsecase NotificationUsecase,
+) ReactionUseCase {
 	return &reactionUsecase{
-		reactionRepo: reactionRepo,
-		userRepo:     userRepo,
-		postRepo:     postRepo,
-		commentRepo:  commentRepo,
+		reactionRepo:        reactionRepo,
+		userRepo:            userRepo,
+		postRepo:            postRepo,
+		commentRepo:         commentRepo,
+		notificationUsecase: notificationUsecase,
 	}
 }
 
@@ -84,6 +97,39 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 		err = u.reactionRepo.AddReaction(ctx, reaction)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	var ownerUserID int
+	var postID *int
+	switch reaction.EntityType {
+	case domain.EntityTypePost:
+		post, err := pghelpers.FindEntity(ctx, u.postRepo, "id", reaction.EntityID, "Post not found")
+		if err != nil {
+			return nil, err
+		}
+		ownerUserID = post.CreatedBy
+		postID = &reaction.EntityID
+	case domain.EntityTypeComment:
+		commentWithInfo, err := pghelpers.FindEntity(ctx, u.commentRepo, "id", reaction.EntityID, "Comment not found")
+		if err != nil {
+			return nil, err
+		}
+		ownerUserID = commentWithInfo.Comment.CreatedBy
+		postID = &commentWithInfo.Comment.PostID
+	}
+
+	if ownerUserID != reaction.UserID && u.notificationUsecase != nil {
+		params := dto.CreateNotificationParams{
+			NotificationType: domain.NotificationTypeReaction,
+			EntityType:       reaction.EntityType,
+			EntityID:         reaction.EntityID,
+			PostID:           postID,
+			OwnerUserID:      ownerUserID,
+		}
+		err = u.notificationUsecase.CreateNotification(ctx, params)
+		if err != nil {
+			log.Printf("Error creating notification: %v", err)
 		}
 	}
 

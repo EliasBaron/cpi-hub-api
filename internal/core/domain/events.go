@@ -140,3 +140,14 @@ type HandleUserConnectionParams struct {
 type UserConnectionManager interface {
 	HandleConnection(params HandleUserConnectionParams) error
 }
+
+type HandleNotificationConnectionParams struct {
+	UserID  int
+	Writer  http.ResponseWriter
+	Request *http.Request
+}
+
+type NotificationManager interface {
+	HandleConnection(params HandleNotificationConnectionParams) error
+	BroadcastToUser(userID int, notification *Notification) error
+}
