@@ -122,3 +122,11 @@ func (u *UserRepository) findUsersByField(ctx context.Context, whereClause strin
 
 	return users, nil
 }
+
+func (u *UserRepository) Update(ctx context.Context, user *domain.User) error {
+	_, err := u.db.ExecContext(ctx,
+		"UPDATE users SET name = $1, last_name = $2, email = $3, password = $4, updated_at = $5, image = $6 WHERE id = $7",
+		user.Name, user.LastName, user.Email, user.Password, user.UpdatedAt, user.Image, user.ID,
+	)
+	return err
+}

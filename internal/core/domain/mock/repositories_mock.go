@@ -101,6 +101,20 @@ func (mr *MockUserRepositoryMockRecorder) Search(ctx, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockUserRepository)(nil).Search), ctx, arg1)
 }
 
+// Update mocks base method.
+func (m *MockUserRepository) Update(ctx context.Context, user *domain.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockUserRepositoryMockRecorder) Update(ctx, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), ctx, user)
+}
+
 // MockSpaceRepository is a mock of SpaceRepository interface.
 type MockSpaceRepository struct {
 	ctrl     *gomock.Controller
@@ -364,6 +378,20 @@ func (mr *MockPostRepositoryMockRecorder) Create(ctx, post any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPostRepository)(nil).Create), ctx, post)
 }
 
+// Delete mocks base method.
+func (m *MockPostRepository) Delete(ctx context.Context, postID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, postID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockPostRepositoryMockRecorder) Delete(ctx, postID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPostRepository)(nil).Delete), ctx, postID)
+}
+
 // Find mocks base method.
 func (m *MockPostRepository) Find(ctx context.Context, arg1 *criteria.Criteria) (*domain.Post, error) {
 	m.ctrl.T.Helper()
@@ -461,11 +489,25 @@ func (mr *MockCommentRepositoryMockRecorder) Create(ctx, comment any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCommentRepository)(nil).Create), ctx, comment)
 }
 
+// Delete mocks base method.
+func (m *MockCommentRepository) Delete(ctx context.Context, commentID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, commentID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCommentRepositoryMockRecorder) Delete(ctx, commentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCommentRepository)(nil).Delete), ctx, commentID)
+}
+
 // Find mocks base method.
-func (m *MockCommentRepository) Find(ctx context.Context, arg1 *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
+func (m *MockCommentRepository) Find(ctx context.Context, arg1 *criteria.Criteria) (*domain.CommentWithInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", ctx, arg1)
-	ret0, _ := ret[0].([]*domain.CommentWithInfo)
+	ret0, _ := ret[0].(*domain.CommentWithInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -474,4 +516,111 @@ func (m *MockCommentRepository) Find(ctx context.Context, arg1 *criteria.Criteri
 func (mr *MockCommentRepositoryMockRecorder) Find(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockCommentRepository)(nil).Find), ctx, arg1)
+}
+
+// FindAll mocks base method.
+func (m *MockCommentRepository) FindAll(ctx context.Context, arg1 *criteria.Criteria) ([]*domain.CommentWithInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", ctx, arg1)
+	ret0, _ := ret[0].([]*domain.CommentWithInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockCommentRepositoryMockRecorder) FindAll(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockCommentRepository)(nil).FindAll), ctx, arg1)
+}
+
+// Update mocks base method.
+func (m *MockCommentRepository) Update(ctx context.Context, comment *domain.Comment) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, comment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockCommentRepositoryMockRecorder) Update(ctx, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCommentRepository)(nil).Update), ctx, comment)
+}
+
+// MockEventsRepository is a mock of EventsRepository interface.
+type MockEventsRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockEventsRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockEventsRepositoryMockRecorder is the mock recorder for MockEventsRepository.
+type MockEventsRepositoryMockRecorder struct {
+	mock *MockEventsRepository
+}
+
+// NewMockEventsRepository creates a new mock instance.
+func NewMockEventsRepository(ctrl *gomock.Controller) *MockEventsRepository {
+	mock := &MockEventsRepository{ctrl: ctrl}
+	mock.recorder = &MockEventsRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockEventsRepository) EXPECT() *MockEventsRepositoryMockRecorder {
+	return m.recorder
+}
+
+// SaveMessage mocks base method.
+func (m *MockEventsRepository) SaveMessage(message *domain.ChatMessage) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveMessage", message)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveMessage indicates an expected call of SaveMessage.
+func (mr *MockEventsRepositoryMockRecorder) SaveMessage(message any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveMessage", reflect.TypeOf((*MockEventsRepository)(nil).SaveMessage), message)
+}
+
+// MockMessageRepository is a mock of MessageRepository interface.
+type MockMessageRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockMessageRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockMessageRepositoryMockRecorder is the mock recorder for MockMessageRepository.
+type MockMessageRepositoryMockRecorder struct {
+	mock *MockMessageRepository
+}
+
+// NewMockMessageRepository creates a new mock instance.
+func NewMockMessageRepository(ctrl *gomock.Controller) *MockMessageRepository {
+	mock := &MockMessageRepository{ctrl: ctrl}
+	mock.recorder = &MockMessageRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMessageRepository) EXPECT() *MockMessageRepositoryMockRecorder {
+	return m.recorder
+}
+
+// SearchMessages mocks base method.
+func (m *MockMessageRepository) SearchMessages(ctx context.Context, filters domain.SearchMessagesFilter) ([]*domain.ChatMessage, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchMessages", ctx, filters)
+	ret0, _ := ret[0].([]*domain.ChatMessage)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// SearchMessages indicates an expected call of SearchMessages.
+func (mr *MockMessageRepositoryMockRecorder) SearchMessages(ctx, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMessages", reflect.TypeOf((*MockMessageRepository)(nil).SearchMessages), ctx, filters)
 }

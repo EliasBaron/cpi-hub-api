@@ -6,8 +6,8 @@ import (
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	"strconv"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,6 +19,7 @@ type UserUseCase interface {
 	GetSpacesByUser(ctx context.Context, userId int) ([]*domain.Space, error)
 	Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error)
 	Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error)
+	UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) error
 }
 
 type useCase struct {
@@ -53,8 +54,8 @@ func (u *useCase) Create(ctx context.Context, user *domain.User) (*domain.User, 
 		return nil, apperror.NewInvalidData("User with this email already exists", nil, "user_usecase.go:Create")
 	}
 
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
+	user.CreatedAt = helpers.GetTime()
+	user.UpdatedAt = helpers.GetTime()
 
 	cryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -236,4 +237,41 @@ func (u *useCase) Login(ctx context.Context, loginUser dto.LoginUser) (*domain.U
 	}
 
 	return user, nil
+}
+
+func (u *useCase) UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) error {
+	user, err := u.userRepository.Find(ctx, &criteria.Criteria{
+		Filters: []criteria.Filter{
+			{
+				Field:    "id",
+				Value:    dto.UserID,
+				Operator: criteria.OperatorEqual,
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.NewNotFound("User not found", nil, "user_usecase.go:UpdateUser")
+	}
+
+	if dto.Name != nil {
+		user.Name = *dto.Name
+	}
+	if dto.LastName != nil {
+		user.LastName = *dto.LastName
+	}
+	if dto.Image != nil {
+		user.Image = *dto.Image
+	}
+	user.UpdatedAt = helpers.GetTime()
+
+	err = u.userRepository.Update(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

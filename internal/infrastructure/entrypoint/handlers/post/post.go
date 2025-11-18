@@ -6,6 +6,7 @@ import (
 	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
 	response "cpi-hub-api/pkg/http"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,8 @@ func (h *PostHandler) Create(c *gin.Context) {
 		response.NewError(c.Writer, appErr)
 		return
 	}
+
+	fmt.Println("postDTO", postDTO)
 
 	createdPost, err := h.PostUseCase.Create(c.Request.Context(), postDTO.ToDomain())
 	if err != nil {
@@ -59,16 +62,17 @@ func (h *PostHandler) AddComment(c *gin.Context) {
 		response.NewError(c.Writer, appErr)
 		return
 	}
-	var commentDTO dto.CommentDTO
+	var commentDTO dto.CreateComment
 
 	if err := c.ShouldBindJSON(&commentDTO); err != nil {
 		appErr := apperror.NewInvalidData("Invalid comment data", err, "comment_handler.go:Create")
 		response.NewError(c.Writer, appErr)
 		return
 	}
+
 	commentDTO.PostID = postID
 
-	createdComment, err := h.PostUseCase.AddComment(c.Request.Context(), commentDTO.ToDomain())
+	createdComment, err := h.PostUseCase.AddComment(c.Request.Context(), commentDTO)
 
 	if err != nil {
 		response.NewError(c.Writer, err)
@@ -170,4 +174,50 @@ func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
 	}
 
 	response.SuccessResponse(context.Writer, data)
+}
+
+func (h *PostHandler) Update(c *gin.Context) {
+	var updatePostDTO dto.UpdatePost
+
+	if err := c.ShouldBindJSON(&updatePostDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid post data", err, "post_handler.go:Update")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	postIDStr := c.Param("post_id")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		appErr := apperror.NewInvalidData("Invalid post_id parameter (must be positive integer)", err, "post_handler.go:Update")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	updatePostDTO.PostID = postID
+
+	err = h.PostUseCase.Update(c.Request.Context(), &updatePostDTO)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, gin.H{"message": "Post updated successfully"})
+}
+
+func (h *PostHandler) Delete(c *gin.Context) {
+	postIDStr := c.Param("post_id")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil || postID <= 0 {
+		appErr := apperror.NewInvalidData("Invalid post_id parameter (must be positive integer)", err, "post_handler.go:Delete")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	err = h.PostUseCase.Delete(c.Request.Context(), postID)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, gin.H{"message": "Post deleted successfully"})
 }

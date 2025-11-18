@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"time"
 
+	"os"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = []byte("2ad4aef027b4a6c17f3d0fca8f90931226e58a82edba9102d587e10533e25b8a51c3ca7e")
+var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 func CreateToken(email string, userId int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"email":   email,
 			"user_id": userId,
-			"exp":     time.Now().Add(time.Hour * 24).Unix(),
-			"iat":     time.Now().Unix(),
+			"exp":     GetTime().Add(time.Hour * 24).Unix(),
+			"iat":     GetTime().Unix(),
 		})
 
 	tokenString, err := token.SignedString(secretKey)
@@ -78,7 +80,7 @@ func IsTokenExpired(tokenString string) bool {
 		if !ok {
 			return true
 		}
-		return float64(time.Now().Unix()) > exp
+		return float64(GetTime().Unix()) > exp
 	}
 
 	return true

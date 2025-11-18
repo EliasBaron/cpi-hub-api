@@ -7,12 +7,11 @@ import (
 	"log"
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"database/sql"
 
 	_ "github.com/lib/pq"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoDBConfig struct {
@@ -44,15 +43,15 @@ func newMongoDBClient() (*mongo.Client, error) {
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to MongoDB: %w", err)
+		return nil, fmt.Errorf("error conectando a MongoDB: %w", err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error verifying connection to MongoDB: %w", err)
+		return nil, fmt.Errorf("error verificando conexión a MongoDB: %w", err)
 	}
 
-	log.Printf("Successfully connected to MongoDB at %s", config.URI)
+	log.Printf("Conectado exitosamente a MongoDB en %s", config.URI)
 	return client, nil
 }
 

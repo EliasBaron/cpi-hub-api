@@ -11,6 +11,7 @@ type UserRepository interface {
 	Find(ctx context.Context, criteria *criteria.Criteria) (*User, error)
 	Search(ctx context.Context, criteria *criteria.Criteria) ([]*User, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	Update(ctx context.Context, user *User) error
 }
 
 type SpaceRepository interface {
@@ -36,10 +37,47 @@ type PostRepository interface {
 	Update(ctx context.Context, post *Post) error
 	Search(ctx context.Context, criteria *criteria.Criteria) ([]*Post, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	Delete(ctx context.Context, postID int) error
 }
 
 type CommentRepository interface {
 	Create(ctx context.Context, comment *Comment) error
-	Find(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
+	Find(ctx context.Context, criteria *criteria.Criteria) (*CommentWithInfo, error)
+	FindAll(ctx context.Context, criteria *criteria.Criteria) ([]*CommentWithInfo, error)
 	Count(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	Update(ctx context.Context, comment *Comment) error
+	Delete(ctx context.Context, commentID int) error
+}
+
+type EventsRepository interface {
+	SaveMessage(message *ChatMessage) error
+}
+
+type SearchMessagesFilter struct {
+	SpaceID       int
+	Page          int
+	PageSize      int
+	OrderBy       string
+	SortDirection string
+}
+
+type MessageRepository interface {
+	SearchMessages(ctx context.Context, filters SearchMessagesFilter) ([]*ChatMessage, int, error)
+}
+
+type ReactionRepository interface {
+	AddReaction(ctx context.Context, reaction *Reaction) error
+	FindReaction(ctx context.Context, criteria *criteria.Criteria) (*Reaction, error)
+	DeleteReaction(ctx context.Context, reactionID string) error
+	UpdateReaction(ctx context.Context, reaction *Reaction) error
+	CountReactions(ctx context.Context, criteria *criteria.Criteria) (int, error)
+	// GetReactions(ctx context.Context, criteria *criteria.Criteria) ([]*Reaction, error)
+}
+
+type NotificationRepository interface {
+	SaveNotification(ctx context.Context, notification *Notification) error
+	GetUserNotifications(ctx context.Context, userID int, limit, offset int) ([]*Notification, error)
+	MarkAsRead(ctx context.Context, notificationID string) error
+	MarkAllAsRead(ctx context.Context, userID int) error
+	GetUnreadCount(ctx context.Context, userID int) (int, error)
 }

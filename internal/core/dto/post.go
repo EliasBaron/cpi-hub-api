@@ -6,10 +6,17 @@ import (
 )
 
 type CreatePost struct {
-	Title     string `json:"title" binding:"required"`
-	Content   string `json:"content" binding:"required"`
-	CreatedBy int    `json:"created_by" binding:"required"`
-	SpaceID   int    `json:"space_id" binding:"required"`
+	Title     string  `json:"title" binding:"required"`
+	Content   string  `json:"content" binding:"required"`
+	Image     *string `json:"image"`
+	CreatedBy int     `json:"created_by" binding:"required"`
+	SpaceID   int     `json:"space_id" binding:"required"`
+}
+
+type UpdatePost struct {
+	PostID  int
+	Title   string `json:"title"  `
+	Content string `json:"content"`
 }
 
 type SearchPostsParams struct {
@@ -41,6 +48,7 @@ type PostExtendedDTO struct {
 	ID        int                  `json:"id"`
 	Title     string               `json:"title"`
 	Content   string               `json:"content"`
+	Image     *string              `json:"image"`
 	CreatedAt time.Time            `json:"created_at"`
 	UpdatedAt time.Time            `json:"updated_at"`
 	UpdatedBy int                  `json:"updated_by"`
@@ -53,22 +61,21 @@ func (c *CreatePost) ToDomain() *domain.Post {
 	return &domain.Post{
 		Title:     c.Title,
 		Content:   c.Content,
+		Image:     c.Image,
 		CreatedBy: c.CreatedBy,
 		SpaceID:   c.SpaceID,
 	}
 }
 
 func ToPostExtendedDTO(post *domain.ExtendedPost) PostExtendedDTO {
-	commentsDTO := make([]CommentWithUserDTO, 0, len(post.Comments))
-
-	for _, c := range post.Comments {
-		commentsDTO = append(commentsDTO, ToCommentWithUserAndPostDTO(c))
-	}
+	// Build nested tree of comments with replies
+	commentsDTO := ToCommentWithUserTreeDTOs(post.Comments)
 
 	return PostExtendedDTO{
 		ID:        post.Post.ID,
 		Title:     post.Post.Title,
 		Content:   post.Post.Content,
+		Image:     post.Post.Image,
 		CreatedAt: post.Post.CreatedAt,
 		UpdatedAt: post.Post.UpdatedAt,
 		UpdatedBy: post.Post.UpdatedBy,

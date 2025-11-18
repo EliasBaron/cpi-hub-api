@@ -30,6 +30,8 @@ func ToMongoDBQuery(c *criteria.Criteria) bson.D {
 			filters = append(filters, bson.E{Key: filter.Field, Value: bson.M{"$regex": filter.Value}})
 		case criteria.OperatorExists:
 			filters = append(filters, bson.E{Key: filter.Field, Value: bson.M{"$exists": filter.Value}})
+		case criteria.OperatorILike:
+			filters = append(filters, bson.E{Key: filter.Field, Value: bson.M{"$regex": filter.Value, "$options": "i"}})
 		}
 	}
 	return filters

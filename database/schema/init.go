@@ -35,6 +35,7 @@ func EnsureSchema(db *sql.DB) error {
             id SERIAL PRIMARY KEY,
             title TEXT NOT NULL,
             content TEXT NOT NULL,
+            image TEXT DEFAULT NULL,
             created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             created_at TIMESTAMP NOT NULL DEFAULT now(),
             updated_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -42,12 +43,24 @@ func EnsureSchema(db *sql.DB) error {
             space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE
         )`,
 		`CREATE TABLE IF NOT EXISTS comments (
-			id SERIAL PRIMARY KEY,
-			post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-			content TEXT NOT NULL,
-    		created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    		created_at TIMESTAMP NOT NULL DEFAULT now()
-		)`,
+            id SERIAL PRIMARY KEY,
+            post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+            content TEXT NOT NULL,
+            image TEXT DEFAULT NULL,
+        	created_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        	created_at TIMESTAMP NOT NULL DEFAULT now(),
+        	updated_at TIMESTAMP NOT NULL DEFAULT now(),
+            parent_comment_id INT DEFAULT NULL REFERENCES comments(id) ON DELETE CASCADE
+        )`,
+
+		`CREATE TABLE IF NOT EXISTS chat_messages (
+            id TEXT PRIMARY KEY,
+            content TEXT NOT NULL,
+            user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            username TEXT NOT NULL,
+            space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
+            timestamp TIMESTAMP NOT NULL DEFAULT now()
+)`,
 	}
 
 	for _, stmt := range stmts {
