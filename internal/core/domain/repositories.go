@@ -81,3 +81,8 @@ type NotificationRepository interface {
 	MarkAllAsRead(ctx context.Context, userID int) error
 	GetUnreadCount(ctx context.Context, userID int) (int, error)
 }
+
+type NewsRepository interface {
+	GetAll(ctx context.Context) ([]*News, error)
+	Create(ctx context.Context, news *News) (*News, error)
+}
