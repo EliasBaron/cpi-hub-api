@@ -4,11 +4,13 @@ import (
 	commentUsecase "cpi-hub-api/internal/core/usecase/comment"
 	eventsUsecase "cpi-hub-api/internal/core/usecase/events"
 	messageUsecase "cpi-hub-api/internal/core/usecase/message"
+	newsUsecase "cpi-hub-api/internal/core/usecase/news"
 	notificationUsecase "cpi-hub-api/internal/core/usecase/notification"
 	postUsecase "cpi-hub-api/internal/core/usecase/post"
 	reactionUsecase "cpi-hub-api/internal/core/usecase/reaction"
 	spaceUsecase "cpi-hub-api/internal/core/usecase/space"
 	userUsecase "cpi-hub-api/internal/core/usecase/user"
+	newsRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/news"
 	notificationRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/notification"
 	reactionRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/mongo/reaction"
 	commentRepository "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/comment"
@@ -21,6 +23,7 @@ import (
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/comment"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/events"
 	messageHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/message"
+	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/news"
 	notificationHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/notification"
 	"cpi-hub-api/internal/infrastructure/entrypoint/handlers/post"
 	reactionHandler "cpi-hub-api/internal/infrastructure/entrypoint/handlers/reaction"
@@ -38,6 +41,7 @@ type Handlers struct {
 	MessageHandler      *messageHandler.MessageHandler
 	ReactionHandler     *reactionHandler.ReactionHandler
 	NotificationHandler *notificationHandler.NotificationHandler
+	NewsHandler         *news.NewsHandler
 }
 
 func Build() *Handlers {
@@ -61,12 +65,14 @@ func Build() *Handlers {
 	messageRepo := messageRepository.NewMessageRepository(sqldb)
 	reactionRepo := reactionRepository.NewReactionRepository(mongodb)
 	notificationRepo := notificationRepository.NewNotificationRepository(mongodb)
+	newsRepo := newsRepository.NewNewsRepository(mongodb)
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
 	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
+	newsUsecase := newsUsecase.NewNewsUsecase(newsRepo)
 
 	hubManager := eventsUsecase.NewHubManager()
 	go hubManager.Run()
@@ -101,5 +107,8 @@ func Build() *Handlers {
 			ReactionUseCase: reactionUsecase,
 		},
 		NotificationHandler: notificationHandler.NewNotificationHandler(notificationUsecase),
+		NewsHandler: &news.NewsHandler{
+			NewsUseCase: newsUsecase,
+		},
 	}
 }
