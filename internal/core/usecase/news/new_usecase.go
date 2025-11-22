@@ -3,6 +3,7 @@ package news
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
+	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/pkg/helpers"
 )
 
@@ -22,7 +23,13 @@ func NewNewsUsecase(newsRepo domain.NewsRepository) NewsUseCase {
 }
 
 func (u *newsUsecase) GetAllNews(ctx context.Context) ([]*domain.News, error) {
-	newsItems, err := u.newsRepository.GetAll(ctx)
+
+	now := helpers.GetTime()
+	searchCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("expires_at", now, criteria.OperatorGte).
+		Build()
+
+	newsItems, err := u.newsRepository.GetAll(ctx, searchCriteria)
 	if err != nil {
 		return nil, err
 	}

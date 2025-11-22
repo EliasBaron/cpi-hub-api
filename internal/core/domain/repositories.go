@@ -83,6 +83,6 @@ type NotificationRepository interface {
 }
 
 type NewsRepository interface {
-	GetAll(ctx context.Context) ([]*News, error)
+	GetAll(ctx context.Context, criteria *criteria.Criteria) ([]*News, error)
 	Create(ctx context.Context, news *News) (*News, error)
 }
