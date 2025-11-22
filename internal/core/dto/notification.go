@@ -12,34 +12,46 @@ type HandleNotificationConnectionParams struct {
 	Request *http.Request
 }
 
-type CreateNotificationParams struct {
-	NotificationType domain.NotificationType
-	EntityType       domain.EntityType
-	EntityID         int
-	PostID           *int
-	OwnerUserID      int
+// CreateNotificationDTO representa una notificación genérica para crear desde el frontend
+type CreateNotificationDTO struct {
+	Title       string  `json:"title" binding:"required"`
+	Description string  `json:"description" binding:"required"`
+	URL         *string `json:"url,omitempty"`
+	To          int     `json:"to" binding:"required"`
 }
 
+// ToDomain convierte CreateNotificationDTO a domain.Notification
+func (dto *CreateNotificationDTO) ToDomain() *domain.Notification {
+	return &domain.Notification{
+		Title:       dto.Title,
+		Description: dto.Description,
+		URL:         dto.URL,
+		To:          dto.To,
+		Read:        false,
+		CreatedAt:   time.Now(),
+	}
+}
+
+// NotificationDTO representa una notificación genérica
 type NotificationDTO struct {
-	ID         string    `json:"id"`
-	Type       string    `json:"type"`
-	EntityType string    `json:"entity_type"`
-	EntityID   int       `json:"entity_id"`
-	PostID     *int      `json:"post_id,omitempty"` // PostID is set when EntityType is comment
-	UserID     int       `json:"user_id"`
-	Read       bool      `json:"read"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	URL         *string   `json:"url,omitempty"`
+	To          int       `json:"to"`
+	Read        bool      `json:"read"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
+// ToNotificationDTO convierte domain.Notification a NotificationDTO
 func ToNotificationDTO(notification *domain.Notification) NotificationDTO {
 	return NotificationDTO{
-		ID:         notification.ID,
-		Type:       string(notification.Type),
-		EntityType: string(notification.EntityType),
-		EntityID:   notification.EntityID,
-		PostID:     notification.PostID,
-		UserID:     notification.UserID,
-		Read:       notification.Read,
-		CreatedAt:  notification.CreatedAt,
+		ID:          notification.ID,
+		Title:       notification.Title,
+		Description: notification.Description,
+		URL:         notification.URL,
+		To:          notification.To,
+		Read:        notification.Read,
+		CreatedAt:   notification.CreatedAt,
 	}
 }

@@ -5,8 +5,10 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
+	"cpi-hub-api/internal/core/usecase/events"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
+	"cpi-hub-api/pkg/helpers"
 	"log"
 )
 
@@ -18,15 +20,11 @@ type ReactionUseCase interface {
 }
 
 type reactionUsecase struct {
-	reactionRepo        domain.ReactionRepository
-	userRepo            domain.UserRepository
-	postRepo            domain.PostRepository
-	commentRepo         domain.CommentRepository
-	notificationUsecase NotificationUsecase
-}
-
-type NotificationUsecase interface {
-	CreateNotification(ctx context.Context, params dto.CreateNotificationParams) error
+	reactionRepo domain.ReactionRepository
+	userRepo     domain.UserRepository
+	postRepo     domain.PostRepository
+	commentRepo  domain.CommentRepository
+	eventEmitter events.EventEmitter
 }
 
 func NewReactionUsecase(
@@ -34,14 +32,14 @@ func NewReactionUsecase(
 	userRepo domain.UserRepository,
 	postRepo domain.PostRepository,
 	commentRepo domain.CommentRepository,
-	notificationUsecase NotificationUsecase,
+	eventEmitter events.EventEmitter,
 ) ReactionUseCase {
 	return &reactionUsecase{
-		reactionRepo:        reactionRepo,
-		userRepo:            userRepo,
-		postRepo:            postRepo,
-		commentRepo:         commentRepo,
-		notificationUsecase: notificationUsecase,
+		reactionRepo: reactionRepo,
+		userRepo:     userRepo,
+		postRepo:     postRepo,
+		commentRepo:  commentRepo,
+		eventEmitter: eventEmitter,
 	}
 }
 
@@ -119,17 +117,22 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 		postID = &commentWithInfo.Comment.PostID
 	}
 
-	if ownerUserID != reaction.UserID && u.notificationUsecase != nil {
-		params := dto.CreateNotificationParams{
-			NotificationType: domain.NotificationTypeReaction,
-			EntityType:       reaction.EntityType,
-			EntityID:         reaction.EntityID,
-			PostID:           postID,
-			OwnerUserID:      ownerUserID,
+	if ownerUserID != reaction.UserID && u.eventEmitter != nil {
+		event := &domain.Event{
+			Type:         "reaction_created",
+			UserID:       reaction.UserID,
+			TargetUserID: ownerUserID,
+			Metadata: map[string]interface{}{
+				"entity_type": string(reaction.EntityType),
+				"entity_id":   reaction.EntityID,
+				"action":      string(reaction.Action),
+				"post_id":     *postID,
+			},
+			Timestamp: helpers.GetTime(),
 		}
-		err = u.notificationUsecase.CreateNotification(ctx, params)
+		err = u.eventEmitter.EmitEvent(ctx, event)
 		if err != nil {
-			log.Printf("Error creating notification: %v", err)
+			log.Printf("Error emitting reaction event: %v", err)
 		}
 	}
 

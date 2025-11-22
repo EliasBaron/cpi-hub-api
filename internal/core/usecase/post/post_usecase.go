@@ -5,9 +5,11 @@ import (
 	"cpi-hub-api/internal/core/domain"
 	"cpi-hub-api/internal/core/domain/criteria"
 	"cpi-hub-api/internal/core/dto"
+	"cpi-hub-api/internal/core/usecase/events"
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
+	"log"
 	"strings"
 )
 
@@ -32,6 +34,7 @@ type postUseCase struct {
 	userRepository      domain.UserRepository
 	commentRepository   domain.CommentRepository
 	userSpaceRepository domain.UserSpaceRepository
+	eventEmitter        events.EventEmitter
 }
 
 func NewPostUsecase(
@@ -40,6 +43,7 @@ func NewPostUsecase(
 	userRepo domain.UserRepository,
 	commentRepo domain.CommentRepository,
 	userSpaceRepo domain.UserSpaceRepository,
+	eventEmitter events.EventEmitter,
 ) PostUseCase {
 	return &postUseCase{
 		postRepository:      postRepo,
@@ -47,6 +51,7 @@ func NewPostUsecase(
 		userRepository:      userRepo,
 		commentRepository:   commentRepo,
 		userSpaceRepository: userSpaceRepo,
+		eventEmitter:        eventEmitter,
 	}
 }
 
@@ -201,6 +206,53 @@ func (p *postUseCase) AddComment(ctx context.Context, commentDTO dto.CreateComme
 	space.UpdatedBy = comment.CreatedBy
 	if err := p.spaceRepository.Update(ctx, space); err != nil {
 		return nil, err
+	}
+
+	if p.eventEmitter != nil {
+		var event *domain.Event
+
+		if comment.ParentID != nil && *comment.ParentID > 0 {
+			parentComment, err := pghelpers.FindEntity(ctx, p.commentRepository, "id", *comment.ParentID, "Parent comment not found")
+			if err == nil && parentComment != nil {
+				if parentComment.Comment.CreatedBy != comment.CreatedBy {
+					event = &domain.Event{
+						Type:         "comment_reply_created",
+						UserID:       comment.CreatedBy,
+						TargetUserID: parentComment.Comment.CreatedBy,
+						Metadata: map[string]interface{}{
+							"post_id":           comment.PostID,
+							"comment_id":        comment.ID,
+							"parent_comment_id": *comment.ParentID,
+							"comment_content":   comment.Content,
+							"is_reply":          true,
+						},
+						Timestamp: comment.CreatedAt,
+					}
+				}
+			}
+		} else {
+			if post.CreatedBy != comment.CreatedBy {
+				event = &domain.Event{
+					Type:         "comment_created",
+					UserID:       comment.CreatedBy,
+					TargetUserID: post.CreatedBy,
+					Metadata: map[string]interface{}{
+						"post_id":         comment.PostID,
+						"comment_id":      comment.ID,
+						"comment_content": comment.Content,
+						"is_reply":        false,
+					},
+					Timestamp: comment.CreatedAt,
+				}
+			}
+		}
+
+		if event != nil {
+			err := p.eventEmitter.EmitEvent(ctx, event)
+			if err != nil {
+				log.Printf("Error emitting comment event: %v", err)
+			}
+		}
 	}
 
 	return &domain.CommentWithInfo{

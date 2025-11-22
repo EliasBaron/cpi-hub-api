@@ -64,7 +64,6 @@ func Build() *Handlers {
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
-	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository)
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
 
@@ -74,8 +73,10 @@ func Build() *Handlers {
 	userConnManager := eventsUsecase.NewUserConnectionManager()
 	notificationManager := eventsUsecase.NewNotificationManager()
 
-	notificationUsecase := notificationUsecase.NewNotificationUsecase(notificationRepo, notificationManager)
-	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository, notificationUsecase)
+	eventEmitter := eventsUsecase.NewEventEmitter(notificationManager)
+	notificationUsecase := notificationUsecase.NewNotificationUsecase(notificationRepo)
+	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository, eventEmitter)
+	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository, eventEmitter)
 
 	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, userConnManager, notificationManager, eventsRepo, userRepository, spaceRepository)
 
