@@ -60,7 +60,7 @@ func EnsureSchema(db *sql.DB) error {
             username TEXT NOT NULL,
             space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
             timestamp TIMESTAMP NOT NULL DEFAULT now()
-)`,
+        )`,
 	}
 
 	for _, stmt := range stmts {
