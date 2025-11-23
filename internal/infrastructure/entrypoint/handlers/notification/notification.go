@@ -20,6 +20,24 @@ func NewNotificationHandler(notificationUseCase notificationUsecase.Notification
 	}
 }
 
+func (h *NotificationHandler) CreateNotification(c *gin.Context) {
+	var notificationDTO dto.CreateNotificationDTO
+	if err := c.ShouldBindJSON(&notificationDTO); err != nil {
+		appErr := apperror.NewInvalidData("Invalid request body", err, "notification_handler.go:CreateNotification")
+		response.NewError(c.Writer, appErr)
+		return
+	}
+
+	notification := notificationDTO.ToDomain()
+	err := h.NotificationUseCase.SaveNotification(c.Request.Context(), notification)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, dto.ToNotificationDTO(notification))
+}
+
 func (h *NotificationHandler) GetNotifications(c *gin.Context) {
 	userIDStr := c.Param("user_id")
 	if userIDStr == "" {

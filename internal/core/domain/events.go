@@ -149,5 +149,5 @@ type HandleNotificationConnectionParams struct {
 
 type NotificationManager interface {
 	HandleConnection(params HandleNotificationConnectionParams) error
-	BroadcastToUser(userID int, notification *Notification) error
+	BroadcastEvent(userID int, event *Event) error
 }

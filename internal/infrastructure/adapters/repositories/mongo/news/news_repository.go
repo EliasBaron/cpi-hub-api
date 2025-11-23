@@ -38,7 +38,7 @@ func (r *NewsRepository) GetAll(ctx context.Context, crit *criteria.Criteria) ([
 	}
 	defer cursor.Close(ctx)
 
-	var newsItems []*domain.News
+	newsItems := make([]*domain.News, 0)
 	for cursor.Next(ctx) {
 		var newsEntity entity.News
 		if err := cursor.Decode(&newsEntity); err != nil {

@@ -14,6 +14,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.GET("/users", handlers.UserHandler.Search)
 
 	// notifications
+	v1.POST("/notifications", handlers.NotificationHandler.CreateNotification)
 	v1.GET("/users/:user_id/notifications", handlers.NotificationHandler.GetNotifications)
 	v1.GET("/users/:user_id/notifications/unread-count", handlers.NotificationHandler.GetUnreadCount)
 	v1.PUT("/users/:user_id/notifications/:notification_id/read", handlers.NotificationHandler.MarkAsRead)

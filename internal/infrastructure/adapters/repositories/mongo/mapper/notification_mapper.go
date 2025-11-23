@@ -22,14 +22,13 @@ func ToMongoNotification(notification *domain.Notification) *entity.Notification
 	}
 
 	return &entity.Notification{
-		ID:         oid,
-		Type:       string(notification.Type),
-		EntityType: string(notification.EntityType),
-		EntityID:   notification.EntityID,
-		PostID:     notification.PostID,
-		UserID:     notification.UserID,
-		Read:       notification.Read,
-		CreatedAt:  createdAt,
+		ID:          oid,
+		Title:       notification.Title,
+		Description: notification.Description,
+		URL:         notification.URL,
+		To:          notification.To,
+		Read:        notification.Read,
+		CreatedAt:   createdAt,
 	}
 }
 
@@ -45,13 +44,12 @@ func ToDomainNotification(notificationEntity *entity.Notification) *domain.Notif
 	}
 
 	return &domain.Notification{
-		ID:         idStr,
-		Type:       domain.NotificationType(notificationEntity.Type),
-		EntityType: domain.EntityType(notificationEntity.EntityType),
-		EntityID:   notificationEntity.EntityID,
-		PostID:     notificationEntity.PostID,
-		UserID:     notificationEntity.UserID,
-		Read:       notificationEntity.Read,
-		CreatedAt:  createdAt,
+		ID:          idStr,
+		Title:       notificationEntity.Title,
+		Description: notificationEntity.Description,
+		URL:         notificationEntity.URL,
+		To:          notificationEntity.To,
+		Read:        notificationEntity.Read,
+		CreatedAt:   createdAt,
 	}
 }

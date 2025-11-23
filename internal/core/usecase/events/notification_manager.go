@@ -114,8 +114,8 @@ func (nm *NotificationManager) removeConnection(userID int) {
 	nm.mutex.Unlock()
 }
 
-// BroadcastToUser envía una notificación a un usuario específico si está conectado
-func (nm *NotificationManager) BroadcastToUser(userID int, notification *domain.Notification) error {
+// BroadcastEvent envía un evento genérico a un usuario específico si está conectado
+func (nm *NotificationManager) BroadcastEvent(userID int, event *domain.Event) error {
 	nm.mutex.RLock()
 	conn, exists := nm.connections[userID]
 	nm.mutex.RUnlock()
@@ -124,17 +124,17 @@ func (nm *NotificationManager) BroadcastToUser(userID int, notification *domain.
 		return nil
 	}
 
-	notificationMessage := dto.ToNotificationMessageDTO(notification)
+	eventMessage := dto.ToEventMessageDTO(event)
 
-	messageBytes, err := json.Marshal(notificationMessage)
+	messageBytes, err := json.Marshal(eventMessage)
 	if err != nil {
-		return apperror.NewInternalServer("error marshaling notification", err, "notification_manager.go:BroadcastToUser")
+		return apperror.NewInternalServer("error marshaling event", err, "notification_manager.go:BroadcastEvent")
 	}
 
 	conn.SetWriteDeadline(time.Now().Add(nm.config.WriteWait))
 	if err := conn.WriteMessage(websocket.TextMessage, messageBytes); err != nil {
 		nm.removeConnection(userID)
-		return apperror.NewInternalServer("error writing notification", err, "notification_manager.go:BroadcastToUser")
+		return apperror.NewInternalServer("error writing event", err, "notification_manager.go:BroadcastEvent")
 	}
 
 	return nil
