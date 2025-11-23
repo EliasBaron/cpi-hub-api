@@ -2,19 +2,13 @@ package domain
 
 import "time"
 
-type NotificationType string
-
-const (
-	NotificationTypeReaction NotificationType = "reaction"
-)
-
+// Notification representa una notificación genérica
 type Notification struct {
-	ID         string
-	Type       NotificationType
-	EntityType EntityType
-	EntityID   int
-	PostID     *int
-	UserID     int
-	Read       bool
-	CreatedAt  time.Time
+	ID          string
+	Title       string
+	Description string
+	URL         *string
+	To          int // user_id del destinatario
+	Read        bool
+	CreatedAt   time.Time
 }

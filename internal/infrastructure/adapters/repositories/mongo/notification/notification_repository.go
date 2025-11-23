@@ -43,7 +43,7 @@ func (r *NotificationRepository) SaveNotification(ctx context.Context, notificat
 func (r *NotificationRepository) GetUserNotifications(ctx context.Context, userID int, limit, offset int) ([]*domain.Notification, error) {
 	collection := r.db.Collection("notifications")
 
-	filter := bson.M{"user_id": userID}
+	filter := bson.M{"to": userID}
 
 	opts := options.Find().
 		SetSort(bson.M{"created_at": -1}).
@@ -100,7 +100,7 @@ func (r *NotificationRepository) MarkAsRead(ctx context.Context, notificationID 
 
 func (r *NotificationRepository) MarkAllAsRead(ctx context.Context, userID int) error {
 	collection := r.db.Collection("notifications")
-	filter := bson.M{"user_id": userID, "read": false}
+	filter := bson.M{"to": userID, "read": false}
 	update := bson.M{
 		"$set": bson.M{"read": true},
 	}
@@ -115,7 +115,7 @@ func (r *NotificationRepository) MarkAllAsRead(ctx context.Context, userID int) 
 
 func (r *NotificationRepository) GetUnreadCount(ctx context.Context, userID int) (int, error) {
 	collection := r.db.Collection("notifications")
-	filter := bson.M{"user_id": userID, "read": false}
+	filter := bson.M{"to": userID, "read": false}
 
 	count, err := collection.CountDocuments(ctx, filter)
 	if err != nil {

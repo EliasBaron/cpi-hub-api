@@ -3,13 +3,11 @@ package notification
 import (
 	"context"
 	"cpi-hub-api/internal/core/domain"
-	"cpi-hub-api/internal/core/dto"
 	"cpi-hub-api/pkg/helpers"
-	"log"
 )
 
 type NotificationUsecase interface {
-	CreateNotification(ctx context.Context, params dto.CreateNotificationParams) error
+	SaveNotification(ctx context.Context, notification *domain.Notification) error
 	GetUserNotifications(ctx context.Context, userID int, limit, offset int) ([]*domain.Notification, error)
 	MarkAsRead(ctx context.Context, notificationID string) error
 	MarkAllAsRead(ctx context.Context, userID int) error
@@ -18,41 +16,22 @@ type NotificationUsecase interface {
 
 type notificationUsecase struct {
 	notificationRepo domain.NotificationRepository
-	notificationMgr  domain.NotificationManager
 }
 
 func NewNotificationUsecase(
 	notificationRepo domain.NotificationRepository,
-	notificationMgr domain.NotificationManager,
 ) NotificationUsecase {
 	return &notificationUsecase{
 		notificationRepo: notificationRepo,
-		notificationMgr:  notificationMgr,
 	}
 }
 
-func (u *notificationUsecase) CreateNotification(ctx context.Context, params dto.CreateNotificationParams) error {
-	notification := &domain.Notification{
-		Type:       params.NotificationType,
-		EntityType: params.EntityType,
-		EntityID:   params.EntityID,
-		PostID:     params.PostID,
-		UserID:     params.OwnerUserID,
-		Read:       false,
-		CreatedAt:  helpers.GetTime(),
+func (u *notificationUsecase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
+	if notification.CreatedAt.IsZero() {
+		notification.CreatedAt = helpers.GetTime()
 	}
 
-	err := u.notificationRepo.SaveNotification(ctx, notification)
-	if err != nil {
-		return err
-	}
-
-	err = u.notificationMgr.BroadcastToUser(params.OwnerUserID, notification)
-	if err != nil {
-		log.Printf("Error broadcasting notification to user %d: %v", params.OwnerUserID, err)
-	}
-
-	return nil
+	return u.notificationRepo.SaveNotification(ctx, notification)
 }
 
 func (u *notificationUsecase) GetUserNotifications(ctx context.Context, userID int, limit, offset int) ([]*domain.Notification, error) {

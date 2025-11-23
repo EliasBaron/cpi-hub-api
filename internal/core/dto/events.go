@@ -41,3 +41,17 @@ func ToNotificationMessageDTO(notification *domain.Notification) NotificationMes
 		Timestamp: notification.CreatedAt,
 	}
 }
+
+type EventMessageDTO struct {
+	Type      string        `json:"type"`
+	Data      *domain.Event `json:"data"`
+	Timestamp time.Time     `json:"timestamp"`
+}
+
+func ToEventMessageDTO(event *domain.Event) EventMessageDTO {
+	return EventMessageDTO{
+		Type:      "event",
+		Data:      event,
+		Timestamp: event.Timestamp,
+	}
+}
