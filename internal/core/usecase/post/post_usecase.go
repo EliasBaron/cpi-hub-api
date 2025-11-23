@@ -58,7 +58,7 @@ func NewPostUsecase(
 func (p *postUseCase) getCommentsWithUsers(ctx context.Context, postIDs []int) (map[int][]*domain.CommentWithInfo, error) {
 	comments, err := p.commentRepository.FindAll(ctx, criteria.NewCriteriaBuilder().
 		WithFilter("post_id", postIDs, criteria.OperatorIn).
-		WithSort("created_at", criteria.OrderDirectionAsc).
+		WithSort("created_at", criteria.OrderDirectionDesc).
 		Build())
 
 	if err != nil {
