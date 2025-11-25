@@ -9,6 +9,7 @@ import (
 	pghelpers "cpi-hub-api/internal/infrastructure/adapters/repositories/postgres/helpers"
 	"cpi-hub-api/pkg/apperror"
 	"cpi-hub-api/pkg/helpers"
+	"fmt"
 	"log"
 	"strings"
 )
@@ -21,6 +22,7 @@ type SearchResult struct {
 type PostUseCase interface {
 	Create(ctx context.Context, post *domain.Post) (*domain.ExtendedPost, error)
 	Get(ctx context.Context, id int) (*domain.ExtendedPost, error)
+	GetTrendingPosts(ctx context.Context, params dto.TrendingPostsParams) (*SearchResult, error)
 	Search(ctx context.Context, params dto.SearchPostsParams) (*SearchResult, error)
 	GetInterestedPosts(ctx context.Context, params dto.InterestedPostsParams) (*SearchResult, error)
 	AddComment(ctx context.Context, commentDTO dto.CreateComment) (*domain.CommentWithInfo, error)
@@ -34,6 +36,7 @@ type postUseCase struct {
 	userRepository      domain.UserRepository
 	commentRepository   domain.CommentRepository
 	userSpaceRepository domain.UserSpaceRepository
+	reactionRepository  domain.ReactionRepository
 	eventEmitter        events.EventEmitter
 }
 
@@ -43,6 +46,7 @@ func NewPostUsecase(
 	userRepo domain.UserRepository,
 	commentRepo domain.CommentRepository,
 	userSpaceRepo domain.UserSpaceRepository,
+	reactionRepo domain.ReactionRepository,
 	eventEmitter events.EventEmitter,
 ) PostUseCase {
 	return &postUseCase{
@@ -51,6 +55,7 @@ func NewPostUsecase(
 		userRepository:      userRepo,
 		commentRepository:   commentRepo,
 		userSpaceRepository: userSpaceRepo,
+		reactionRepository:  reactionRepo,
 		eventEmitter:        eventEmitter,
 	}
 }
@@ -321,6 +326,72 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 	}
 
 	extendedPosts, err := p.buildExtendedPosts(ctx, posts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchResult{
+		Posts: extendedPosts,
+		Total: total,
+	}, nil
+}
+
+func (p *postUseCase) GetTrendingPosts(ctx context.Context, params dto.TrendingPostsParams) (*SearchResult, error) {
+	since, err := helpers.ParseTimeFrame(params.TimeFrame)
+	if err != nil {
+		return nil, apperror.NewInvalidData(fmt.Sprintf("Invalid time_frame: %s", params.TimeFrame), err, "post_usecase.go:GetTrendingPosts")
+	}
+
+	// Build criteria for aggregating reactions on posts since the timeframe
+	reactionCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("entity_type", string(domain.EntityTypePost), criteria.OperatorEqual).
+		WithFilter("action", string(domain.ActionTypeLike), criteria.OperatorEqual).
+		WithFilter("timestamp", since, criteria.OperatorGte).
+		WithPagination(params.Page, params.PageSize).
+		Build()
+
+	// Get top posts by reaction count, grouped by entity_id (post_id)
+	topReactions, total, err := p.reactionRepository.GetTopReactionEntities(ctx, reactionCriteria, "entity_id")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(topReactions) == 0 {
+		return &SearchResult{Posts: []*domain.ExtendedPost{}, Total: 0}, nil
+	}
+
+	// Extract post IDs from aggregation results, preserving order
+	postIDs := make([]int, len(topReactions))
+	for i, tr := range topReactions {
+		postIDs[i] = tr.EntityID
+	}
+
+	// Fetch posts from Postgres by IDs
+	postsCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("id", postIDs, criteria.OperatorIn).
+		Build()
+
+	posts, err := p.postRepository.Search(ctx, postsCriteria)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a map for quick lookup and preserve trending order
+	postMap := make(map[int]*domain.Post)
+	for _, post := range posts {
+		postMap[post.ID] = post
+	}
+
+	// Rebuild posts slice in the order of topReactions (most likes first)
+	orderedPosts := make([]*domain.Post, 0, len(topReactions))
+	for _, tr := range topReactions {
+		if post, exists := postMap[tr.EntityID]; exists {
+			orderedPosts = append(orderedPosts, post)
+		}
+	}
+
+	// Build extended posts with user, space, and comments
+	extendedPosts, err := p.buildExtendedPosts(ctx, orderedPosts)
 	if err != nil {
 		return nil, err
 	}

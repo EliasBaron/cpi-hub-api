@@ -79,6 +79,8 @@ func (u *reactionUsecase) AddReaction(ctx context.Context, reaction *domain.Reac
 			{Field: "entity_id", Operator: criteria.OperatorEqual, Value: reaction.EntityID},
 		},
 	}
+
+	reaction.Timestamp = helpers.GetTime()
 	existingReaction, err := u.reactionRepo.FindReaction(ctx, criteria)
 
 	if err != nil {

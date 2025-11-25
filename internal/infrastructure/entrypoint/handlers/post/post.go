@@ -176,6 +176,35 @@ func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
 	response.SuccessResponse(context.Writer, data)
 }
 
+func (h *PostHandler) GetTrendingPosts(c *gin.Context) {
+	page, pageSize := helpers.GetPaginationValues(c)
+	timeFrame := c.Query("time_frame")
+	if timeFrame == "" {
+		timeFrame = "24h"
+	}
+
+	trendingParams := dto.TrendingPostsParams{
+		Page:      page,
+		PageSize:  pageSize,
+		TimeFrame: timeFrame,
+	}
+
+	trendingPosts, err := h.PostUseCase.GetTrendingPosts(c.Request.Context(), trendingParams)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	data := dto.PaginatedPostsResponse{
+		Data:     dto.ToPostExtendedDTOs(trendingPosts.Posts),
+		Page:     trendingParams.Page,
+		PageSize: trendingParams.PageSize,
+		Total:    trendingPosts.Total,
+	}
+
+	response.SuccessResponse(c.Writer, data)
+}
+
 func (h *PostHandler) Update(c *gin.Context) {
 	var updatePostDTO dto.UpdatePost
 

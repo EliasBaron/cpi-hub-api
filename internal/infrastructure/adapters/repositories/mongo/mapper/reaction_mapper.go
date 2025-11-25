@@ -20,6 +20,7 @@ func ToMongoReaction(reaction *domain.Reaction) *entity.Reaction {
 		EntityType: string(reaction.EntityType),
 		EntityID:   reaction.EntityID,
 		Action:     string(reaction.Action),
+		Timestamp:  reaction.Timestamp,
 	}
 }
 
@@ -34,5 +35,6 @@ func ToDomainReaction(reactionEntity *entity.Reaction) *domain.Reaction {
 		EntityType: domain.EntityType(reactionEntity.EntityType),
 		EntityID:   reactionEntity.EntityID,
 		Action:     domain.ActionType(reactionEntity.Action),
+		Timestamp:  reactionEntity.Timestamp,
 	}
 }
