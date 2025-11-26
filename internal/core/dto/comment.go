@@ -57,6 +57,12 @@ type SearchCommentsParams struct {
 	PostID        *int
 }
 
+type TrendingCommentsParams struct {
+	Page      int
+	PageSize  int
+	TimeFrame string
+}
+
 type PaginatedCommentsResponse struct {
 	Data     []CommentWithSpaceDTO `json:"data"`
 	Page     int                   `json:"page"`

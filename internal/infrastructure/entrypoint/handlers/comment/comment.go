@@ -15,6 +15,36 @@ type CommentHandler struct {
 	CommentUseCase comment.CommentUseCase
 }
 
+func (h *CommentHandler) GetTrendingComments(c *gin.Context) {
+	page, pageSize := helpers.GetPaginationValues(c)
+	timeFrame := c.Query("time_frame")
+	if timeFrame == "" {
+		timeFrame = "24h"
+	}
+
+	trendingParams := dto.TrendingCommentsParams{
+		Page:      page,
+		PageSize:  pageSize,
+		TimeFrame: timeFrame,
+	}
+
+	trendingComments, err := h.CommentUseCase.GetTrendingComments(c.Request.Context(), trendingParams)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	data := dto.PaginatedCommentsResponse{
+		Data:     dto.ToCommentWithSpaceDTOs(trendingComments.Comments),
+		Page:     trendingParams.Page,
+		PageSize: trendingParams.PageSize,
+		Total:    trendingComments.Total,
+	}
+
+	response.SuccessResponse(c.Writer, data)
+}
+
+
 func (h *CommentHandler) Search(c *gin.Context) {
 	page, pageSize := helpers.GetPaginationValues(c)
 	orderBy, sortDirection := helpers.GetSortValues(c)

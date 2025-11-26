@@ -69,7 +69,7 @@ func Build() *Handlers {
 
 	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
-	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
+	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository, reactionRepo)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
 	newsUsecase := newsUsecase.NewNewsUsecase(newsRepo)
 

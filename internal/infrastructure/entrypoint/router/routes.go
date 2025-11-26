@@ -51,6 +51,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	//comments
 	v1.GET("/comments", handlers.CommentHandler.Search)
+	v1.GET("/comments/trending", handlers.CommentHandler.GetTrendingComments)
 	v1.PUT("/comments/:comment_id", handlers.CommentHandler.Update)
 	v1.DELETE("/comments/:comment_id", handlers.CommentHandler.Delete)
 
