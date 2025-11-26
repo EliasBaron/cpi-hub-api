@@ -337,18 +337,19 @@ func (p *postUseCase) Search(ctx context.Context, params dto.SearchPostsParams) 
 }
 
 func (p *postUseCase) GetTrendingPosts(ctx context.Context, params dto.TrendingPostsParams) (*SearchResult, error) {
-	since, err := helpers.ParseTimeFrame(params.TimeFrame)
-	if err != nil {
-		return nil, apperror.NewInvalidData(fmt.Sprintf("Invalid time_frame: %s", params.TimeFrame), err, "post_usecase.go:GetTrendingPosts")
+	builder := criteria.NewCriteriaBuilder().
+		WithFilter("entity_type", string(domain.EntityTypePost), criteria.OperatorEqual).
+		WithFilter("action", string(domain.ActionTypeLike), criteria.OperatorEqual)
+
+	if params.TimeFrame != "" {
+		since, err := helpers.ParseTimeFrame(params.TimeFrame)
+		if err != nil {
+			return nil, apperror.NewInvalidData(fmt.Sprintf("Invalid time_frame: %s", params.TimeFrame), err, "post_usecase.go:GetTrendingPosts")
+		}
+		builder = builder.WithFilter("timestamp", since, criteria.OperatorGte)
 	}
 
-	// Build criteria for aggregating reactions on posts since the timeframe
-	reactionCriteria := criteria.NewCriteriaBuilder().
-		WithFilter("entity_type", string(domain.EntityTypePost), criteria.OperatorEqual).
-		WithFilter("action", string(domain.ActionTypeLike), criteria.OperatorEqual).
-		WithFilter("timestamp", since, criteria.OperatorGte).
-		WithPagination(params.Page, params.PageSize).
-		Build()
+	reactionCriteria := builder.WithPagination(params.Page, params.PageSize).Build()
 
 	// Get top posts by reaction count, grouped by entity_id (post_id)
 	topReactions, total, err := p.reactionRepository.GetTopReactionEntities(ctx, reactionCriteria, "entity_id")

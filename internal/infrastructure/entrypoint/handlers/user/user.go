@@ -203,9 +203,6 @@ func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
 func (h *UserHandler) GetTrendingUsers(c *gin.Context) {
 	page, pageSize := helpers.GetPaginationValues(c)
 	timeFrame := c.Query("time_frame")
-	if timeFrame == "" {
-		timeFrame = "24h"
-	}
 
 	trendingParams := dto.TrendingUsersParams{
 		Page:      page,

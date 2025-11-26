@@ -18,9 +18,6 @@ type CommentHandler struct {
 func (h *CommentHandler) GetTrendingComments(c *gin.Context) {
 	page, pageSize := helpers.GetPaginationValues(c)
 	timeFrame := c.Query("time_frame")
-	if timeFrame == "" {
-		timeFrame = "24h"
-	}
 
 	trendingParams := dto.TrendingCommentsParams{
 		Page:      page,
@@ -43,7 +40,6 @@ func (h *CommentHandler) GetTrendingComments(c *gin.Context) {
 
 	response.SuccessResponse(c.Writer, data)
 }
-
 
 func (h *CommentHandler) Search(c *gin.Context) {
 	page, pageSize := helpers.GetPaginationValues(c)

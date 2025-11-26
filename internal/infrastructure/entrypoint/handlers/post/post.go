@@ -179,9 +179,6 @@ func (h *PostHandler) GetInterestedPosts(context *gin.Context) {
 func (h *PostHandler) GetTrendingPosts(c *gin.Context) {
 	page, pageSize := helpers.GetPaginationValues(c)
 	timeFrame := c.Query("time_frame")
-	if timeFrame == "" {
-		timeFrame = "24h"
-	}
 
 	trendingParams := dto.TrendingPostsParams{
 		Page:      page,
