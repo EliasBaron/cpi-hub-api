@@ -67,7 +67,7 @@ func Build() *Handlers {
 	notificationRepo := notificationRepository.NewNotificationRepository(mongodb)
 	newsRepo := newsRepository.NewNewsRepository(mongodb)
 
-	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
+	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository, reactionRepo)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
 	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository, reactionRepo)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)

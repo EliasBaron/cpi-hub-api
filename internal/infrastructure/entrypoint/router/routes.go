@@ -11,6 +11,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	// users
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
+	v1.GET("/users/trending", handlers.UserHandler.GetTrendingUsers)
 	v1.GET("/users", handlers.UserHandler.Search)
 
 	// notifications

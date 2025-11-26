@@ -200,6 +200,28 @@ func (h *UserHandler) GetSpacesByUserId(c *gin.Context) {
 	response.SuccessResponse(c.Writer, spacesDTO)
 }
 
+func (h *UserHandler) GetTrendingUsers(c *gin.Context) {
+	page, pageSize := helpers.GetPaginationValues(c)
+	timeFrame := c.Query("time_frame")
+	if timeFrame == "" {
+		timeFrame = "24h"
+	}
+
+	trendingParams := dto.TrendingUsersParams{
+		Page:      page,
+		PageSize:  pageSize,
+		TimeFrame: timeFrame,
+	}
+
+	trendingUsers, err := h.UseCase.GetTrendingUsers(c.Request.Context(), trendingParams)
+	if err != nil {
+		response.NewError(c.Writer, err)
+		return
+	}
+
+	response.SuccessResponse(c.Writer, trendingUsers)
+}
+
 func (h *UserHandler) GetInterestedPosts(c *gin.Context) {
 	userIdStr := c.Param("user_id")
 	userId, err := strconv.Atoi(userIdStr)
