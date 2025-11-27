@@ -5,6 +5,8 @@ import (
 	"cpi-hub-api/database/schema"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"database/sql"
@@ -30,16 +32,22 @@ type PostgreSQLConfig struct {
 }
 
 func newMongoDBClient() (*mongo.Client, error) {
-	config := MongoDBConfig{
-		URI:      "mongodb://localhost:27017",
-		Database: "cpihub",
-		Timeout:  10 * time.Second,
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		uri = "mongodb://localhost:27017" // Fallback para desarrollo local
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), config.Timeout)
+	timeout := 10 * time.Second
+	if timeoutStr := os.Getenv("MONGODB_TIMEOUT"); timeoutStr != "" {
+		if parsedTimeout, err := time.ParseDuration(timeoutStr); err == nil {
+			timeout = parsedTimeout
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI(config.URI)
+	clientOptions := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
@@ -51,7 +59,7 @@ func newMongoDBClient() (*mongo.Client, error) {
 		return nil, fmt.Errorf("error verificando conexión a MongoDB: %w", err)
 	}
 
-	log.Printf("Conectado exitosamente a MongoDB en %s", config.URI)
+	log.Printf("Conectado exitosamente a MongoDB")
 	return client, nil
 }
 
@@ -61,7 +69,12 @@ func GetMongoDatabase() (*mongo.Database, error) {
 		return nil, err
 	}
 
-	return client.Database("cpihub"), nil
+	databaseName := os.Getenv("MONGODB_DATABASE")
+	if databaseName == "" {
+		databaseName = "cpihub"
+	}
+
+	return client.Database(databaseName), nil
 }
 
 func CloseMongoConnection(client *mongo.Client) error {
@@ -72,13 +85,33 @@ func CloseMongoConnection(client *mongo.Client) error {
 }
 
 func NewPostgreSQLClient() (*sql.DB, error) {
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL != "" {
+		db, err := sql.Open("postgres", databaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("error opening connection to PostgreSQL: %w", err)
+		}
+
+		if err := db.Ping(); err != nil {
+			return nil, fmt.Errorf("error verifying connection to PostgreSQL: %w", err)
+		}
+
+		if err = schema.EnsureSchema(db); err != nil {
+			return nil, fmt.Errorf("error ensuring database schema: %w", err)
+		}
+
+		log.Printf("Successfully connected to PostgreSQL using DATABASE_URL")
+		return db, nil
+	}
+
+	// Fallback: leer variables individuales
 	config := PostgreSQLConfig{
-		Host:     "localhost",
-		Port:     5432,
-		User:     "postgres",
-		Password: "rootroot",
-		Database: "cpihub",
-		SSLMode:  "disable",
+		Host:     getEnv("POSTGRES_HOST", "localhost"),
+		Port:     getEnvAsInt("POSTGRES_PORT", 5432),
+		User:     getEnv("POSTGRES_USER", "postgres"),
+		Password: getEnv("POSTGRES_PASSWORD", "rootroot"),
+		Database: getEnv("POSTGRES_DB", "cpihub"),
+		SSLMode:  getEnv("POSTGRES_SSLMODE", "require"),
 	}
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -98,8 +131,24 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 	}
 
 	log.Printf("Successfully connected to PostgreSQL at %s:%d", config.Host, config.Port)
-
 	return db, nil
+}
+
+// Helper functions
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
 }
 
 func GetPostgreSQLDatabase() (*sql.DB, error) {
