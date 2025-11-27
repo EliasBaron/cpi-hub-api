@@ -11,6 +11,7 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 
 	// users
 	v1.GET("/users/current", handlers.UserHandler.GetCurrentUser)
+	v1.GET("/users/trending", handlers.UserHandler.GetTrendingUsers)
 	v1.GET("/users", handlers.UserHandler.Search)
 
 	// notifications
@@ -45,11 +46,13 @@ func LoadRoutes(app *gin.Engine, handlers *dependencies.Handlers) {
 	v1.GET("/posts/:post_id", handlers.PostHandler.Get)
 	v1.PUT("/posts/:post_id", handlers.PostHandler.Update)
 	v1.GET("/posts", handlers.PostHandler.Search)
+	v1.GET("/posts/trending", handlers.PostHandler.GetTrendingPosts)
 	v1.POST("/posts/:post_id/comments", handlers.PostHandler.AddComment)
 	v1.DELETE("/posts/:post_id", handlers.PostHandler.Delete)
 
 	//comments
 	v1.GET("/comments", handlers.CommentHandler.Search)
+	v1.GET("/comments/trending", handlers.CommentHandler.GetTrendingComments)
 	v1.PUT("/comments/:comment_id", handlers.CommentHandler.Update)
 	v1.DELETE("/comments/:comment_id", handlers.CommentHandler.Delete)
 

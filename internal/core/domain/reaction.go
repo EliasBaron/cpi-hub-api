@@ -13,6 +13,13 @@ type Reaction struct {
 	Timestamp  time.Time
 }
 
+type TopReactionEntity struct {
+	EntityID int
+	UserID   int
+	Count    int
+	GroupBy  string
+}
+
 type EntityType string
 
 const (

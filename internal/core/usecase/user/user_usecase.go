@@ -20,19 +20,22 @@ type UserUseCase interface {
 	Login(ctx context.Context, loginUser dto.LoginUser) (*domain.User, error)
 	Search(ctx context.Context, params dto.SearchUsersParams) (*dto.PaginatedUsersResponse, error)
 	UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) error
+	GetTrendingUsers(ctx context.Context, params dto.TrendingUsersParams) (*dto.PaginatedTrendingUsersResponse, error)
 }
 
 type useCase struct {
 	userRepository      domain.UserRepository
 	spaceRepository     domain.SpaceRepository
 	userSpaceRepository domain.UserSpaceRepository
+	reactionRepository  domain.ReactionRepository
 }
 
-func NewUserUsecase(userRepository domain.UserRepository, spaceRepository domain.SpaceRepository, userSpaceRepository domain.UserSpaceRepository) UserUseCase {
+func NewUserUsecase(userRepository domain.UserRepository, spaceRepository domain.SpaceRepository, userSpaceRepository domain.UserSpaceRepository, reactionRepository domain.ReactionRepository) UserUseCase {
 	return &useCase{
 		userRepository:      userRepository,
 		spaceRepository:     spaceRepository,
 		userSpaceRepository: userSpaceRepository,
+		reactionRepository:  reactionRepository,
 	}
 }
 
@@ -274,4 +277,72 @@ func (u *useCase) UpdateUser(ctx context.Context, dto dto.UpdateUserDTO) error {
 	}
 
 	return nil
+}
+
+func (u *useCase) GetTrendingUsers(ctx context.Context, params dto.TrendingUsersParams) (*dto.PaginatedTrendingUsersResponse, error) {
+	since, err := helpers.ParseTimeFrame(params.TimeFrame)
+	if err != nil {
+		return nil, apperror.NewInvalidData("Invalid time_frame: "+params.TimeFrame, err, "user_usecase.go:GetTrendingUsers")
+	}
+
+	reactionCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("action", string(domain.ActionTypeLike), criteria.OperatorEqual).
+		WithFilter("timestamp", since, criteria.OperatorGte).
+		WithPagination(params.Page, params.PageSize).
+		Build()
+
+	topReactions, total, err := u.reactionRepository.GetTopReactionEntities(ctx, reactionCriteria, "user_id")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(topReactions) == 0 {
+		return &dto.PaginatedTrendingUsersResponse{
+			Data:     []dto.UserDTOWithLikesCount{},
+			Page:     params.Page,
+			PageSize: params.PageSize,
+			Total:    0,
+		}, nil
+	}
+
+	// Extract user IDs from aggregation results
+	userIDs := make([]int, len(topReactions))
+	for i, tr := range topReactions {
+		userIDs[i] = tr.UserID
+	}
+
+	// Fetch users from Postgres by IDs
+	usersCriteria := criteria.NewCriteriaBuilder().
+		WithFilter("id", userIDs, criteria.OperatorIn).
+		Build()
+
+	users, err := u.userRepository.Search(ctx, usersCriteria)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a map for quick lookup and preserve trending order
+	userMap := make(map[int]*domain.User)
+	likesCountMap := make(map[int]int)
+	for _, user := range users {
+		userMap[user.ID] = user
+	}
+
+	for _, tr := range topReactions {
+		likesCountMap[tr.UserID] = tr.Count
+	}
+
+	trendingUsers := make([]dto.UserDTOWithLikesCount, 0, len(topReactions))
+	for _, tr := range topReactions {
+		if user, exists := userMap[tr.UserID]; exists {
+			trendingUsers = append(trendingUsers, dto.ToUserDTOWithLikesCount(user, likesCountMap[tr.UserID]))
+		}
+	}
+
+	return &dto.PaginatedTrendingUsersResponse{
+		Data:     trendingUsers,
+		Page:     params.Page,
+		PageSize: params.PageSize,
+		Total:    total,
+	}, nil
 }

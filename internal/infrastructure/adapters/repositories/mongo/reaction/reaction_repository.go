@@ -103,3 +103,87 @@ func (r *ReactionRepository) CountReactions(ctx context.Context, criteria *crite
 
 	return int(count), nil
 }
+
+func (r *ReactionRepository) GetTopReactionEntities(ctx context.Context, crit *criteria.Criteria, groupBy string) ([]*domain.TopReactionEntity, int, error) {
+	if groupBy != "entity_id" && groupBy != "user_id" {
+		return nil, 0, fmt.Errorf("invalid groupBy field: %s (must be 'entity_id' or 'user_id')", groupBy)
+	}
+
+	matchQuery := mapper.ToMongoDBQuery(crit)
+	matchStage := bson.D{{Key: "$match", Value: matchQuery}}
+
+	// Group by the specified field
+	groupStage := bson.D{{Key: "$group", Value: bson.M{
+		"_id":   "$" + groupBy,
+		"count": bson.M{"$sum": 1},
+	}}}
+
+	// Sort by count descending
+	sortStage := bson.D{{Key: "$sort", Value: bson.M{"count": -1}}}
+
+	// Build pagination stages from criteria
+	var paginationStages []bson.D
+	if crit.Pagination.Page > 0 && crit.Pagination.PageSize > 0 {
+		skip := (crit.Pagination.Page - 1) * crit.Pagination.PageSize
+		paginationStages = []bson.D{
+			{{Key: "$skip", Value: int64(skip)}},
+			{{Key: "$limit", Value: int64(crit.Pagination.PageSize)}},
+		}
+	}
+
+	// Build and execute aggregation pipeline
+	pipeline := mongo.Pipeline{matchStage, groupStage, sortStage}
+	pipeline = append(pipeline, paginationStages...)
+
+	cursor, err := r.db.Collection("reactions").Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to aggregate reactions: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Parse results
+	var results []*domain.TopReactionEntity
+	for cursor.Next(ctx) {
+		var doc struct {
+			ID    int `bson:"_id"`
+			Count int `bson:"count"`
+		}
+		if err := cursor.Decode(&doc); err != nil {
+			return nil, 0, fmt.Errorf("failed to decode aggregation result: %w", err)
+		}
+
+		topEntity := &domain.TopReactionEntity{
+			Count:   doc.Count,
+			GroupBy: groupBy,
+		}
+		if groupBy == "entity_id" {
+			topEntity.EntityID = doc.ID
+		} else {
+			topEntity.UserID = doc.ID
+		}
+		results = append(results, topEntity)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, 0, fmt.Errorf("cursor error: %w", err)
+	}
+
+	// Get total count of distinct groups
+	totalPipeline := mongo.Pipeline{matchStage, groupStage, bson.D{{Key: "$count", Value: "total"}}}
+	totalCursor, err := r.db.Collection("reactions").Aggregate(ctx, totalPipeline)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to aggregate total reactions: %w", err)
+	}
+	defer totalCursor.Close(ctx)
+
+	var total int
+	if totalCursor.Next(ctx) {
+		var totalDoc struct {
+			Total int `bson:"total"`
+		}
+		if err := totalCursor.Decode(&totalDoc); err == nil {
+			total = totalDoc.Total
+		}
+	}
+
+	return results, total, nil
+}

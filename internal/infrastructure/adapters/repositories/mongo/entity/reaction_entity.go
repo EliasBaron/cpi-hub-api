@@ -1,6 +1,9 @@
 package entity
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Reaction struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
@@ -8,4 +11,5 @@ type Reaction struct {
 	EntityType string             `bson:"entity_type"`
 	EntityID   int                `bson:"entity_id"`
 	Action     string             `bson:"action"`
+	Timestamp  time.Time          `bson:"timestamp"`
 }

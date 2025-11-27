@@ -44,6 +44,12 @@ type PaginatedPostsResponse struct {
 	Total    int               `json:"total"`
 }
 
+type TrendingPostsParams struct {
+	Page      int
+	PageSize  int
+	TimeFrame string
+}
+
 type PostExtendedDTO struct {
 	ID        int                  `json:"id"`
 	Title     string               `json:"title"`

@@ -67,9 +67,9 @@ func Build() *Handlers {
 	notificationRepo := notificationRepository.NewNotificationRepository(mongodb)
 	newsRepo := newsRepository.NewNewsRepository(mongodb)
 
-	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository)
+	userUsecase := userUsecase.NewUserUsecase(userRepository, spaceRepository, userSpaceRepository, reactionRepo)
 	spaceUsecase := spaceUsecase.NewSpaceUsecase(spaceRepository, userRepository, userSpaceRepository, postRepository)
-	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository)
+	commentUsecase := commentUsecase.NewCommentUsecase(commentRepository, reactionRepo)
 	messageUsecase := messageUsecase.NewMessageUsecase(messageRepo)
 	newsUsecase := newsUsecase.NewNewsUsecase(newsRepo)
 
@@ -82,7 +82,7 @@ func Build() *Handlers {
 	eventEmitter := eventsUsecase.NewEventEmitter(notificationManager)
 	notificationUsecase := notificationUsecase.NewNotificationUsecase(notificationRepo)
 	reactionUsecase := reactionUsecase.NewReactionUsecase(reactionRepo, userRepository, postRepository, commentRepository, eventEmitter)
-	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository, eventEmitter)
+	postUsecase := postUsecase.NewPostUsecase(postRepository, spaceRepository, userRepository, commentRepository, userSpaceRepository, reactionRepo, eventEmitter)
 
 	eventsUsecase := eventsUsecase.NewEventsUsecase(hubManager, userConnManager, notificationManager, eventsRepo, userRepository, spaceRepository)
 

@@ -107,3 +107,36 @@ type UpdateUserDTO struct {
 	LastName *string `json:"last_name"`
 	Image    *string `json:"image"`
 }
+
+type TrendingUsersParams struct {
+	Page      int
+	PageSize  int
+	TimeFrame string
+}
+
+type UserDTOWithLikesCount struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	LastName   string `json:"last_name"`
+	Email      string `json:"email"`
+	Image      string `json:"image"`
+	LikesCount int    `json:"likes_count"`
+}
+
+type PaginatedTrendingUsersResponse struct {
+	Data     []UserDTOWithLikesCount `json:"data"`
+	Page     int                     `json:"page"`
+	PageSize int                     `json:"page_size"`
+	Total    int                     `json:"total"`
+}
+
+func ToUserDTOWithLikesCount(user *domain.User, likesCount int) UserDTOWithLikesCount {
+	return UserDTOWithLikesCount{
+		ID:         user.ID,
+		Name:       user.Name,
+		LastName:   user.LastName,
+		Email:      user.Email,
+		Image:      user.Image,
+		LikesCount: likesCount,
+	}
+}
