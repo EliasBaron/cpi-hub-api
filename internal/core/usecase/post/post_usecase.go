@@ -413,6 +413,12 @@ func (p *postUseCase) GetInterestedPosts(ctx context.Context, params dto.Interes
 	if err != nil {
 		return nil, err
 	}
+	if len(spaceIDs) == 0 {
+		return &SearchResult{
+			Posts: []*domain.ExtendedPost{},
+			Total: 0,
+		}, nil
+	}
 
 	searchCriteria := criteria.NewCriteriaBuilder().
 		WithFilter("space_id", spaceIDs, criteria.OperatorIn).
