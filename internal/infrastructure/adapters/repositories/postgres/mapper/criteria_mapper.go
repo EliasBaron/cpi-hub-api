@@ -142,6 +142,9 @@ func buildFilterClauseWithAlias(filter criteria.Filter, tableAlias string, start
 	case criteria.OperatorIn:
 		switch v := filter.Value.(type) {
 		case []int:
+			if len(v) == 0 {
+				return "1 = 0", nil
+			}
 			placeholders := make([]string, len(v))
 			args := make([]interface{}, len(v))
 			for i, val := range v {
@@ -150,6 +153,9 @@ func buildFilterClauseWithAlias(filter criteria.Filter, tableAlias string, start
 			}
 			return fmt.Sprintf("%s IN (%s)", fieldName, strings.Join(placeholders, ", ")), args
 		case []interface{}:
+			if len(v) == 0 {
+				return "1 = 0", nil
+			}
 			placeholders := make([]string, len(v))
 			args := make([]interface{}, len(v))
 			for i, val := range v {
@@ -158,6 +164,10 @@ func buildFilterClauseWithAlias(filter criteria.Filter, tableAlias string, start
 			}
 			return fmt.Sprintf("%s IN (%s)", fieldName, strings.Join(placeholders, ", ")), args
 		case []string:
+			if len(v) == 0 {
+				// Array vacío: retornar condición que siempre es falsa
+				return "1 = 0", nil
+			}
 			placeholders := make([]string, len(v))
 			args := make([]interface{}, len(v))
 			for i, val := range v {
@@ -171,6 +181,10 @@ func buildFilterClauseWithAlias(filter criteria.Filter, tableAlias string, start
 
 	case criteria.OperatorNotIn:
 		if values, ok := filter.Value.([]interface{}); ok {
+			if len(values) == 0 {
+				// Array vacío: retornar condición que siempre es verdadera (todos los valores están "not in" un conjunto vacío)
+				return "1 = 1", nil
+			}
 			placeholders := make([]string, len(values))
 			for i, _ := range values {
 				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
@@ -232,6 +246,10 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 	case criteria.OperatorIn:
 		switch v := filter.Value.(type) {
 		case []int:
+			if len(v) == 0 {
+				// Array vacío: retornar condición que siempre es falsa
+				return "1 = 0", nil
+			}
 			placeholders := make([]string, len(v))
 			args := make([]interface{}, len(v))
 			for i, val := range v {
@@ -240,6 +258,10 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 			}
 			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), args
 		case []interface{}:
+			if len(v) == 0 {
+				// Array vacío: retornar condición que siempre es falsa
+				return "1 = 0", nil
+			}
 			placeholders := make([]string, len(v))
 			args := make([]interface{}, len(v))
 			for i, val := range v {
@@ -248,6 +270,10 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 			}
 			return fmt.Sprintf("%s IN (%s)", filter.Field, strings.Join(placeholders, ", ")), args
 		case []string:
+			if len(v) == 0 {
+				// Array vacío: retornar condición que siempre es falsa
+				return "1 = 0", nil
+			}
 			placeholders := make([]string, len(v))
 			args := make([]interface{}, len(v))
 			for i, val := range v {
@@ -261,6 +287,10 @@ func buildFilterClause(filter criteria.Filter, startIndex int) (string, []interf
 
 	case criteria.OperatorNotIn:
 		if values, ok := filter.Value.([]interface{}); ok {
+			if len(values) == 0 {
+				// Array vacío: retornar condición que siempre es verdadera (todos los valores están "not in" un conjunto vacío)
+				return "1 = 1", nil
+			}
 			placeholders := make([]string, len(values))
 			for i, _ := range values {
 				placeholders[i] = fmt.Sprintf("$%d", startIndex+i)
