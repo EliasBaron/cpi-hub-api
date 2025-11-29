@@ -105,13 +105,23 @@ func NewPostgreSQLClient() (*sql.DB, error) {
 	}
 
 	// Fallback: leer variables individuales
+	host := getEnv("POSTGRES_HOST", "localhost")
+	sslMode := getEnv("POSTGRES_SSLMODE", "")
+	if sslMode == "" {
+		if host == "localhost" || host == "127.0.0.1" {
+			sslMode = "disable"
+		} else {
+			sslMode = "require"
+		}
+	}
+
 	config := PostgreSQLConfig{
-		Host:     getEnv("POSTGRES_HOST", "localhost"),
+		Host:     host,
 		Port:     getEnvAsInt("POSTGRES_PORT", 5432),
 		User:     getEnv("POSTGRES_USER", "postgres"),
 		Password: getEnv("POSTGRES_PASSWORD", "rootroot"),
 		Database: getEnv("POSTGRES_DB", "cpihub"),
-		SSLMode:  getEnv("POSTGRES_SSLMODE", "require"),
+		SSLMode:  sslMode,
 	}
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
